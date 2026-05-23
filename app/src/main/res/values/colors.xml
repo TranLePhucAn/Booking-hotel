@@ -15,12 +15,17 @@
     <!-- Text -->
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
-        <color name="ocean_deep">#023e8a</color>
-        <color name="ocean_blue">#0077b6</color>
-        <color name="ocean_light">#00b4d8</color>
-        <color name="ocean_sky">#90e0ef</color>
-        <color name="ocean_bg">#F1FAFF</color>
-        <color name="white">#FFFFFF</color>
-        <color name="gray_text">#64748b</color>
+    <color name="ocean_deep">#023e8a</color>
+    <color name="ocean_blue">#0077b6</color>
+    <color name="ocean_light">#00b4d8</color>
+    <color name="ocean_sky">#90e0ef</color>
+    <color name="ocean_bg">#F1FAFF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="gray_text">#64748b</color>
+    <color name="warn_text">#d32d55</color>
+    <color name="highlight_text">#fd5d1c</color>
+
+    <!-- Border -->
+    <color name="separate_color">#E0E0E0</color>
 
 </resources>
