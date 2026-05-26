@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <!-- Primary -->
     <color name="primary">#4CAF50</color>
     <color name="primary_dark">#2E7D32</color>
-
-    <!-- Accent -->
     <color name="accent">#FFC107</color>
 
-    <!-- Neutral -->
+    <color name="ocean_deep">#023e8a</color>
+    <color name="ocean_blue">#0077b6</color>
+    <color name="ocean_light">#00b4d8</color>
+    <color name="ocean_sky">#90e0ef</color>
+    <color name="ocean_bg">#F1FAFF</color>
+
     <color name="background">#F5F5F5</color>
     <color name="card">#FFFFFF</color>
-
-    <!-- Text -->
+    <color name="white">#FFFFFF</color>
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
-        <color name="ocean_deep">#023e8a</color>
-        <color name="ocean_blue">#0077b6</color>
-        <color name="ocean_light">#00b4d8</color>
-        <color name="ocean_sky">#90e0ef</color>
-        <color name="ocean_bg">#F1FAFF</color>
-        <color name="white">#FFFFFF</color>
-        <color name="gray_text">#64748b</color>
-
+    <color name="gray_text">#64748b</color>
 </resources>
