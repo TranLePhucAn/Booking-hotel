@@ -10,9 +10,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+
         <activity
-            android:name=".ui.home.HomeActivity"
+            android:name=".ui.home.SearchActivity"
             android:exported="false" />
+
+<!--        <activity-->
+<!--            android:name=".ui.home.HomeActivity"-->
+<!--            android:exported="false" />-->
 
         <activity
             android:name=".ui.auth.RegisterActivity"
@@ -22,8 +27,17 @@
             android:name=".ui.auth.LoginActivity"
             android:exported="false" />
 
+<!--        <activity-->
+<!--            android:name=".ui.payment.ConfirmActivity"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
+
         <activity
-            android:name=".ui.payment.ConfirmActivity"
+            android:name=".ui.home.HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
