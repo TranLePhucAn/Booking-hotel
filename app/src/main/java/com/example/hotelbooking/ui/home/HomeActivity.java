@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,6 +16,8 @@ import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.ui.auth.LoginActivity;
+
+import com.example.hotelbooking.ui.home.ProfileActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +55,7 @@ public class HomeActivity extends AppCompatActivity {
         rvCategories = findViewById(R.id.rvCategories);
         rvFeaturedHotels = findViewById(R.id.rvFeaturedHotels);
         LinearLayout searchBar = findViewById(R.id.searchBar);
-        ImageView btnLogout = findViewById(R.id.btnLogout);
+        TextView btnProfile = findViewById(R.id.btnProfile);
         ImageView btnFilter = findViewById(R.id.btnFilter);
 
         // Chuyển sang màn hình tìm kiếm khi nhấn vào thanh search
@@ -62,12 +65,18 @@ public class HomeActivity extends AppCompatActivity {
             });
         }
 
-        // Nút đăng xuất (Sử dụng ImageView để tránh ClassCastException)
-        if (btnLogout != null) {
-            btnLogout.setOnClickListener(v -> {
-                FirebaseClient.getAuth().signOut();
-                startActivity(new Intent(HomeActivity.this, LoginActivity.class));
-                finish();
+        // Hiển thị thông tin user từ Firebase
+        if (FirebaseClient.getAuth().getCurrentUser() != null) {
+            String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
+            String email = FirebaseClient.getAuth().getCurrentUser().getEmail();
+
+            if (name != null && !name.isEmpty()) btnProfile.setText(name);
+        }
+
+        // Xử lý chuyển sang Profile
+        if (btnProfile != null) {
+            btnProfile.setOnClickListener(v -> {
+                startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
             });
         }
 
