@@ -15,7 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
+import com.example.hotelbooking.databinding.ActivityHomeBinding;
 import com.example.hotelbooking.ui.auth.LoginActivity;
+// Nếu màn hình chi tiết của em ở package khác, hãy import nó vào đây nhé
+// Ví dụ: import com.example.hotelbooking.ui.detail.ProductDetailActivity; 
 
 import com.example.hotelbooking.ui.home.ProfileActivity;
 
@@ -25,6 +28,7 @@ import java.util.List;
 
 public class HomeActivity extends AppCompatActivity {
 
+    private ActivityHomeBinding binding;
     private RecyclerView rvCategories, rvFeaturedHotels;
     private CategoryAdapter categoryAdapter;
     private HotelAdapter hotelAdapter;
@@ -33,18 +37,8 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
-
-//        Button btnLogout = findViewById(R.id.btnLogout);
-//
-//        btnLogout.setOnClickListener(v -> {
-//            // Đăng xuất khỏi Firebase
-//            FirebaseClient.getAuth().signOut();
-//
-//            // Chuyển về màn hình Login
-//            startActivity(new Intent(HomeActivity.this, LoginActivity.class));
-//            finish(); // Đóng HomeActivity
-//        });
+        binding = ActivityHomeBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         initViews();
         setupCategories();
@@ -77,6 +71,12 @@ public class HomeActivity extends AppCompatActivity {
         if (btnProfile != null) {
             btnProfile.setOnClickListener(v -> {
                 startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
+        // Nút đăng xuất
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> {
+                FirebaseClient.getAuth().signOut();
+                startActivity(new Intent(HomeActivity.this, LoginActivity.class));
+                finish();
             });
         }
 
@@ -101,14 +101,46 @@ public class HomeActivity extends AppCompatActivity {
 
     private void setupFeaturedHotels() {
         featuredHotels = new ArrayList<>();
-        featuredHotels.add(new Hotel("1", "Vinpearl Resort & Spa", "Nha Trang", 200, 4.8f, "", "Resort", "Nghỉ dưỡng đẳng cấp"));
-        featuredHotels.add(new Hotel("2", "InterContinental", "Đà Nẵng", 350, 4.9f, "", "Khách sạn", "View biển cực đẹp"));
-        featuredHotels.add(new Hotel("3", "JW Marriott", "Phú Quốc", 400, 5.0f, "", "Resort", "Không gian sang trọng"));
+        
+        // Cập nhật dữ liệu mẫu chạy theo Constructor 11 tham số mới của file Hotel.java
+        featuredHotels.add(new Hotel(
+                "1", 
+                "Vinpearl Resort & Spa", 
+                "Đảo Hòn Tre, Nha Trang", 
+                250.0, 
+                4.8f, 
+                "https://vcdn1-dulich.vnecdn.net/2022/04/15/v-1650013394.jpg", 
+                "Resort", 
+                "Khu nghỉ dưỡng sang trọng với bãi biển riêng và công viên giải trí.",
+                Arrays.asList("https://vcdn1-dulich.vnecdn.net/2022/04/15/v-1650013394.jpg", "https://vcdn1-dulich.vnecdn.net/2022/04/15/v-1650013394.jpg"),
+                Arrays.asList("Wifi", "Hồ bơi", "Spa", "Nhà hàng"),
+                12.2197, 
+                109.2435
+        ));
+        
+        featuredHotels.add(new Hotel(
+                "2", 
+                "InterContinental Danang", 
+                "Bán đảo Sơn Trà, Đà Nẵng", 
+                450.0, 
+                5.0f, 
+                "https://pix10.agoda.net/hotelImages/301136/-1/6c30e20f2637956e5454b52b3112a688.jpg", 
+                "Khách sạn", 
+                "Nằm trên sườn đồi với tầm nhìn tuyệt đẹp ra biển Đông.",
+                Arrays.asList("https://pix10.agoda.net/hotelImages/301136/-1/6c30e20f2637956e5454b52b3112a688.jpg"),
+                Arrays.asList("Wifi", "Bãi biển riêng", "Bar", "Gym"),
+                16.1219, 
+                108.2782
+        ));
 
         hotelAdapter = new HotelAdapter(featuredHotels, new HotelAdapter.OnHotelClickListener() {
             @Override
             public void onHotelClick(Hotel hotel) {
-                Toast.makeText(HomeActivity.this, "Chi tiết: " + hotel.getName(), Toast.LENGTH_SHORT).show();
+                // KHI BẤM VÀO ITEM: Mở màn hình Chi tiết khách sạn của An và truyền Object sang
+              
+                Intent intent = new Intent(HomeActivity.this, ProductDetailActivity.class);
+                intent.putExtra("SELECTED_HOTEL", hotel);
+                startActivity(intent);
             }
 
             @Override
@@ -116,6 +148,7 @@ public class HomeActivity extends AppCompatActivity {
                 Toast.makeText(HomeActivity.this, "Đặt phòng: " + hotel.getName(), Toast.LENGTH_SHORT).show();
             }
         });
+
         if (rvFeaturedHotels != null) {
             rvFeaturedHotels.setLayoutManager(new LinearLayoutManager(this));
             rvFeaturedHotels.setAdapter(hotelAdapter);
