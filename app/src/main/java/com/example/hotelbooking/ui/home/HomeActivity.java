@@ -17,6 +17,7 @@ import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.databinding.ActivityHomeBinding;
 import com.example.hotelbooking.ui.auth.LoginActivity;
+import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 // Nếu màn hình chi tiết của em ở package khác, hãy import nó vào đây nhé
 // Ví dụ: import com.example.hotelbooking.ui.detail.ProductDetailActivity; 
 
@@ -138,8 +139,8 @@ public class HomeActivity extends AppCompatActivity {
             public void onHotelClick(Hotel hotel) {
                 // KHI BẤM VÀO ITEM: Mở màn hình Chi tiết khách sạn của An và truyền Object sang
               
-                Intent intent = new Intent(HomeActivity.this, ProductDetailActivity.class);
-                intent.putExtra("SELECTED_HOTEL", hotel);
+                Intent intent = new Intent(HomeActivity.this, HotelDetailActivity.class);
+                intent.putExtra("hotel", hotel);
                 startActivity(intent);
             }
 

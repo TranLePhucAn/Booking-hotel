@@ -1,5 +1,6 @@
 package com.example.hotelbooking.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
+import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import java.util.ArrayList;
@@ -69,7 +71,9 @@ public class SearchActivity extends AppCompatActivity {
         hotelAdapter = new HotelAdapter(filteredHotels, new HotelAdapter.OnHotelClickListener() {
             @Override
             public void onHotelClick(Hotel hotel) {
-                // Navigate to Detail
+                Intent intent = new Intent(SearchActivity.this, HotelDetailActivity.class);
+                intent.putExtra("hotel", hotel);
+                startActivity(intent);
             }
 
             @Override
