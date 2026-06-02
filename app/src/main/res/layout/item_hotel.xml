@@ -70,6 +70,15 @@
                     android:stepSize="0.5" />
             </LinearLayout>
 
+            <Button
+                android:id="@+id/btnBook"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="@color/primary"
+                android:text="Đặt phòng"
+                android:textColor="@color/white" />
+
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

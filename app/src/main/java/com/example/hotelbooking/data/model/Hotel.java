@@ -22,6 +22,12 @@ public class Hotel implements Serializable {
     public Hotel() {
     }
 
+    public Hotel(String id, String name, String location, double price, float rating,
+                 String imageUrl, String category, String description) {
+        this(id, name, location, price, rating, imageUrl, category, description,
+                null, null, 0, 0);
+    }
+
     // Constructor đã gộp đầy đủ các trường dữ liệu
     public Hotel(String id, String name, String location, double price, float rating, 
                  String imageUrl, String category, String description, 
@@ -52,6 +58,9 @@ public class Hotel implements Serializable {
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
 
+    public String getAddress() { return location; }
+    public void setAddress(String address) { this.location = address; }
+
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
 
@@ -60,6 +69,9 @@ public class Hotel implements Serializable {
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getMainImage() { return imageUrl; }
+    public void setMainImage(String mainImage) { this.imageUrl = mainImage; }
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
