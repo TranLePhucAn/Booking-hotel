@@ -43,15 +43,22 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/btnLogout"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                <TextView
+                    android:id="@+id/btnProfile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:padding="8dp"
-                    android:src="@android:drawable/ic_lock_power_off"
-                    app:tint="@color/warn_text" />
+                    android:text="Chào, Người dùng!" android:textColor="@color/ocean_blue"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:focusable="true"
+                    android:clickable="true" />
             </RelativeLayout>
 
             <LinearLayout
