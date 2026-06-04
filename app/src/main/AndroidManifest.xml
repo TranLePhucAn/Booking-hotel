@@ -10,15 +10,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity
-            android:name=".ui.home.HomeActivity"
-            android:exported="true" >
 
+        <activity
+            android:name=".ui.home.SearchActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.splash.SplashActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.hotel.HotelDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.hotel.MapActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.auth.RegisterActivity"
@@ -29,13 +41,12 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.payment.ConfirmActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false" />
 
         <activity
             android:name=".ui.payment.PaymentActivity"
