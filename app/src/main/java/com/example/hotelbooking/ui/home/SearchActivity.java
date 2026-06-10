@@ -144,7 +144,7 @@ public class SearchActivity extends AppCompatActivity {
         String query = etSearch.getText().toString().toLowerCase();
         
         filteredHotels = allHotels.stream()
-                .filter(hotel -> (hotel.getName().toLowerCase().contains(query) || 
+                .filter(hotel -> (hotel.getHotelName().toLowerCase().contains(query) ||
                                  hotel.getLocation().toLowerCase().contains(query)))
                 .filter(hotel -> hotel.getPrice() <= maxPriceFilter)
                 .filter(hotel -> hotel.getRating() >= minRatingFilter)

@@ -44,7 +44,7 @@ public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Hotel hotel = hotels.get(position);
-        holder.txtName.setText(hotel.getName());
+        holder.txtName.setText(hotel.getHotelName());
         holder.txtLocation.setText(hotel.getLocation()); // Thống nhất dùng getLocation()
         holder.txtPrice.setText(String.format(Locale.getDefault(), "$%.0f / night", hotel.getPrice()));
 
