@@ -2,6 +2,7 @@ package com.example.hotelbooking.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -19,6 +20,8 @@ import com.example.hotelbooking.ui.auth.LoginActivity;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 // Nếu màn hình chi tiết của em ở package khác, hãy import nó vào đây nhé
 // Ví dụ: import com.example.hotelbooking.ui.detail.ProductDetailActivity; 
+
+import com.example.hotelbooking.ui.home.ProfileActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -143,7 +146,7 @@ public class HomeActivity extends AppCompatActivity {
 
             @Override
             public void onBookClick(Hotel hotel) {
-                Toast.makeText(HomeActivity.this, "Đặt phòng: " + hotel.getHotelName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(HomeActivity.this, "Đặt phòng: " + hotel.getName(), Toast.LENGTH_SHORT).show();
             }
         });
 
