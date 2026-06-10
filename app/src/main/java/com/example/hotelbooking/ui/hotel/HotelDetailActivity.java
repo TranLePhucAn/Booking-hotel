@@ -50,7 +50,7 @@ public class HotelDetailActivity extends AppCompatActivity {
     }
 
     private void displayHotelDetails() {
-        binding.tvHotelName.setText(hotel.getHotelName());
+        binding.tvHotelName.setText(hotel.getName());
         binding.tvHotelAddress.setText(hotel.getAddress());
         binding.tvDescription.setText(hotel.getDescription());
         binding.tvPrice.setText(String.format("$%.2f / đêm", hotel.getPrice()));
