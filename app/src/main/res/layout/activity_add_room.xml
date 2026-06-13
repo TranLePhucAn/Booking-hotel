@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/tvAddRoomTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Them phong"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edtRoomName"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_input"
+            android:hint="Ten phong"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtRoomType"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Loai phong, vi du Deluxe"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtRoomDescription"
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Mo ta phong"
+            android:padding="14dp" />
+
+        <EditText
+            android:id="@+id/edtRoomPrice"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Gia moi dem, vi du 650000"
+            android:inputType="numberDecimal"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtAdults"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="So nguoi lon"
+            android:inputType="number"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtChildren"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="So tre em"
+            android:inputType="number"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtBedType"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Loai giuong"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtRoomSize"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Dien tich phong, vi du 32"
+            android:inputType="numberDecimal"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtAvailableRooms"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="So luong phong con trong"
+            android:inputType="number"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtRoomImage"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Anh phong"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtRoomAmenities"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Tien ich phong, cach nhau bang dau phay"
+            android:paddingHorizontal="14dp" />
+
+        <Button
+            android:id="@+id/btnSaveRoom"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="18dp"
+            android:backgroundTint="@color/ocean_blue"
+            android:text="Luu phong"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnFinishHotelPost"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="10dp"
+            android:text="Gui duyet bai dang"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>

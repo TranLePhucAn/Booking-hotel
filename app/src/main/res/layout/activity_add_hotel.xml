@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Them khach san moi"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edtBusinessName"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_input"
+            android:hint="Ten doanh nghiep / chu khach san"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtHotelName"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Ten khach san"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtDescription"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Mo ta khach san"
+            android:padding="14dp" />
+
+        <EditText
+            android:id="@+id/edtAddress"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Dia chi khach san"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtCity"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Thanh pho"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtDistrict"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Quan / huyen"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtRatingStar"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="So sao khach san, vi du 2"
+            android:inputType="numberDecimal"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtPriceFrom"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Gia thap nhat moi dem, vi du 500000"
+            android:inputType="numberDecimal"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtAmenities"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Tien ich khach san, cach nhau bang dau phay"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtMainImageUrl"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Anh chinh"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtImageUrls"
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Danh sach anh phu, cach nhau bang dau phay"
+            android:padding="14dp" />
+
+        <EditText
+            android:id="@+id/edtLatitude"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Latitude, vi du 10.8131"
+            android:inputType="numberDecimal|numberSigned"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtLongitude"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Longitude, vi du 106.6658"
+            android:inputType="numberDecimal|numberSigned"
+            android:paddingHorizontal="14dp" />
+
+        <Button
+            android:id="@+id/btnSubmitHotel"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="18dp"
+            android:backgroundTint="@color/ocean_blue"
+            android:text="Tao khach san va them phong"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>
