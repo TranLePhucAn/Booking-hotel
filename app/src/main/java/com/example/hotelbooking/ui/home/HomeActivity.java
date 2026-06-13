@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,6 +20,8 @@ import com.example.hotelbooking.ui.auth.LoginActivity;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 // Nếu màn hình chi tiết của em ở package khác, hãy import nó vào đây nhé
 // Ví dụ: import com.example.hotelbooking.ui.detail.ProductDetailActivity; 
+
+import com.example.hotelbooking.ui.home.ProfileActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +50,7 @@ public class HomeActivity extends AppCompatActivity {
         rvCategories = findViewById(R.id.rvCategories);
         rvFeaturedHotels = findViewById(R.id.rvFeaturedHotels);
         LinearLayout searchBar = findViewById(R.id.searchBar);
-        ImageView btnLogout = findViewById(R.id.btnLogout);
+        TextView btnProfile = findViewById(R.id.btnProfile);
         ImageView btnFilter = findViewById(R.id.btnFilter);
 
         // Chuyển sang màn hình tìm kiếm khi nhấn vào thanh search
@@ -57,6 +60,18 @@ public class HomeActivity extends AppCompatActivity {
             });
         }
 
+        // Hiển thị thông tin user từ Firebase
+        if (FirebaseClient.getAuth().getCurrentUser() != null) {
+            String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
+            String email = FirebaseClient.getAuth().getCurrentUser().getEmail();
+
+            if (name != null && !name.isEmpty()) btnProfile.setText(name);
+        }
+
+        // Xử lý chuyển sang Profile
+        if (btnProfile != null) {
+            btnProfile.setOnClickListener(v -> {
+                startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
         // Nút đăng xuất
         if (btnLogout != null) {
             btnLogout.setOnClickListener(v -> {
