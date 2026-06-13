@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_gradient">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dang ky doi tac khach san"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edtOwnerName"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_input"
+            android:hint="Ten nguoi dai dien"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtPartnerEmail"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Email dang nhap"
+            android:inputType="textEmailAddress"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtPartnerPhone"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="So dien thoai"
+            android:inputType="phone"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtPartnerPassword"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Mat khau"
+            android:inputType="textPassword"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtBusinessName"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Ten doanh nghiep / ten khach san"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtBusinessAddress"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Dia chi kinh doanh"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtBusinessType"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Loai hinh: Hotel, Homestay, Resort..."
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/edtLicenseInfo"
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Giay phep kinh doanh / thong tin xac minh"
+            android:padding="14dp" />
+
+        <Button
+            android:id="@+id/btnPartnerRegister"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="18dp"
+            android:backgroundTint="@color/ocean_blue"
+            android:text="Gui dang ky doi tac"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>
