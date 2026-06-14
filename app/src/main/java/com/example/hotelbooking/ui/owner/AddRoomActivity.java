@@ -21,6 +21,7 @@ import java.util.Map;
 public class AddRoomActivity extends AppCompatActivity {
 
     private String hotelId;
+    private String hotelName;
     private EditText edtRoomName;
     private EditText edtRoomType;
     private EditText edtRoomDescription;
@@ -41,7 +42,7 @@ public class AddRoomActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         hotelId = getIntent().getStringExtra("hotel_id");
-        String hotelName = getIntent().getStringExtra("hotel_name");
+        hotelName = getIntent().getStringExtra("hotel_name");
 
         TextView tvAddRoomTitle = findViewById(R.id.tvAddRoomTitle);
         tvAddRoomTitle.setText("Them phong cho " + (hotelName == null ? "khach san" : hotelName));
@@ -78,9 +79,11 @@ public class AddRoomActivity extends AppCompatActivity {
         String ownerId = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
                 : "";
+        int availableRooms = intOf(edtAvailableRooms, 0);
 
         Map<String, Object> room = new HashMap<>();
         room.put("hotel_id", hotelId);
+        room.put("hotel_name", hotelName == null ? "" : hotelName);
         room.put("owner_id", ownerId);
         room.put("room_name", roomName);
         room.put("room_type", textOf(edtRoomType));
@@ -92,10 +95,10 @@ public class AddRoomActivity extends AppCompatActivity {
         room.put("bed_type", textOf(edtBedType));
         room.put("room_size", doubleOf(edtRoomSize, 0));
         room.put("area", doubleOf(edtRoomSize, 0));
-        room.put("available_rooms", intOf(edtAvailableRooms, 0));
+        room.put("available_rooms", availableRooms);
         room.put("image_url", textOf(edtRoomImage));
         room.put("amenities", listOf(textOf(edtRoomAmenities)));
-        room.put("status", "AVAILABLE");
+        room.put("status", availableRooms > 0 ? "AVAILABLE" : "SUSPENDED");
         room.put("created_at", System.currentTimeMillis());
 
         db.collection("rooms")

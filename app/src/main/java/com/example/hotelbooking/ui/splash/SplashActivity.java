@@ -9,7 +9,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.ui.auth.LoginActivity;
-import com.example.hotelbooking.ui.home.HomeActivity;
+import com.example.hotelbooking.utils.LoadingDialog;
+import com.example.hotelbooking.utils.RoleRouter;
 import com.google.firebase.auth.FirebaseUser;
 
 public class SplashActivity extends AppCompatActivity {
@@ -20,18 +21,13 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
 
         new Handler().postDelayed(() -> {
-            // Kiểm tra xem user đã đăng nhập chưa
             FirebaseUser currentUser = FirebaseClient.getAuth().getCurrentUser();
-
             if (currentUser != null) {
-                // Đã đăng nhập -> Vào thẳng Home
-                startActivity(new Intent(this, HomeActivity.class));
+                RoleRouter.routeCurrentUser(this, new LoadingDialog(this));
             } else {
-                // Chưa đăng nhập -> Vào màn hình Login
                 startActivity(new Intent(this, LoginActivity.class));
+                finish();
             }
-            finish();
-
-        }, 2000);
+        }, 1200);
     }
 }

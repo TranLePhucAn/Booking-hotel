@@ -86,6 +86,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         box.addView(createText("Email: " + value(doc, "email"), false));
         box.addView(createText("Dien thoai: " + value(doc, "phone"), false));
         box.addView(createText("Dia chi: " + value(doc, "address"), false));
+        box.addView(createText("Giay phep: " + value(doc, "license_info"), false));
 
         EditText reason = createReasonInput();
         box.addView(reason);
@@ -122,7 +123,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         db.collection("businesses").document(businessId).update(updates)
                 .addOnSuccessListener(unused -> db.collection("users").document(businessId)
-                        .update("partner_status", "approved")
+                        .update("partner_status", "approved", "role", "partner")
                         .addOnSuccessListener(userUnused -> {
                             Toast.makeText(this, "Da duyet doanh nghiep", Toast.LENGTH_SHORT).show();
                             loadPendingBusinesses();
@@ -147,6 +148,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         db.collection(collection).document(documentId).update(updates)
                 .addOnSuccessListener(unused -> {
+                    if ("businesses".equals(collection)) {
+                        db.collection("users").document(documentId)
+                                .update("partner_status", status, "role", "partner_pending");
+                    }
                     Toast.makeText(this, "Da cap nhat " + collection + " = " + status, Toast.LENGTH_SHORT).show();
                     loadPendingData();
                 })
