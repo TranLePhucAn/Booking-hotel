@@ -107,7 +107,7 @@ public class PartnerRegisterActivity extends AppCompatActivity {
         userData.put("uid", uid);
         userData.put("email", email);
         userData.put("fullName", ownerName);
-        userData.put("role", "owner");
+        userData.put("role", "partner_pending");
         userData.put("partner_status", "pending");
 
         Map<String, Object> partnerData = new HashMap<>();
@@ -119,6 +119,7 @@ public class PartnerRegisterActivity extends AppCompatActivity {
         partnerData.put("business_type", textOf(edtBusinessType));
         partnerData.put("address", address);
         partnerData.put("license_info", textOf(edtLicenseInfo));
+        partnerData.put("license_image_url", textOf(edtLicenseInfo));
         partnerData.put("status", "pending");
         partnerData.put("created_at", System.currentTimeMillis());
 

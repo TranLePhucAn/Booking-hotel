@@ -46,11 +46,11 @@ public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> 
         Hotel hotel = hotels.get(position);
         holder.txtName.setText(hotel.getName());
         holder.txtLocation.setText(hotel.getLocation()); // Thống nhất dùng getLocation()
-        holder.txtPrice.setText(String.format(Locale.getDefault(), "$%.0f / night", hotel.getPrice()));
+        holder.txtPrice.setText(String.format(Locale.getDefault(), "Tu %,.0f VND / dem", hotel.getPrice()));
 
         // 1. Hiển thị số sao đánh giá (Bổ sung từ nhánhAn)
         if (holder.ratingBarSmall != null) {
-            holder.ratingBarSmall.setRating(hotel.getRating());
+            holder.ratingBarSmall.setRating(hotel.getRatingStar() > 0 ? hotel.getRatingStar() : hotel.getRating());
         }
 
         // 2. Tải ảnh bằng thư viện Glide (Bổ sung từ nhánh An - dùng getImageUrl())
