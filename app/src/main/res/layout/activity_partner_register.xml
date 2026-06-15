@@ -1,98 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient">
+    android:background="@drawable/bg_gradient"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Dang ky doi tac khach san"
+            android:text="Dang ky cong tac khach san"
             android:textColor="@color/white"
-            android:textSize="24sp"
+            android:textSize="26sp"
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/edtOwnerName"
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Gui ho so de admin xet duyet va mo dashboard quan ly phong."
+            android:textColor="@color/ocean_sky"
+            android:textSize="14sp" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:background="@drawable/bg_input"
-            android:hint="Ten nguoi dai dien"
-            android:paddingHorizontal="14dp" />
+            app:cardBackgroundColor="@color/card"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="6dp">
 
-        <EditText
-            android:id="@+id/edtPartnerEmail"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:hint="Email dang nhap"
-            android:inputType="textEmailAddress"
-            android:paddingHorizontal="14dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <EditText
-            android:id="@+id/edtPartnerPhone"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:hint="So dien thoai"
-            android:inputType="phone"
-            android:paddingHorizontal="14dp" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Thong tin tai khoan"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/edtPartnerPassword"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:hint="Mat khau"
-            android:inputType="textPassword"
-            android:paddingHorizontal="14dp" />
+                <EditText
+                    android:id="@+id/edtOwnerName"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_input"
+                    android:hint="Ten nguoi dai dien"
+                    android:inputType="textPersonName"
+                    android:paddingHorizontal="14dp" />
 
-        <EditText
-            android:id="@+id/edtBusinessName"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:hint="Ten doanh nghiep / ten khach san"
-            android:paddingHorizontal="14dp" />
+                <EditText
+                    android:id="@+id/edtPartnerEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_input"
+                    android:hint="Email dang nhap"
+                    android:inputType="textEmailAddress"
+                    android:paddingHorizontal="14dp" />
 
-        <EditText
-            android:id="@+id/edtBusinessAddress"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:hint="Dia chi kinh doanh"
-            android:paddingHorizontal="14dp" />
+                <EditText
+                    android:id="@+id/edtPartnerPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_input"
+                    android:hint="So dien thoai"
+                    android:inputType="phone"
+                    android:paddingHorizontal="14dp" />
 
-        <EditText
-            android:id="@+id/edtBusinessType"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:hint="Loai hinh: Hotel, Homestay, Resort..."
-            android:paddingHorizontal="14dp" />
+                <EditText
+                    android:id="@+id/edtPartnerPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_input"
+                    android:hint="Mat khau toi thieu 6 ky tu"
+                    android:inputType="textPassword"
+                    android:paddingHorizontal="14dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-        <EditText
-            android:id="@+id/edtLicenseInfo"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="90dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_input"
-            android:gravity="top"
-            android:hint="Giay phep kinh doanh / thong tin xac minh"
-            android:padding="14dp" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:cardBackgroundColor="@color/card"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Thong tin khach san"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edtBusinessName"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_input"
+                    android:hint="Ten doanh nghiep / ten khach san"
+                    android:paddingHorizontal="14dp" />
+
+                <EditText
+                    android:id="@+id/edtBusinessAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_input"
+                    android:hint="Dia chi kinh doanh"
+                    android:paddingHorizontal="14dp" />
+
+                <EditText
+                    android:id="@+id/edtBusinessType"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_input"
+                    android:hint="Loai hinh: Hotel, Homestay, Resort"
+                    android:paddingHorizontal="14dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="Giay phep / xac minh"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edtLicenseInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="96dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input"
+                    android:gravity="top"
+                    android:hint="Nhap ma giay phep, thong tin xac minh hoac link anh giay phep"
+                    android:padding="14dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <Button
             android:id="@+id/btnPartnerRegister"
@@ -100,7 +168,7 @@
             android:layout_height="54dp"
             android:layout_marginTop="18dp"
             android:backgroundTint="@color/ocean_blue"
-            android:text="Gui dang ky doi tac"
+            android:text="Gui yeu cau xet duyet"
             android:textColor="@color/white"
             android:textStyle="bold" />
 

@@ -118,6 +118,7 @@ public class HotelDetailActivity extends AppCompatActivity {
         binding.tvDescription.setText(valueOrDefault(hotel.getDescription(), "Dang cap nhat mo ta"));
         binding.tvPrice.setText(formatMoney(hotel.getPrice()) + " / dem");
         binding.ratingBar.setRating((float) hotel.getRatingStar());
+        binding.tvHotelRatingInfo.setText(formatHotelRatingInfo());
 
         if (hotel.getAmenities() != null && !hotel.getAmenities().isEmpty()) {
             binding.tvAmenities.setText(String.join(", ", hotel.getAmenities()));
@@ -143,8 +144,7 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void loadLocation() {
         if (hotel.getLocationId() == null || hotel.getLocationId().isEmpty()) {
-            latitude = hotel.getLatitude();
-            longitude = hotel.getLongitude();
+            useHotelLocationFallback();
             return;
         }
 
@@ -153,13 +153,16 @@ public class HotelDetailActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(document -> {
                     if (!document.exists()) {
+                        useHotelLocationFallback();
                         return;
                     }
-                    latitude = doubleValue(document, "latitude", 0);
-                    longitude = doubleValue(document, "longitude", 0);
-                    address = stringValue(document, "address", hotel.getAddress());
+
+                    latitude = firstDoubleValue(document, hotel.getLatitude(), "latitude", "lat");
+                    longitude = firstDoubleValue(document, hotel.getLongitude(), "longitude", "lng", "lon");
+                    address = firstStringValue(document, hotel.getAddress(), "address", "address_text");
                     binding.tvHotelAddress.setText(valueOrDefault(address, hotel.getAddress()));
-                });
+                })
+                .addOnFailureListener(e -> useHotelLocationFallback());
     }
 
     private void loadRooms() {
@@ -276,6 +279,7 @@ public class HotelDetailActivity extends AppCompatActivity {
     }
 
     private void openMap() {
+        ensureMapLocationReady();
         Intent intent = new Intent(this, HotelMapActivity.class);
         intent.putExtra("hotel_name", hotel != null ? hotel.getHotelName() : "");
         intent.putExtra("address", address);
@@ -375,10 +379,30 @@ public class HotelDetailActivity extends AppCompatActivity {
         return value == null ? fallback : value;
     }
 
+    private String firstStringValue(DocumentSnapshot document, String fallback, String... fields) {
+        for (String field : fields) {
+            String value = document.getString(field);
+            if (value != null && !value.isEmpty()) {
+                return value;
+            }
+        }
+        return fallback;
+    }
+
     private double doubleValue(DocumentSnapshot document, String field, double fallback) {
         Object value = document.get(field);
         if (value instanceof Number) {
             return ((Number) value).doubleValue();
+        }
+        return fallback;
+    }
+
+    private double firstDoubleValue(DocumentSnapshot document, double fallback, String... fields) {
+        for (String field : fields) {
+            Object value = document.get(field);
+            if (value instanceof Number) {
+                return ((Number) value).doubleValue();
+            }
         }
         return fallback;
     }
@@ -393,6 +417,36 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private String valueOrDefault(String value, String fallback) {
         return value == null || value.isEmpty() ? fallback : value;
+    }
+
+    private void useHotelLocationFallback() {
+        if (hotel == null) {
+            return;
+        }
+        if (latitude == 0 && longitude == 0) {
+            latitude = hotel.getLatitude();
+            longitude = hotel.getLongitude();
+        }
+        address = valueOrDefault(address, hotel.getAddress());
+    }
+
+    private void ensureMapLocationReady() {
+        useHotelLocationFallback();
+        if (latitude == 0 && longitude == 0) {
+            latitude = 10.8131;
+            longitude = 106.6658;
+        }
+        address = valueOrDefault(address, hotel != null ? hotel.getAddress() : "Dang cap nhat");
+    }
+
+    private String formatHotelRatingInfo() {
+        double reviewScore = hotel.getReviewScore();
+        int reviewCount = hotel.getReviewCount();
+        double ratingStar = hotel.getRatingStar();
+
+        String scoreText = reviewScore > 0 ? formatNumber(reviewScore) + "/10" : "Chua co diem";
+        String reviewText = reviewCount > 0 ? reviewCount + " danh gia" : "Chua co danh gia";
+        return formatNumber(ratingStar) + " sao  -  " + scoreText + "  -  " + reviewText;
     }
 
     private String formatMoney(double value) {
