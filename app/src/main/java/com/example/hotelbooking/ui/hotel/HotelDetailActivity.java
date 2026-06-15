@@ -113,11 +113,11 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void displayHotelDetails() {
         address = hotel.getAddress();
-        binding.tvHotelName.setText(valueOrDefault(hotel.getName(), "Khach san"));
+        binding.tvHotelName.setText(valueOrDefault(hotel.getHotelName(), "Khach san"));
         binding.tvHotelAddress.setText(valueOrDefault(hotel.getAddress(), "Dang cap nhat dia chi"));
         binding.tvDescription.setText(valueOrDefault(hotel.getDescription(), "Dang cap nhat mo ta"));
         binding.tvPrice.setText(formatMoney(hotel.getPrice()) + " / dem");
-        binding.ratingBar.setRating(hotel.getRatingStar() > 0 ? hotel.getRatingStar() : hotel.getRating());
+        binding.ratingBar.setRating((float) hotel.getRatingStar());
 
         if (hotel.getAmenities() != null && !hotel.getAmenities().isEmpty()) {
             binding.tvAmenities.setText(String.join(", ", hotel.getAmenities()));
@@ -277,7 +277,7 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void openMap() {
         Intent intent = new Intent(this, HotelMapActivity.class);
-        intent.putExtra("hotel_name", hotel != null ? hotel.getName() : "");
+        intent.putExtra("hotel_name", hotel != null ? hotel.getHotelName() : "");
         intent.putExtra("address", address);
         intent.putExtra("latitude", latitude);
         intent.putExtra("longitude", longitude);
@@ -291,11 +291,11 @@ public class HotelDetailActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, ConfirmActivity.class);
         intent.putExtra("hotel_id", hotelId);
-        intent.putExtra("hotel_name", hotel.getName());
+        intent.putExtra("hotel_name", hotel.getHotelName());
         intent.putExtra("hotel_address", address);
         intent.putExtra("hotel_image", hotel.getImageUrl());
         intent.putExtra("owner_id", hotel.getOwnerId());
-        intent.putExtra("review_score", hotel.getRating());
+        intent.putExtra("review_score", hotel.getRatingStar());
         intent.putExtra("rating_star", hotel.getRatingStar());
         intent.putExtra("review_count", hotel.getReviewCount());
 
@@ -317,11 +317,11 @@ public class HotelDetailActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, ConfirmActivity.class);
         intent.putExtra("hotel_id", hotelId);
-        intent.putExtra("hotel_name", hotel.getName());
+        intent.putExtra("hotel_name", hotel.getHotelName());
         intent.putExtra("hotel_address", address);
         intent.putExtra("hotel_image", hotel.getImageUrl());
         intent.putExtra("owner_id", hotel.getOwnerId());
-        intent.putExtra("review_score", hotel.getRating());
+        intent.putExtra("review_score", hotel.getRatingStar());
         intent.putExtra("rating_star", hotel.getRatingStar());
         intent.putExtra("review_count", hotel.getReviewCount());
         intent.putExtra("room_id", room.id);

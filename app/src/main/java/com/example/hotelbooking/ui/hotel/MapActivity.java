@@ -41,7 +41,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         hotel = (Hotel) getIntent().getSerializableExtra("hotel");
         if (hotel != null) {
-            binding.tvMapHotelName.setText(hotel.getName());
+            binding.tvMapHotelName.setText(hotel.getHotelName());
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -61,7 +61,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         if (hotel != null) {
             LatLng hotelLocation = new LatLng(hotel.getLatitude(), hotel.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(hotelLocation).title(hotel.getName()));
+            mMap.addMarker(new MarkerOptions().position(hotelLocation).title(hotel.getHotelName()));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hotelLocation, 15f));
         }
 

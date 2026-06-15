@@ -161,8 +161,8 @@ public class SearchActivity extends AppCompatActivity {
         filteredHotels.clear();
 
         for (Hotel hotel : allHotels) {
-            String name = safeLower(hotel.getName());
-            String location = safeLower(hotel.getLocation());
+            String name = safeLower(hotel.getHotelName());
+            String location = safeLower(hotel.getAddress());
             boolean matchQuery = query.isEmpty() || name.contains(query) || location.contains(query);
             boolean matchPrice = hotel.getPrice() <= maxPriceFilter;
             boolean matchRating = hotel.getRating() >= minRatingFilter;
