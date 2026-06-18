@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:gravity="center">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quét mã QR để thanh toán"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mở ứng dụng Ngân hàng hoặc Ví điện tử để quét"
+        android:textSize="13sp"
+        android:textColor="#666666"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <ImageView
+        android:id="@+id/img_qr_code"
+        android:layout_width="220dp"
+        android:layout_height="220dp"
+        android:background="#EEEEEE"
+        android:scaleType="fitCenter"
+        android:layout_marginBottom="20dp" />
+
+    <Button
+        android:id="@+id/btn_paid_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Xác nhận chuyển khoản"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="@color/ocean_deep"/>
+</LinearLayout>

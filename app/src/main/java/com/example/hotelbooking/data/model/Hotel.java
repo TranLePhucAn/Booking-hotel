@@ -150,30 +150,40 @@ public class Hotel implements Serializable {
 
     public static Hotel fromDocument(DocumentSnapshot document) {
         Hotel hotel = new Hotel();
-        hotel.setId(document.getId()); // Lấy ID Document từ Firestore (ví dụ: "hotel_001")
+        hotel.setId(document.getId());
 
-        hotel.setHotelName(stringValue(document, "hotel_name", stringValue(document, "name", "Khách sạn")));
+        hotel.setHotelName(document.contains("hotel_name") ? document.getString("hotel_name") : "Khách sạn");
+        hotel.setAddress(document.contains("address") ? document.getString("address") : "Chưa cập nhật địa chỉ");
+        hotel.setDescription(document.contains("description") ? document.getString("description") : "Chưa cập nhật mô tả");
+        hotel.setCategory(document.contains("category") ? document.getString("category") : "Hotel");
+        hotel.setStatus(document.contains("status") ? document.getString("status") : "active");
+        hotel.setImageUrl(document.contains("image_url") ? document.getString("image_url") : "");
+        hotel.setLocationId(document.contains("location_id") ? document.getString("location_id") : "");
+        hotel.setOwnerId(document.contains("ownerId") ? document.getString("ownerId") : "");
 
-        hotel.setAddress(stringValue(document, "address", stringValue(document, "address_text", "Chưa cập nhật địa chỉ")));
+        hotel.setPrice(document.contains("price") && document.get("price") != null ?
+                ((Number) document.get("price")).doubleValue() : 0.0);
 
-        hotel.setDescription(stringValue(document, "description", "Chưa cập nhật mô tả"));
-        hotel.setPrice(doubleValue(document, "price", doubleValue(document, "price_from", 0)));
-        hotel.setCategory(stringValue(document, "category", stringValue(document, "business_type", "Hotel")));
-        hotel.setStatus(stringValue(document, "status", "ACTIVE"));
+        hotel.setReviewScore(document.contains("review_score") && document.get("review_score") != null ?
+                ((Number) document.get("review_score")).doubleValue() : 0.0);
 
-        hotel.setReviewScore(doubleValue(document, "review_score", doubleValue(document, "rating", 0)));
-        hotel.setRatingStar(doubleValue(document, "rating_star", 0));
-        hotel.setReviewCount((int) doubleValue(document, "review_count", 0));
+        hotel.setRatingStar(document.contains("rating_star") && document.get("rating_star") != null ?
+                ((Number) document.get("rating_star")).doubleValue() : 0.0);
 
-        hotel.setImageUrl(stringValue(document, "image_url", stringValue(document, "mainImage", "")));
+        hotel.setLatitude(document.contains("latitude") && document.get("latitude") != null ?
+                ((Number) document.get("latitude")).doubleValue() : 0.0);
+
+        hotel.setLongitude(document.contains("longitude") && document.get("longitude") != null ?
+                ((Number) document.get("longitude")).doubleValue() : 0.0);
+
+        if (document.contains("review_count") && document.get("review_count") != null) {
+            hotel.setReviewCount(((Number) document.get("review_count")).intValue());
+        } else {
+            hotel.setReviewCount(0);
+        }
+
         hotel.setSecondaryImages(stringListValue(document, "image_urls"));
         hotel.setAmenities(stringListValue(document, "amenities"));
-
-        hotel.setLatitude(doubleValue(document, "latitude", 0));
-        hotel.setLongitude(doubleValue(document, "longitude", 0));
-        hotel.setLocationId(stringValue(document, "location_id", ""));
-
-        hotel.setOwnerId(stringValue(document, "owner_id", stringValue(document, "business_id", "")));
 
         return hotel;
     }
