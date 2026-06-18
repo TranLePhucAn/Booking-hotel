@@ -57,7 +57,7 @@
                     android:id="@+id/imgAvatar"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
-                    android:src="@android:drawable/sym_def_app_icon"
+                    android:src="@drawable/ic_default_avatar"
                     android:scaleType="centerCrop"
                     app:shapeAppearanceOverlay="@style/Widget.Material3.CircularProgressIndicator" />
 
@@ -78,6 +78,44 @@
                     android:layout_marginTop="4dp"
                     android:text="email@example.com"
                     android:textColor="@android:color/darker_gray" />
+
+
+                <TextView
+                    android:id="@+id/tvProfilePhoneDisplay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="start"
+                    android:text="Số điện thoại: ---"
+                    android:textColor="@android:color/darker_gray" />
+
+                <TextView
+                    android:id="@+id/tvProfileGenderDisplay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="start"
+                    android:text="Giới tính: ---"
+                    android:textColor="@android:color/darker_gray" />
+
+                <TextView
+                    android:id="@+id/tvProfileDobDisplay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="start"
+                    android:text="Ngày sinh: ---"
+                    android:textColor="@android:color/darker_gray" />
+
+                <TextView
+                    android:id="@+id/tvProfileCountryDisplay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_gravity="start"
+                    android:text="Quốc tịch: ---"
+                    android:textColor="@android:color/darker_gray" />
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
