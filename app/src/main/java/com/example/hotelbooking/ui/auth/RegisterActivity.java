@@ -93,6 +93,11 @@ public class RegisterActivity extends AppCompatActivity {
         userData.put("fullName", name);
         userData.put("email", email);
         userData.put("role", "customer");
+        userData.put("phone", "");
+        userData.put("avatarUrl", "");
+        userData.put("gender", "");
+        userData.put("date_of_birth", "");
+        userData.put("country", "");
         userData.put("created_at", FieldValue.serverTimestamp());
 
         FirebaseFirestore.getInstance()

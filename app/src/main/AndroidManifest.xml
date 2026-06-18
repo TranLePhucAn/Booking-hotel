@@ -104,5 +104,7 @@
             android:resource="@array/preloaded_fonts" />
 
     </application>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
 </manifest>
