@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,11 +22,16 @@ import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class ConfirmActivity extends AppCompatActivity {
 
-    private TextView tvHotelName, tvRoomStyle, tvBasePrice, tvTaxPrice, tvTotalPrice, tvOldTotalPrice;
+    private TextView tvHotelName, tvRoomStyle, tvBasePrice, tvTaxPrice, tvTotalPrice, tvOldTotalPrice,
+            tvAvailableRooms, tvDateFrom, tvDateEnd, tvNumberOfNights, tvCheckInTime, tvCheckOutTime;
+    private TextView tvRatingScore, tvReviewCount;
+    private RatingBar ratingBar;
+
     private EditText etPromoCode, etGuestName, etGuestPhone, etGuestEmail;
     private Button btnApplyPromo, btnConfirmBooking;
     private Hotel hotel;
@@ -35,6 +41,8 @@ public class ConfirmActivity extends AppCompatActivity {
     private Date checkInDate;
     private Date checkOutDate;
     private int numberOfNights = 1; // mặc định là 1 đêm
+    private int availableRooms;
+    private String checkInText, checkOutText, checkInTimeText, checkOutTimeText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,11 +92,20 @@ public class ConfirmActivity extends AppCompatActivity {
 
     private void initViews() {
         tvHotelName = findViewById(R.id.textView); // ID của Tên khách sạn
+        ratingBar = findViewById(R.id.ratingBar);
+        tvRatingScore = findViewById(R.id.textView2);
+        tvReviewCount = findViewById(R.id.textView3);
         tvRoomStyle = findViewById(R.id.textView5); // ID của Tên hạng phòng
         tvBasePrice = findViewById(R.id.tv_base_price);
         tvTaxPrice = findViewById(R.id.tv_tax_price);
         tvTotalPrice = findViewById(R.id.tv_total_price);
         tvOldTotalPrice = findViewById(R.id.tv_old_total_price);
+        tvAvailableRooms = findViewById(R.id.textView6);
+        tvDateFrom = findViewById(R.id.textView8);
+        tvCheckInTime = findViewById(R.id.textView9);
+        tvNumberOfNights = findViewById(R.id.textView10);
+        tvDateEnd = findViewById(R.id.textView12);
+        tvCheckOutTime = findViewById(R.id.textView13);
 
         etPromoCode = findViewById(R.id.et_promo_code);
         etGuestName = findViewById(R.id.et_guest_name);
@@ -104,15 +121,28 @@ public class ConfirmActivity extends AppCompatActivity {
         if(intent != null) {
             hotel = (Hotel) intent.getSerializableExtra("EXTRA_HOTEL");
             section = (Section) intent.getSerializableExtra("EXTRA_SECTION");
+            availableRooms = intent.getIntExtra("EXTRA_AVAILABLE_ROOMS", 1);
 
             // Giả định nhận thêm ngày check-in/out từ bộ lọc tìm kiếm màn hình trước
             // nếu không có thì lấy ngày hôm nay và ngày mai làm mặc định mẫu
             long checkInMillis = intent.getLongExtra("EXTRA_CHECK_IN", System.currentTimeMillis());
             long checkOutMillis = intent.getLongExtra("EXTRA_CHECK_OUT", System.currentTimeMillis() + 86400000);
+
             checkInDate = new Date(checkInMillis);
             checkOutDate = new Date(checkOutMillis);
 
-            // Tính số đêm (Đơn giản)
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("EEEE, d 'thg' M", new java.util.Locale("vi", "VN"));
+
+            // ngày
+            checkInText = sdf.format(checkInDate);
+            checkOutText = sdf.format(checkOutDate);
+
+            // giờ
+            java.text.SimpleDateFormat sdfTime = new java.text.SimpleDateFormat("HH:mm", new java.util.Locale("vi", "VN"));
+            checkInTimeText = sdfTime.format(checkInDate);
+            checkOutTimeText = sdfTime.format(checkOutDate);
+
+            // Tính số đêm
             long diff = checkOutMillis - checkInMillis;
             if (diff > 0) {
                 numberOfNights = (int) (diff / (1000 * 60 * 60 * 24));
@@ -120,8 +150,22 @@ public class ConfirmActivity extends AppCompatActivity {
             }
 
             if(hotel != null && section != null) {
+                double reviewScore = hotel.getReviewScore();
+                int reviewCount = hotel.getReviewCount();
+                String scoreText = reviewScore > 0 ? formatNumber(reviewScore) + "/10" : "Chưa có điểm";
+                String reviewText = reviewCount > 0 ? reviewCount + " đánh giá" : "Chưa có đánh giá";
+
                 tvHotelName.setText(hotel.getHotelName());
+                ratingBar.setRating((float) hotel.getRatingStar());
+                tvRatingScore.setText(scoreText);
+                tvReviewCount.setText(reviewText);
                 tvRoomStyle.setText("(1x) " + section.getRoomStyle());
+                tvAvailableRooms.setText("Chỉ còn " + availableRooms + " phòng");
+                tvDateFrom.setText(checkInText);
+                tvCheckInTime.setText("Từ " + checkInTimeText);
+                tvNumberOfNights.setText(numberOfNights + " đêm");
+                tvDateEnd.setText(checkOutText);
+                tvCheckOutTime.setText("Đến " + checkOutTimeText);
 
                 double basePrice = section.getBasePrice() * numberOfNights;
                 double taxPrice = basePrice * 0.1; // thuế 10%
@@ -132,6 +176,10 @@ public class ConfirmActivity extends AppCompatActivity {
                 tvTotalPrice.setText(formatVND(finalPrice));
             }
         }
+    }
+
+    private String formatNumber(double value) {
+        return String.format(Locale.getDefault(), "%.1f", value);
     }
 
     // Xử lý nút áp dụng mã giảm giá
@@ -196,6 +244,7 @@ public class ConfirmActivity extends AppCompatActivity {
                         Intent intentPayment = new Intent(ConfirmActivity.this, PaymentActivity.class);
                         intentPayment.putExtra("RESERVATION_ID", reservationId);
                         intentPayment.putExtra("TOTAL_PRICE", finalPrice);
+                        intentPayment.putExtra("EXTRA_HOTEL", hotel);
                         startActivity(intentPayment);
                         finish();
                     })

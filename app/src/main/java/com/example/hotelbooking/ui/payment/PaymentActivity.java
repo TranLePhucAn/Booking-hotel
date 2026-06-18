@@ -2,20 +2,27 @@ package com.example.hotelbooking.ui.payment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
+import com.example.hotelbooking.data.model.Hotel;
 
 import java.text.DecimalFormat;
+import java.util.Locale;
 
 public class PaymentActivity extends AppCompatActivity {
     private String reservationId;
@@ -29,6 +36,7 @@ public class PaymentActivity extends AppCompatActivity {
     private EditText etCardName, etCardNumber, etExpiryDate, etCvv;
     private CheckBox cbAgreeTerms;
     private Button btnBooking;
+    private Hotel hotel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +45,8 @@ public class PaymentActivity extends AppCompatActivity {
 
         initViews();
         receiveIntentData();
+        setupPaymentSelectionLogic();
+        setupSubmitPaymentLogic();
     }
 
     private void receiveIntentData() {
@@ -44,9 +54,26 @@ public class PaymentActivity extends AppCompatActivity {
         if (intent != null) {
             reservationId = intent.getStringExtra("RESERVATION_ID");
             totalPrice = intent.getDoubleExtra("TOTAL_PRICE", 0.0);
+            hotel = (Hotel) intent.getSerializableExtra("EXTRA_HOTEL");
+
+            if(hotel != null) {
+                double reviewScore = hotel.getReviewScore();
+                int reviewCount = hotel.getReviewCount();
+                String scoreText = reviewScore > 0 ? formatNumber(reviewScore) + "/10" : "Chưa có điểm";
+                String reviewText = reviewCount > 0 ? reviewCount + " đánh giá" : "Chưa có đánh giá";
+
+                tvHotelName.setText(hotel.getHotelName());
+                ratingBar.setRating((float) hotel.getRatingStar());
+                tvRatingScore.setText(scoreText);
+                tvReviewCount.setText(reviewText);
+            }
 
             tvTotalPrice.setText(formatVND(totalPrice));
         }
+    }
+
+    private String formatNumber(double value) {
+        return String.format(Locale.getDefault(), "%.1f", value);
     }
 
     private void initViews() {
@@ -72,6 +99,85 @@ public class PaymentActivity extends AppCompatActivity {
 
         cbAgreeTerms = findViewById(R.id.cb_agree_terms);
         btnBooking = findViewById(R.id.btn_booking);
+    }
+
+    private void setupPaymentSelectionLogic() {
+        rgPaymentMethods.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rb_credit_card) {
+                layoutCreditCardInfo.setVisibility(View.VISIBLE);
+                layoutDigitalPaymentInfo.setVisibility(View.GONE);
+            } else if (checkedId == R.id.rb_digital_payment) {
+                layoutCreditCardInfo.setVisibility(View.GONE);
+                layoutDigitalPaymentInfo.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void setupSubmitPaymentLogic() {
+        btnBooking.setOnClickListener(view -> {
+            if(!cbAgreeTerms.isChecked()) {
+                Toast.makeText(this, "Vui lòng đọc và đồng ý với điều khoản dịch vụ!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int selectedMethodId = rgPaymentMethods.getCheckedRadioButtonId();
+
+            if(selectedMethodId == R.id.rb_credit_card) {
+                if (validateCardFields()) {
+                    processFirebasePaymentUpdate("CREDIT_CARD");
+                }
+            } else if(selectedMethodId == R.id.rb_digital_payment) {
+                showQRDialog();
+            }
+        });
+    }
+
+    private void showQRDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.activity_payment_qr, null);
+        builder.setView(dialogView);
+
+        ImageView imgQrCode = dialogView.findViewById(R.id.img_qr_code);
+        Button btnPaidConfirm = dialogView.findViewById(R.id.btn_paid_confirm);
+
+        String bankId = "VCB"; // Mã định danh ngân hàng
+        String accountNo = "1234567890"; // Số tài khoản ngân hàng thật
+        String accountName = "NGUYEN VAN A"; // Tên chủ tài khoản
+
+        String description = "Thanh toan ma phong " + reservationId;
+
+        String qrUrl = "https://img.vietqr.io/image/" + bankId + "-" + accountNo + "-compact.jpg"
+                + "?amount=" + (int) totalPrice
+                + "&addInfo=" + description.replace(" ", "%20")
+                + "&accountName=" + accountName.replace(" ", "%20");
+
+        Glide.with(this).load(qrUrl).into(imgQrCode);
+
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+
+        btnPaidConfirm.setOnClickListener(v -> {
+            dialog.dismiss();
+            processFirebasePaymentUpdate("QR_CODE");
+        });
+
+        dialog.show();
+    }
+
+    private void processFirebasePaymentUpdate(String creditCard) {
+        // todo: thanh toán chuyển trạng thái thủ công
+    }
+
+    private boolean validateCardFields() {
+        String name = etCardName.getText().toString().trim();
+        String number = etCardNumber.getText().toString().trim();
+        String expiry = etExpiryDate.getText().toString().trim();
+        String cvv = etCvv.getText().toString().trim();
+        if (name.isEmpty()) { etCardName.setError("Nhập tên chủ thẻ"); return false; }
+        if (number.length() < 16) { etCardNumber.setError("Số thẻ phải gồm 16 chữ số"); return false; }
+        if (expiry.isEmpty() || !expiry.contains("/")) { etExpiryDate.setError("Định dạng MM/YY"); return false; }
+        if (cvv.length() < 3) { etCvv.setError("Mã CVV gồm 3 số"); return false; }
+        return true;
     }
 
     private String formatVND(double amount) {

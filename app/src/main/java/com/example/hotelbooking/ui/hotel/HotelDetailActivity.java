@@ -16,8 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.denzcoskun.imageslider.constants.ScaleTypes;
 import com.denzcoskun.imageslider.models.SlideModel;
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
+import com.example.hotelbooking.data.model.Room;
+import com.example.hotelbooking.data.model.Section;
 import com.example.hotelbooking.databinding.ActivityHotelDetailBinding;
 import com.example.hotelbooking.ui.map.HotelMapActivity;
 import com.example.hotelbooking.ui.payment.ConfirmActivity;
@@ -41,8 +42,11 @@ public class HotelDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         binding = ActivityHotelDetailBinding.inflate(getLayoutInflater());
+
         setContentView(binding.getRoot());
+
         db = FirebaseFirestore.getInstance();
 
         setSupportActionBar(binding.toolbar);
@@ -51,95 +55,118 @@ public class HotelDetailActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("");
         }
 
+        // Nhận thông tin từ dữ liệu thật truyền qua Intent
         hotelId = getIntent().getStringExtra("hotel_id");
         hotel = (Hotel) getIntent().getSerializableExtra("hotel");
+
+        // lấy id hotel hiện tại
         if ((hotelId == null || hotelId.isEmpty()) && hotel != null) {
             hotelId = hotel.getId();
         }
 
         if (hotelId == null || hotelId.isEmpty()) {
-            if (hotel != null) {
-                displayHotelDetails();
-            } else {
-                Toast.makeText(this, "Khong co ma khach san", Toast.LENGTH_LONG).show();
-                finish();
-                return;
-            }
-        } else if (isDemoHotel(hotelId)) {
-            Hotel demoHotel = DemoHotelData.findHotel(hotelId);
-            if (demoHotel != null) {
-                hotel = demoHotel;
-            }
-            displayHotelDetails();
-            latitude = hotel.getLatitude();
-            longitude = hotel.getLongitude();
-            address = hotel.getAddress();
-            loadDemoRooms();
-            loadDemoReviews();
-        } else {
-            loadHotel();
+            Toast.makeText(this, "Không tìm thấy mã khách sạn hợp lệ", Toast.LENGTH_LONG).show();
+            finish();
+            return;
         }
 
+        if (hotel != null) {
+            initHotelFlow();
+        } else {
+            loadHotelFromFirestore();
+        }
+
+        // hiển thị bảng đồ
         binding.btnShowMap.setOnClickListener(v -> openMap());
+
+        // xử lý nút đặt ngay bằng cách tự động chọn phòng có trạng thái available đầu tiên
         binding.btnBookNow.setOnClickListener(v -> {
-            if (isDemoHotel(hotelId)) {
-                openFirstDemoRoom();
-            } else {
-                openBooking(null);
-            }
+            // truy vấn bảng rooms
+            db.collection("rooms")
+                    .whereEqualTo("hotel_id", hotelId)
+                    .whereEqualTo("status", "AVAILABLE")
+                    .limit(1)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        if (!querySnapshot.isEmpty()) {
+                            DocumentSnapshot firstRoomSnapshot = querySnapshot.getDocuments().get(0);
+                            Room targetRoom = firstRoomSnapshot.toObject(Room.class);
+                            if (targetRoom != null) {
+                                targetRoom.setId(firstRoomSnapshot.getId());
+                                // gửi dl phòng đầu tiên qua trang confirm
+                                openBookingWithRoom(targetRoom);
+                            }
+                        } else {
+                            Toast.makeText(this, "Khách sạn hiện tại không còn phòng trống", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Lỗi kiểm tra phòng: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
     }
 
-    private void loadHotel() {
+    private void loadHotelFromFirestore() {
         db.collection("hotels")
                 .document(hotelId)
                 .get()
                 .addOnSuccessListener(document -> {
                     if (!document.exists()) {
-                        Toast.makeText(this, "Khong tim thay khach san", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Không tìm thấy khách sạn trên Firebase", Toast.LENGTH_LONG).show();
                         finish();
                         return;
                     }
-
                     hotel = Hotel.fromDocument(document);
-                    displayHotelDetails();
-                    loadLocation();
-                    loadRooms();
-                    loadReviews();
+                    initHotelFlow();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Khong doc duoc khach san: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Không đọc được dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
+    private void initHotelFlow() {
+        displayHotelDetails();
+        loadLocation();
+        loadRooms();
+        loadReviews();
+    }
+
+    @SuppressWarnings("unchecked")
     private void displayHotelDetails() {
         address = hotel.getAddress();
-        binding.tvHotelName.setText(valueOrDefault(hotel.getHotelName(), "Khach san"));
-        binding.tvHotelAddress.setText(valueOrDefault(hotel.getAddress(), "Dang cap nhat dia chi"));
-        binding.tvDescription.setText(valueOrDefault(hotel.getDescription(), "Dang cap nhat mo ta"));
-        binding.tvPrice.setText(formatMoney(hotel.getPrice()) + " / dem");
+        binding.tvHotelName.setText(valueOrDefault(hotel.getHotelName(), "Khách sạn"));
+        binding.tvHotelAddress.setText(valueOrDefault(hotel.getAddress(), "Đang cập nhật địa chỉ"));
+        binding.tvDescription.setText(valueOrDefault(hotel.getDescription(), "Đang cập nhật mô tả"));
+        binding.tvPrice.setText(formatMoney(hotel.getPrice()) + " / đêm");
         binding.ratingBar.setRating((float) hotel.getRatingStar());
         binding.tvHotelRatingInfo.setText(formatHotelRatingInfo());
 
+        // Hiển thị Amenities
         if (hotel.getAmenities() != null && !hotel.getAmenities().isEmpty()) {
             binding.tvAmenities.setText(String.join(", ", hotel.getAmenities()));
         } else {
-            binding.tvAmenities.setText("Dang cap nhat tien ich");
+            binding.tvAmenities.setText("Đang cập nhật tiện ích");
         }
 
+        // Xử lý Image Slider lấy từ `image_url` và mảng ảnh phụ `image_urls`
         List<SlideModel> imageList = new ArrayList<>();
         if (hotel.getImageUrl() != null && !hotel.getImageUrl().isEmpty()) {
             imageList.add(new SlideModel(hotel.getImageUrl(), ScaleTypes.CENTER_CROP));
         }
-        if (hotel.getSecondaryImages() != null) {
-            for (String imageUrl : hotel.getSecondaryImages()) {
-                if (imageUrl != null && !imageUrl.isEmpty() && !imageUrl.equals(hotel.getImageUrl())) {
-                    imageList.add(new SlideModel(imageUrl, ScaleTypes.CENTER_CROP));
+
+        db.collection("hotels").document(hotelId).get().addOnSuccessListener(document -> {
+            if (document.exists() && document.get("image_urls") != null) {
+                List<String> secondaryImages = (List<String>) document.get("image_urls");
+                if (secondaryImages != null) {
+                    for (String imgUrl : secondaryImages) {
+                        if (imgUrl != null && !imgUrl.isEmpty() && !imgUrl.equals(hotel.getImageUrl())) {
+                            imageList.add(new SlideModel(imgUrl, ScaleTypes.CENTER_CROP));
+                        }
+                    }
+                    if (!imageList.isEmpty()) {
+                        binding.imageSlider.setImageList(imageList);
+                    }
                 }
             }
-        }
-        if (!imageList.isEmpty()) {
-            binding.imageSlider.setImageList(imageList);
-        }
+        });
     }
 
     private void loadLocation() {
@@ -156,10 +183,9 @@ public class HotelDetailActivity extends AppCompatActivity {
                         useHotelLocationFallback();
                         return;
                     }
-
-                    latitude = firstDoubleValue(document, hotel.getLatitude(), "latitude", "lat");
-                    longitude = firstDoubleValue(document, hotel.getLongitude(), "longitude", "lng", "lon");
-                    address = firstStringValue(document, hotel.getAddress(), "address", "address_text");
+                    latitude = firstDoubleValue(document, hotel.getLatitude(), "latitude");
+                    longitude = firstDoubleValue(document, hotel.getLongitude(), "longitude");
+                    address = firstStringValue(document, hotel.getAddress(), "address");
                     binding.tvHotelAddress.setText(valueOrDefault(address, hotel.getAddress()));
                 })
                 .addOnFailureListener(e -> useHotelLocationFallback());
@@ -167,75 +193,123 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void loadRooms() {
         binding.layoutRooms.removeAllViews();
+
+        // Tìm các phòng có trường hotel_id trùng khớp với ID khách sạn hiện tại
         db.collection("rooms")
                 .whereEqualTo("hotel_id", hotelId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot.isEmpty()) {
-                        binding.layoutRooms.addView(createText("Chua co phong dang hien thi", false));
+                        // Nếu trống, hiển thị thông báo kèm mã ID khách sạn
+                        binding.layoutRooms.addView(createText("Chưa có phòng nào liên kết với hotel_id: " + hotelId, false));
                         return;
                     }
-
                     for (DocumentSnapshot room : querySnapshot.getDocuments()) {
                         addRoomView(room);
                     }
                 })
                 .addOnFailureListener(e ->
-                        binding.layoutRooms.addView(createText("Khong tai duoc phong: " + e.getMessage(), false)));
+                        binding.layoutRooms.addView(createText("Không tải được phòng: " + e.getMessage(), false)));
     }
 
-    private void addRoomView(DocumentSnapshot room) {
-        LinearLayout box = createBox();
-        String roomName = stringValue(room, "room_name", "Phong");
-        String roomType = stringValue(room, "room_type", "");
-        double price = doubleValue(room, "price_per_night", hotel.getPrice());
-        String bedType = stringValue(room, "bed_type", "");
-        String capacity = stringValue(room, "capacity", "");
-        String status = stringValue(room, "status", "AVAILABLE");
-        int availableRooms = intValue(room, "available_rooms", 0);
-        double roomSize = doubleValue(room, "room_size", 0);
+    private void addRoomView(DocumentSnapshot roomSnapshot) {
+        LinearLayout roomContainer = binding.layoutRooms;
 
-        box.addView(createText(roomName, true));
-        box.addView(createText(roomType + (roomSize > 0 ? " - " + roomSize + " m2" : ""), false));
-        box.addView(createText(bedType, false));
-        box.addView(createText(capacity, false));
-        box.addView(createText(formatMoney(price) + " / dem", true));
-        boolean canBook = "AVAILABLE".equalsIgnoreCase(status) && availableRooms > 0;
-        box.addView(createText("Trang thai: " + (canBook ? "Con phong" : "Het phong / Tam ngung phuc vu"), false));
+        Room room = roomSnapshot.toObject(Room.class);
+        if (room == null) return;
+        room.setId(roomSnapshot.getId());
+
+        LinearLayout box = createBox();
+
+        String name = valueOrDefault(room.getRoomName(), "Phòng tiêu chuẩn");
+        String type = valueOrDefault(room.getRoomType(), "");
+        double price = room.getPricePerNight() > 0 ? room.getPricePerNight() : hotel.getPrice();
+        String bed = valueOrDefault(room.getBedType(), "Giường tiêu chuẩn");
+        double size = room.getRoomSize();
+        int adults = room.getCapacityAdults();
+        int children = room.getCapacityChildren();
+
+        boolean canBook = "AVAILABLE".equalsIgnoreCase(room.getStatus()) && room.getAvailableRooms() > 0;
+
+        box.addView(createText(name, true));
+        box.addView(createText(type + (size > 0 ? " - " + size + " m2" : ""), false));
+        box.addView(createText("Giường: " + bed, false));
+        box.addView(createText("Sức chứa: " + adults + " Người lớn, " + children + " Trẻ em", false));
+        box.addView(createText(formatMoney(price) + " / đêm", true));
+        box.addView(createText("Trạng thái: " + (canBook ? "Còn phòng (" + room.getAvailableRooms() + ")" : "Hết phòng"), false));
 
         Button bookButton = new Button(this);
-        bookButton.setText(canBook ? "Xem chi tiet / Dat phong" : "Het phong");
+        bookButton.setText(canBook ? "Xem chi tiết / Đặt phòng" : "Hết phòng");
         bookButton.setEnabled(canBook);
-        bookButton.setOnClickListener(v -> openBooking(room));
-        box.addView(bookButton);
 
-        binding.layoutRooms.addView(box);
+        // gửi dl phòng được chọn qua trang confirm
+        bookButton.setOnClickListener(v -> openBookingWithRoom(room));
+
+        box.addView(bookButton);
+        roomContainer.addView(box);
     }
 
-    private void loadDemoRooms() {
-        binding.layoutRooms.removeAllViews();
-        for (DemoHotelData.DemoRoom room : DemoHotelData.rooms(hotelId)) {
-            addDemoRoomView(room);
+    private void openBookingWithRoom(Room room) {
+        if (hotel == null || room == null) {
+            Toast.makeText(this, "Dữ liệu đang tải, vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+            return;
         }
-    }
 
-    private void addDemoRoomView(DemoHotelData.DemoRoom room) {
-        LinearLayout box = createBox();
-        box.addView(createText(room.name, true));
-        box.addView(createText(room.type + " - " + room.size + " m2", false));
-        box.addView(createText(room.bedType, false));
-        box.addView(createText(room.capacity, false));
-        box.addView(createText(formatMoney(room.price) + " / dem", true));
+        Intent intent = new Intent(this, ConfirmActivity.class);
 
-        boolean canBook = "AVAILABLE".equalsIgnoreCase(room.status) && room.availableRooms > 0;
-        box.addView(createText("Trang thai: " + (canBook ? "Con " + room.availableRooms + " phong" : "Het phong / Tam ngung phuc vu"), false));
+        String sectionId = (room.getSectionId() != null && !room.getSectionId().isEmpty()) ? room.getSectionId() : room.getId();
 
-        Button bookButton = new Button(this);
-        bookButton.setText(canBook ? "Xem chi tiet / Dat phong" : "Het phong");
-        bookButton.setEnabled(canBook);
-        bookButton.setOnClickListener(v -> openDemoBooking(room));
-        box.addView(bookButton);
-        binding.layoutRooms.addView(box);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("sections").document(sectionId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+
+                    double realPrice = 0;
+                    boolean isRefundable = false;
+                    boolean isReschedulable = false;
+                    String roomStyleText = room.getRoomName();
+
+                    if (documentSnapshot.exists()) {
+                        if (documentSnapshot.contains("base_price") && documentSnapshot.get("base_price") != null) {
+                            realPrice = ((Number) documentSnapshot.get("base_price")).doubleValue();
+                        }
+
+                        if (documentSnapshot.contains("is_refundable")) {
+                            isRefundable = documentSnapshot.getBoolean("is_refundable");
+                        }
+
+                        if (documentSnapshot.contains("is_reschedulable")) {
+                            isReschedulable = documentSnapshot.getBoolean("is_reschedulable");
+                        }
+
+                        if (documentSnapshot.contains("room_style") && documentSnapshot.getString("room_style") != null) {
+                            roomStyleText = documentSnapshot.getString("room_style");
+                        }
+                    } else {
+                        // Không tìm thấy Section: Dùng cơ chế bọc lót (Fallback) lấy giá từ bảng Room
+                        realPrice = room.getPricePerNight() > 0 ? room.getPricePerNight() : hotel.getPrice();
+                    }
+
+                    intent.putExtra("EXTRA_HOTEL", hotel);
+
+                    Section targetSection = new Section(
+                            sectionId,
+                            realPrice,
+                            hotel.getId(),
+                            isRefundable,
+                            isReschedulable,
+                            room.getCapacityAdults(),
+                            roomStyleText
+                    );
+
+                    intent.putExtra("EXTRA_SECTION", targetSection);
+
+                    // lấy số lượng phòng trống
+                    intent.putExtra("EXTRA_AVAILABLE_ROOMS", room.getAvailableRooms());
+                    startActivity(intent);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi tải thông tin gói phòng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void loadReviews() {
@@ -245,21 +319,20 @@ public class HotelDetailActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot.isEmpty()) {
-                        binding.layoutReviews.addView(createText("Chua co danh gia", false));
+                        binding.layoutReviews.addView(createText("Chưa có đánh giá nào cho khách sạn này", false));
                         return;
                     }
-
                     for (DocumentSnapshot review : querySnapshot.getDocuments()) {
                         addReviewView(review);
                     }
                 })
                 .addOnFailureListener(e ->
-                        binding.layoutReviews.addView(createText("Khong tai duoc danh gia: " + e.getMessage(), false)));
+                        binding.layoutReviews.addView(createText("Không tải được đánh giá", false)));
     }
 
     private void addReviewView(DocumentSnapshot review) {
         LinearLayout box = createBox();
-        String userName = stringValue(review, "user_name", stringValue(review, "reviewer_name", "Khach hang"));
+        String userName = stringValue(review, "user_name", stringValue(review, "reviewer_name", "Khách hàng"));
         double rating = doubleValue(review, "rating", doubleValue(review, "score", 0));
         String comment = stringValue(review, "comment", stringValue(review, "content", ""));
 
@@ -268,84 +341,14 @@ public class HotelDetailActivity extends AppCompatActivity {
         binding.layoutReviews.addView(box);
     }
 
-    private void loadDemoReviews() {
-        binding.layoutReviews.removeAllViews();
-        for (DemoHotelData.DemoReview review : DemoHotelData.reviews(hotelId)) {
-            LinearLayout box = createBox();
-            box.addView(createText(review.userName + ": " + formatNumber(review.rating) + " sao", true));
-            box.addView(createText(review.comment, false));
-            binding.layoutReviews.addView(box);
-        }
-    }
-
     private void openMap() {
-        ensureMapLocationReady();
+        useHotelLocationFallback();
         Intent intent = new Intent(this, HotelMapActivity.class);
         intent.putExtra("hotel_name", hotel != null ? hotel.getHotelName() : "");
         intent.putExtra("address", address);
         intent.putExtra("latitude", latitude);
         intent.putExtra("longitude", longitude);
         startActivity(intent);
-    }
-
-    private void openBooking(DocumentSnapshot room) {
-        if (hotel == null) {
-            return;
-        }
-
-        Intent intent = new Intent(this, ConfirmActivity.class);
-        intent.putExtra("hotel_id", hotelId);
-        intent.putExtra("hotel_name", hotel.getHotelName());
-        intent.putExtra("hotel_address", address);
-        intent.putExtra("hotel_image", hotel.getImageUrl());
-        intent.putExtra("owner_id", hotel.getOwnerId());
-        intent.putExtra("review_score", hotel.getRatingStar());
-        intent.putExtra("rating_star", hotel.getRatingStar());
-        intent.putExtra("review_count", hotel.getReviewCount());
-
-        if (room != null) {
-            intent.putExtra("room_id", room.getId());
-            intent.putExtra("room_name", stringValue(room, "room_name", "Phong"));
-            intent.putExtra("room_price", doubleValue(room, "price_per_night", hotel.getPrice()));
-        } else {
-            intent.putExtra("room_name", "Phong tieu chuan");
-            intent.putExtra("room_price", hotel.getPrice());
-        }
-        startActivity(intent);
-    }
-
-    private void openDemoBooking(DemoHotelData.DemoRoom room) {
-        if (hotel == null) {
-            return;
-        }
-
-        Intent intent = new Intent(this, ConfirmActivity.class);
-        intent.putExtra("hotel_id", hotelId);
-        intent.putExtra("hotel_name", hotel.getHotelName());
-        intent.putExtra("hotel_address", address);
-        intent.putExtra("hotel_image", hotel.getImageUrl());
-        intent.putExtra("owner_id", hotel.getOwnerId());
-        intent.putExtra("review_score", hotel.getRatingStar());
-        intent.putExtra("rating_star", hotel.getRatingStar());
-        intent.putExtra("review_count", hotel.getReviewCount());
-        intent.putExtra("room_id", room.id);
-        intent.putExtra("room_name", room.name);
-        intent.putExtra("room_price", room.price);
-        startActivity(intent);
-    }
-
-    private void openFirstDemoRoom() {
-        for (DemoHotelData.DemoRoom room : DemoHotelData.rooms(hotelId)) {
-            if ("AVAILABLE".equalsIgnoreCase(room.status) && room.availableRooms > 0) {
-                openDemoBooking(room);
-                return;
-            }
-        }
-        Toast.makeText(this, "Khach san hien chua co phong trong", Toast.LENGTH_SHORT).show();
-    }
-
-    private boolean isDemoHotel(String id) {
-        return id != null && id.startsWith("demo_");
     }
 
     private LinearLayout createBox() {
@@ -407,22 +410,12 @@ public class HotelDetailActivity extends AppCompatActivity {
         return fallback;
     }
 
-    private int intValue(DocumentSnapshot document, String field, int fallback) {
-        Object value = document.get(field);
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        return fallback;
-    }
-
     private String valueOrDefault(String value, String fallback) {
         return value == null || value.isEmpty() ? fallback : value;
     }
 
     private void useHotelLocationFallback() {
-        if (hotel == null) {
-            return;
-        }
+        if (hotel == null) return;
         if (latitude == 0 && longitude == 0) {
             latitude = hotel.getLatitude();
             longitude = hotel.getLongitude();
@@ -430,22 +423,13 @@ public class HotelDetailActivity extends AppCompatActivity {
         address = valueOrDefault(address, hotel.getAddress());
     }
 
-    private void ensureMapLocationReady() {
-        useHotelLocationFallback();
-        if (latitude == 0 && longitude == 0) {
-            latitude = 10.8131;
-            longitude = 106.6658;
-        }
-        address = valueOrDefault(address, hotel != null ? hotel.getAddress() : "Dang cap nhat");
-    }
-
     private String formatHotelRatingInfo() {
         double reviewScore = hotel.getReviewScore();
         int reviewCount = hotel.getReviewCount();
         double ratingStar = hotel.getRatingStar();
 
-        String scoreText = reviewScore > 0 ? formatNumber(reviewScore) + "/10" : "Chua co diem";
-        String reviewText = reviewCount > 0 ? reviewCount + " danh gia" : "Chua co danh gia";
+        String scoreText = reviewScore > 0 ? formatNumber(reviewScore) + "/10" : "Chưa có điểm";
+        String reviewText = reviewCount > 0 ? reviewCount + " đánh giá" : "Chưa có đánh giá";
         return formatNumber(ratingStar) + " sao  -  " + scoreText + "  -  " + reviewText;
     }
 
