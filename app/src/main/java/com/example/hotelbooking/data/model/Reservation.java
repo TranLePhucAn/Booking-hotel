@@ -23,9 +23,13 @@ public class Reservation implements Serializable {
     private String status;
     private double taxFee;
     private double totalPrice;
+
+    private String paymentMethod;
+
+    private Timestamp paidAt;
     public Reservation() {}
 
-    public Reservation(String id, double basePrice, Timestamp createdAt, String customerId, Timestamp dayEnd, Timestamp dayStart, double discountPrice, String guestEmail, String guestName, String guestPhone, String hotelId, Timestamp paymentDeadline, String roomId, String sectionId, String status, double taxFee, double totalPrice) {
+    public Reservation(String id, double basePrice, Timestamp createdAt, String customerId, Timestamp dayEnd, Timestamp dayStart, double discountPrice, String guestEmail, String guestName, String guestPhone, String hotelId, Timestamp paymentDeadline, String roomId, String sectionId, String status, double taxFee, double totalPrice, String paymentMethod, Timestamp paidAt) {
         this.id = id;
         this.basePrice = basePrice;
         this.createdAt = createdAt;
@@ -43,6 +47,8 @@ public class Reservation implements Serializable {
         this.status = status;
         this.taxFee = taxFee;
         this.totalPrice = totalPrice;
+        this.paymentMethod = paymentMethod;
+        this.paidAt = paidAt;
     }
 
     public String getId() {
@@ -140,6 +146,25 @@ public class Reservation implements Serializable {
     public void setPaymentDeadline(Timestamp paymentDeadline) {
         this.paymentDeadline = paymentDeadline;
     }
+
+    @PropertyName("payment_method")
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+    @PropertyName("payment_method")
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    @PropertyName("paid_at")
+    public Timestamp getPaidAt() {
+        return paidAt;
+    }
+    @PropertyName("paid_at")
+    public void setPaidAt(Timestamp paidAt) {
+        this.paidAt = paidAt;
+    }
+
     @PropertyName("room_id")
     public String getRoomId() {
         return roomId;
@@ -172,11 +197,11 @@ public class Reservation implements Serializable {
     public void setTaxFee(double taxFee) {
         this.taxFee = taxFee;
     }
-    @PropertyName("total_pice")
+    @PropertyName("total_price")
     public double getTotalPrice() {
         return totalPrice;
     }
-    @PropertyName("total_pice")
+    @PropertyName("total_price")
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
     }

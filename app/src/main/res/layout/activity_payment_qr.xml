@@ -36,7 +36,7 @@
         android:id="@+id/btn_paid_confirm"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="Xác nhận chuyển khoản"
+        android:text="Tôi đã chuyển khoản thành công"
         android:textStyle="bold"
         android:textColor="#FFFFFF"
         android:backgroundTint="@color/ocean_deep"/>

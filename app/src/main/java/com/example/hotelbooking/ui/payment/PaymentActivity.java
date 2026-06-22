@@ -20,9 +20,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
+import com.example.hotelbooking.ui.home.HomeActivity;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class PaymentActivity extends AppCompatActivity {
     private String reservationId;
@@ -140,9 +145,9 @@ public class PaymentActivity extends AppCompatActivity {
         ImageView imgQrCode = dialogView.findViewById(R.id.img_qr_code);
         Button btnPaidConfirm = dialogView.findViewById(R.id.btn_paid_confirm);
 
-        String bankId = "VCB"; // Mã định danh ngân hàng
-        String accountNo = "1234567890"; // Số tài khoản ngân hàng thật
-        String accountName = "NGUYEN VAN A"; // Tên chủ tài khoản
+        String bankId = "MB"; // Mã định danh ngân hàng
+        String accountNo = "0342689642"; // Số tài khoản ngân hàng thật
+        String accountName = "NGUYEN THI HONG HANH"; // Tên chủ tài khoản
 
         String description = "Thanh toan ma phong " + reservationId;
 
@@ -164,8 +169,58 @@ public class PaymentActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void processFirebasePaymentUpdate(String creditCard) {
+    private void processFirebasePaymentUpdate(String paymentMethod) {
         // todo: thanh toán chuyển trạng thái thủ công
+        btnBooking.setEnabled(false);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("reservations").document(reservationId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if(documentSnapshot.exists()) {
+                        Timestamp paymentDeadline = documentSnapshot.getTimestamp("payment_deadline");
+                        Timestamp now = Timestamp.now();
+                        if(paymentDeadline != null && now.compareTo(paymentDeadline) > 0) {
+                            db.collection("reservations").document(reservationId)
+                                    .update("status", "CANCELLED")
+                                    .addOnCompleteListener(task -> {
+                                        Toast.makeText(PaymentActivity.this,
+                                                "Đơn đặt phòng của bạn đã hết hạn 20 phút giữ phòng! Vui lòng đặt lại.",
+                                                Toast.LENGTH_LONG).show();
+
+                                        Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                        finish();
+                                    });
+                            return;
+                        }
+
+                        Map<String, Object> updates = new HashMap<>();
+                        updates.put("status", "PAID");
+                        updates.put("payment_method", paymentMethod);
+                        updates.put("paid_at", now);
+
+                        db.collection("reservations").document(reservationId)
+                                .update(updates)
+                                .addOnSuccessListener(runnable -> {
+                                    Toast.makeText(PaymentActivity.this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
+                                    Intent intent = new Intent(PaymentActivity.this, HomeActivity.class); // chuyển về trang lịch sử booking
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(intent);
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    btnBooking.setEnabled(true);
+                                    Toast.makeText(PaymentActivity.this, "Lỗi cập nhật: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        btnBooking.setEnabled(true);
+                        Toast.makeText(PaymentActivity.this, "Đơn đặt phòng không tồn tại!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    btnBooking.setEnabled(true);
+                    Toast.makeText(PaymentActivity.this, "Lỗi kết nối hệ thống: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private boolean validateCardFields() {
