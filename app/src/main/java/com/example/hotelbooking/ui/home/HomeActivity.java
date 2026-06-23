@@ -7,6 +7,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.databinding.ActivityHomeBinding;
@@ -29,9 +30,7 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Nạp giao diện XML và chuyển đổi toàn bộ thẻ tag thành đối tượng Java
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
-        // Hiển thị gốc giao diện lên màn hình điện thoại
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
@@ -39,7 +38,7 @@ public class HomeActivity extends AppCompatActivity {
         initViews();
         setupCategories();
         setupFeaturedHotels();
-        loadActiveHotels(); // Chỉ tải dữ liệu thật
+        loadActiveHotels();
     }
 
     private void initViews() {
@@ -93,9 +92,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.rvFeaturedHotels.setAdapter(hotelAdapter);
     }
 
-    // load dữ liệu trong firestore, những ks có status là active lên và hiển thị thành list (hotelAdapter)
     private void loadActiveHotels() {
-        // truy vấn bảng hotels
         db.collection("hotels")
                 .whereEqualTo("status", "active")
                 .get()
@@ -103,21 +100,38 @@ public class HomeActivity extends AppCompatActivity {
                     featuredHotels.clear();
                     querySnapshot.getDocuments().forEach(document ->
                             featuredHotels.add(Hotel.fromDocument(document)));
+                    addDemoHotelsIfNeeded();
                     hotelAdapter.updateData(featuredHotels);
-
-                    if (featuredHotels.isEmpty()) {
-                        Toast.makeText(this, "Không có khách sạn nào đang hoạt động trên hệ thống", Toast.LENGTH_LONG).show();
-                    }
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Lỗi kết nối mạng: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                .addOnFailureListener(e -> {
+                    featuredHotels.clear();
+                    featuredHotels.addAll(DemoHotelData.hotels());
+                    hotelAdapter.updateData(featuredHotels);
+                    Toast.makeText(this, "Dang hien thi du lieu mau", Toast.LENGTH_SHORT).show();
+                });
     }
 
-    // mở chi tiết khách sạn
+    private void addDemoHotelsIfNeeded() {
+        for (Hotel demoHotel : DemoHotelData.hotels()) {
+            if (!containsHotel(demoHotel.getId())) {
+                featuredHotels.add(demoHotel);
+            }
+        }
+    }
+
+    private boolean containsHotel(String hotelId) {
+        for (Hotel hotel : featuredHotels) {
+            if (hotelId != null && hotelId.equals(hotel.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void openHotelDetail(Hotel hotel) {
         Intent intent = new Intent(HomeActivity.this, HotelDetailActivity.class);
         intent.putExtra("hotel_id", hotel.getId());
-        intent.putExtra("hotel", hotel); // Truyền Object đi để trang sau dùng luôn không cần tải lại
+        intent.putExtra("hotel", hotel);
         startActivity(intent);
     }
 }

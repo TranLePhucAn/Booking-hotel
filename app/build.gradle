@@ -65,7 +65,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:21.3.0'
 
     // OpenStreetMap (Thầy đã thêm thư viện osmdroid này vào để sửa lỗi cho em)
-    implementation 'org.osmdroid:osmdroid-android:6.1.18'
+    implementation 'org.osmdroid:osmdroid-android:6.1.20'
 
     // Image Slider
     implementation 'com.github.denzcoskun:ImageSlideshow:0.1.2'

@@ -29,6 +29,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private GoogleMap mMap;
     private ActivityMapBinding binding;
     private Hotel hotel;
+    private double latitude;
+    private double longitude;
+    private String hotelName = "";
+    private String address = "";
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
 
@@ -39,9 +43,20 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         binding = ActivityMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        receiveMapData();
         hotel = (Hotel) getIntent().getSerializableExtra("hotel");
         if (hotel != null) {
-            binding.tvMapHotelName.setText(hotel.getHotelName());
+            if (latitude == 0 && longitude == 0) {
+                latitude = hotel.getLatitude();
+                longitude = hotel.getLongitude();
+            }
+            if (hotelName.isEmpty()) {
+                hotelName = valueOrDefault(hotel.getHotelName(), "");
+            }
+        }
+        binding.tvMapHotelName.setText(valueOrDefault(hotelName, "Khach san"));
+        if (!address.isEmpty()) {
+            binding.tvDistance.setText(address);
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -59,13 +74,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
-        if (hotel != null) {
-            LatLng hotelLocation = new LatLng(hotel.getLatitude(), hotel.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(hotelLocation).title(hotel.getHotelName()));
+        if (latitude != 0 && longitude != 0) {
+            LatLng hotelLocation = new LatLng(latitude, longitude);
+            mMap.addMarker(new MarkerOptions().position(hotelLocation).title(valueOrDefault(hotelName, "Khach san")));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hotelLocation, 15f));
+        } else {
+            Toast.makeText(this, "Khach san chua co toa do", Toast.LENGTH_SHORT).show();
         }
 
         enableUserLocation();
+    }
+
+    private void receiveMapData() {
+        latitude = getIntent().getDoubleExtra("latitude", 0);
+        longitude = getIntent().getDoubleExtra("longitude", 0);
+        hotelName = valueOrDefault(getIntent().getStringExtra("hotel_name"), "");
+        address = valueOrDefault(getIntent().getStringExtra("address"), "");
     }
 
     private void enableUserLocation() {
@@ -84,14 +108,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         }
 
         fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-            if (location != null && hotel != null) {
+            if (location != null && latitude != 0 && longitude != 0) {
                 float[] results = new float[1];
                 Location.distanceBetween(location.getLatitude(), location.getLongitude(),
-                        hotel.getLatitude(), hotel.getLongitude(), results);
+                        latitude, longitude, results);
                 float distanceInKm = results[0] / 1000;
                 binding.tvDistance.setText(String.format(Locale.getDefault(), "Khoảng cách: %.2f km", distanceInKm));
             }
         });
+    }
+
+    private String valueOrDefault(String value, String fallback) {
+        return value == null || value.isEmpty() ? fallback : value;
     }
 
     @Override
