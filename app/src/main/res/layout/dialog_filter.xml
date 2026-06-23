@@ -26,15 +26,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:max="1000"
-        android:progress="1000" />
+        android:max="10000000"
+        android:progress="10000000" />
 
     <TextView
         android:id="@+id/tvPriceValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:text="1000 USD"
+        android:text="10,000,000 VND"
         android:textColor="@color/primary"
         android:textStyle="bold" />
 

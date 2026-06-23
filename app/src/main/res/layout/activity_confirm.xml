@@ -169,6 +169,7 @@
                             android:layout_weight="1"
                             android:gravity="center"
                             android:orientation="vertical">
+
                             <TextView
                                 android:id="@+id/textView10"
                                 android:layout_width="wrap_content"
@@ -434,7 +435,7 @@
                     <EditText
                         android:id="@+id/et_guest_name"
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
+                        android:layout_height="48dp"
                         android:hint="Nguyễn Văn A"
                         android:inputType="textPersonName"
                         style="@style/TextMore"
@@ -453,7 +454,7 @@
                     <EditText
                         android:id="@+id/et_guest_phone"
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
+                        android:layout_height="48dp"
                         android:hint="0901234567"
                         android:inputType="phone"
                         style="@style/TextMore"
@@ -472,7 +473,7 @@
                     <EditText
                         android:id="@+id/et_guest_email"
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
+                        android:layout_height="48dp"
                         android:hint="nguyenvana@email.com"
                         android:inputType="textEmailAddress"
                         style="@style/TextMore"
@@ -493,8 +494,9 @@
                 android:id="@+id/btn_confirm_booking"
                 style="@style/AppButtonStyle"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="48dp"
                 android:layout_marginTop="12dp"
+                android:textSize="14sp"
                 android:text="Xác nhận đặt phòng"
                 android:background="@drawable/bg_button" />
         </LinearLayout>
