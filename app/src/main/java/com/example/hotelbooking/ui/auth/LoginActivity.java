@@ -10,20 +10,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.remote.FirebaseClient;
-import com.example.hotelbooking.ui.home.HomeActivity;
+import com.example.hotelbooking.data.model.User;
+import com.example.hotelbooking.utils.AppConstants;
 import com.example.hotelbooking.utils.LoadingDialog;
 import com.example.hotelbooking.utils.RoleRouter;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
-import com.google.firebase.auth.FirebaseAuthInvalidUserException;
-import com.google.firebase.auth.FirebaseUser;
+import com.example.hotelbooking.viewmodels.AuthViewModel;
+import com.example.hotelbooking.viewmodels.UserViewModel;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -33,7 +29,8 @@ public class LoginActivity extends AppCompatActivity {
     private TextView txtRegister;
     private TextView txtPartnerRegister;
 
-    private FirebaseAuth auth;
+    private AuthViewModel authViewModel;
+    private UserViewModel userViewModel;
     private LoadingDialog loadingDialog;
 
     @Override
@@ -42,12 +39,17 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         initViews();
-        auth = FirebaseClient.getAuth();
         loadingDialog = new LoadingDialog(this);
+
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+
+        observeViewModels();
 
         btnLogin.setOnClickListener(v -> login());
         txtRegister.setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class)));
+        
         if (txtPartnerRegister != null) {
             txtPartnerRegister.setOnClickListener(v ->
                     startActivity(new Intent(this, PartnerRegisterActivity.class)));
@@ -62,102 +64,70 @@ public class LoginActivity extends AppCompatActivity {
         txtPartnerRegister = findViewById(R.id.txtPartnerRegister);
     }
 
+    private void observeViewModels() {
+        authViewModel.userSession.observe(this, firebaseUser -> {
+            if (firebaseUser != null) {
+                userViewModel.fetchUserData(firebaseUser.getUid());
+            }
+        });
+
+        authViewModel.isLoading.observe(this, isLoading -> {
+            if (isLoading) loadingDialog.show();
+            else loadingDialog.dismiss();
+        });
+
+        authViewModel.error.observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, "Lỗi đăng nhập: " + error, Toast.LENGTH_LONG).show();
+            }
+        });
+
+        userViewModel.userData.observe(this, user -> {
+            if (user != null) {
+                String role = user.getRole();
+                String partnerStatus = user.getPartnerStatus();
+                if (AppConstants.ROLE_USER.equalsIgnoreCase(role)) {
+                    finish();
+                } else {
+                    RoleRouter.navigateByRole(this, role, partnerStatus);
+                    finish();
+                }
+            }
+        });
+
+        userViewModel.error.observe(this, error -> {
+            if (error != null) {
+                if (authViewModel.userSession.getValue() != null) {
+                    createDefaultUser(authViewModel.userSession.getValue().getUid(),
+                            authViewModel.userSession.getValue().getEmail());
+                }
+            }
+        });
+    }
+    private void createDefaultUser(String uid, String email) {
+        User newUser = new User(uid, "Người dùng", email, "", AppConstants.ROLE_USER, null);
+
+        FirebaseFirestore.getInstance().collection(AppConstants.COLLECTION_USERS)
+                .document(uid).set(newUser)
+                .addOnSuccessListener(aVoid -> {
+                    finish();
+                });
+    }
+
     private void login() {
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
 
         if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Vui long nhap day du thong tin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Email khong dung dinh dang", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        loadingDialog.show();
-        auth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(this, "Dang nhap thanh cong", Toast.LENGTH_SHORT).show();
-                        openHomeForCustomerOrRouteRole();
-                    } else {
-                        loadingDialog.dismiss();
-                        String message = getLoginErrorMessage(task.getException());
-                        Toast.makeText(this, "Loi: " + message, Toast.LENGTH_LONG).show();
-                    }
-                });
-    }
-
-    private void openHomeForCustomerOrRouteRole() {
-        FirebaseUser user = auth.getCurrentUser();
-        if (user == null) {
-            loadingDialog.dismiss();
-            Toast.makeText(this, "Khong lay duoc thong tin tai khoan", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(user.getUid())
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    String role = documentSnapshot.getString("role");
-                    if (RoleRouter.ROLE_ADMIN.equalsIgnoreCase(role)
-                            || RoleRouter.ROLE_PARTNER.equalsIgnoreCase(role)
-                            || RoleRouter.ROLE_OWNER.equalsIgnoreCase(role)
-                            || RoleRouter.ROLE_PARTNER_PENDING.equalsIgnoreCase(role)) {
-                        RoleRouter.routeCurrentUser(this, loadingDialog);
-                        return;
-                    }
-
-                    if (!documentSnapshot.exists()) {
-                        createCustomerProfile(user);
-                    }
-
-                    loadingDialog.dismiss();
-                    openHome();
-                })
-                .addOnFailureListener(e -> {
-                    loadingDialog.dismiss();
-                    openHome();
-                });
-    }
-
-    private void createCustomerProfile(FirebaseUser user) {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("uid", user.getUid());
-        userData.put("email", user.getEmail());
-        userData.put("fullName", user.getDisplayName());
-        userData.put("role", RoleRouter.ROLE_CUSTOMER);
-
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(user.getUid())
-                .set(userData);
-    }
-
-    private void openHome() {
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
-
-    private String getLoginErrorMessage(Exception exception) {
-        if (exception instanceof FirebaseAuthInvalidCredentialsException) {
-            return "Email hoac mat khau khong dung. Hay kiem tra lai tai khoan trong Firebase Authentication.";
-        }
-
-        if (exception instanceof FirebaseAuthInvalidUserException) {
-            return "Tai khoan khong ton tai tren Firebase project hien tai.";
-        }
-
-        if (exception != null && exception.getMessage() != null) {
-            return exception.getMessage();
-        }
-
-        return "Khong dang nhap duoc. Hay kiem tra mang va Firebase Authentication.";
+        authViewModel.login(email, password);
     }
 }

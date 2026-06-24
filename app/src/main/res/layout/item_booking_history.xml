@@ -66,12 +66,22 @@
                 </RelativeLayout>
 
                 <TextView
+                    android:id="@+id/tvHistoryGuestName"
+                    style="@style/TextSubtitleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👤 Khách: Nguyễn Văn A"
+                    android:layout_marginTop="4dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"/>
+
+                <TextView
                     android:id="@+id/tvHistoryDate"
                     style="@style/TextSubtitleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="📅 15/10/2026 - 18/10/2026"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="4dp"
                     android:textColor="@color/text_secondary"/>
 
                 <TextView

@@ -18,15 +18,16 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_toStartOf="@+id/layoutUserActions"
-                    android:layout_alignParentStart="true"
+                    android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
@@ -49,8 +50,6 @@
                     android:id="@+id/layoutUserActions"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
@@ -60,13 +59,13 @@
                         android:layout_height="wrap_content"
                         android:text="Chào, Người dùng!"
                         android:textColor="@color/ocean_blue"
-                        android:textSize="14sp"
+                        android:textSize="20sp"
                         android:textStyle="bold"
                         android:maxLines="1"
                         android:ellipsize="end"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="6dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="8dp"
+                        android:background="?android:attr/selectableItemBackground"
                         android:focusable="true"
                         android:clickable="true" />
 
@@ -76,16 +75,18 @@
                         android:layout_height="wrap_content"
                         android:text="Đăng xuất"
                         android:textColor="#FF3B30"
-                        android:textSize="12sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="6dp"
                         android:layout_marginStart="4dp"
+                        android:visibility="visible"
                         android:background="?android:attr/selectableItemBackgroundBorderless"
                         android:focusable="true"
                         android:clickable="true" />
                 </LinearLayout>
-            </RelativeLayout>
+
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/searchBar"

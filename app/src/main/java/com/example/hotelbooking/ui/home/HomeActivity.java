@@ -2,6 +2,7 @@ package com.example.hotelbooking.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,42 +30,72 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Nạp giao diện XML và chuyển đổi toàn bộ thẻ tag thành đối tượng Java
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
-        // Hiển thị gốc giao diện lên màn hình điện thoại
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
-
         initViews();
         setupCategories();
         setupFeaturedHotels();
-        loadActiveHotels(); // Chỉ tải dữ liệu thật
+        loadActiveHotels();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateUserInterface();
+    }
+
+    private void updateUserInterface() {
+
+        if (FirebaseClient.getAuth().getCurrentUser() != null) {
+
+            String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
+
+            if (name != null && !name.isEmpty()) {
+                binding.btnProfile.setText("Chào, " + name);
+            } else {
+                binding.btnProfile.setText("Tài khoản");
+            }
+
+            binding.btnLogout.setVisibility(View.VISIBLE);
+
+        } else {
+
+            binding.btnProfile.setText("Đăng nhập");
+            binding.btnLogout.setVisibility(View.GONE);
+        }
     }
 
     private void initViews() {
+
         binding.searchBar.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
 
-        if (FirebaseClient.getAuth().getCurrentUser() != null) {
-            String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
-            if (name != null && !name.isEmpty()) {
-                binding.btnProfile.setText(name);
-            }
-        }
+        binding.btnProfile.setOnClickListener(v -> {
+            if (FirebaseClient.getAuth().getCurrentUser() == null) {
+                Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+                startActivity(intent);
 
-        binding.btnProfile.setOnClickListener(v ->
-                startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
+            } else {
+                startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
+            }
+        });
 
         binding.btnLogout.setOnClickListener(v -> {
             FirebaseClient.getAuth().signOut();
-            Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
+            updateUserInterface();
+            Toast.makeText(this, "Đã đăng xuất tài khoản", Toast.LENGTH_SHORT).show();
         });
 
         binding.btnFilter.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
+    }
+
+    private void openLoginActivity() {
+        Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
     }
 
     private void setupCategories() {
@@ -93,9 +124,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.rvFeaturedHotels.setAdapter(hotelAdapter);
     }
 
-    // load dữ liệu trong firestore, những ks có status là active lên và hiển thị thành list (hotelAdapter)
     private void loadActiveHotels() {
-        // truy vấn bảng hotels
         db.collection("hotels")
                 .whereEqualTo("status", "active")
                 .get()
@@ -113,11 +142,10 @@ public class HomeActivity extends AppCompatActivity {
                         Toast.makeText(this, "Lỗi kết nối mạng: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
-    // mở chi tiết khách sạn
     private void openHotelDetail(Hotel hotel) {
         Intent intent = new Intent(HomeActivity.this, HotelDetailActivity.class);
         intent.putExtra("hotel_id", hotel.getId());
-        intent.putExtra("hotel", hotel); // Truyền Object đi để trang sau dùng luôn không cần tải lại
+        intent.putExtra("hotel", hotel);
         startActivity(intent);
     }
 }

@@ -39,12 +39,14 @@ public class HotelDetailActivity extends AppCompatActivity {
     private double longitude;
     private String address;
 
+    // ĐÃ SỬA: Thêm biến toàn cục để lưu số lượng đánh giá load từ Firestore
+    private int reviewCount = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         binding = ActivityHotelDetailBinding.inflate(getLayoutInflater());
-
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
@@ -318,6 +320,10 @@ public class HotelDetailActivity extends AppCompatActivity {
                 .whereEqualTo("hotel_id", hotelId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+                    // ĐÃ SỬA: Đếm tổng số review từ Firestore và gập nhật lại TextView thông tin
+                    reviewCount = querySnapshot.isEmpty() ? 0 : querySnapshot.size();
+                    binding.tvHotelRatingInfo.setText(formatHotelRatingInfo());
+
                     if (querySnapshot.isEmpty()) {
                         binding.layoutReviews.addView(createText("Chưa có đánh giá nào cho khách sạn này", false));
                         return;
@@ -425,7 +431,6 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private String formatHotelRatingInfo() {
         double reviewScore = hotel.getReviewScore();
-        int reviewCount = hotel.getReviewCount();
         double ratingStar = hotel.getRatingStar();
 
         String scoreText = reviewScore > 0 ? formatNumber(reviewScore) + "/10" : "Chưa có điểm";

@@ -49,72 +49,69 @@ public class DemoHotelData {
     public static List<Hotel> hotels() {
         List<Hotel> hotels = new ArrayList<>();
 
-        Hotel passion = new Hotel(
-                "demo_passion_lux",
-                "The Passion Lux Airport",
-                "119 Duong Bach Dang, Phuong 2, Tan Binh, TP.HCM",
-                500000,
-                8.3f,
+        Hotel passion = new Hotel();
+        passion.setId("demo_passion_lux");
+        passion.setName("The Passion Lux Airport");
+        passion.setAddress("119 Duong Bach Dang, Phuong 2, Tan Binh, TP.HCM");
+        passion.setLocation("TP.HCM");
+        passion.setPrice(500000);
+        passion.setRating(8.3);
+        passion.setImageUrl("https://pix10.agoda.net/hotelImages/56801030/-1/96cc40d590a674ca39caebda5879fe97.jpg");
+        passion.setDescription("Khách sạn gần sân bay, phòng hiện đại, phù hợp cho du lịch và công tác.");
+        passion.setImageUrls(Arrays.asList(
                 "https://pix10.agoda.net/hotelImages/56801030/-1/96cc40d590a674ca39caebda5879fe97.jpg",
-                "Khach san",
-                "Khach san gan san bay, phong hien dai, phu hop cho du lich va cong tac.",
-                Arrays.asList(
-                        "https://pix10.agoda.net/hotelImages/56801030/-1/96cc40d590a674ca39caebda5879fe97.jpg",
-                        "https://pix10.agoda.net/hotelImages/56801030/-1/ea01218c2f62d0c80f2f22e54553d748.jpg",
-                        "https://pix10.agoda.net/hotelImages/56801030/-1/f8c527a2f31b0c2a141ddc884b7d7cd8.jpg"
-                ),
-                Arrays.asList("Wifi mien phi", "May lanh", "Bai dau xe", "Le tan 24/7", "Dua don san bay"),
-                10.8131,
-                106.6658
-        );
+                "https://pix10.agoda.net/hotelImages/56801030/-1/ea01218c2f62d0c80f2f22e54553d748.jpg",
+                "https://pix10.agoda.net/hotelImages/56801030/-1/f8c527a2f31b0c2a141ddc884b7d7cd8.jpg"
+        ));
+        passion.setAmenities(Arrays.asList("Wifi miễn phí", "Máy lạnh", "Bãi đậu xe", "Lễ tân 24/7", "Đưa đón sân bay"));
+        passion.setLatitude(10.8131);
+        passion.setLongitude(106.6658);
         passion.setRatingStar(2);
-        passion.setReviewCount(84);
-        passion.setStatus("active");
+        passion.setIsActive(true);
+        passion.setApprovalStatus("approved");
         hotels.add(passion);
 
-        Hotel binhYen = new Hotel(
-                "demo_binh_yen",
-                "Khach San Binh Yen",
-                "Vung Tau",
-                650000,
-                8.7f,
+        Hotel binhYen = new Hotel();
+        binhYen.setId("demo_binh_yen");
+        binhYen.setName("Khách Sạn Bình Yên");
+        binhYen.setAddress("Vũng Tàu");
+        binhYen.setLocation("Vũng Tàu");
+        binhYen.setPrice(650000);
+        binhYen.setRating(8.7);
+        binhYen.setImageUrl("https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200");
+        binhYen.setDescription("Khách sạn yên tĩnh gần biển, có phòng VIP hướng biển và dịch vụ thân thiện.");
+        binhYen.setImageUrls(Arrays.asList(
                 "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
-                "Resort",
-                "Khach san yen tinh gan bien, co phong VIP huong bien va dich vu than thien.",
-                Arrays.asList(
-                        "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
-                        "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200",
-                        "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1200"
-                ),
-                Arrays.asList("Wifi mien phi", "Ho boi", "Gan bien", "Bua sang", "Bai dau xe"),
-                10.3460,
-                107.0843
-        );
+                "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200",
+                "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1200"
+        ));
+        binhYen.setAmenities(Arrays.asList("Wifi miễn phí", "Hồ bơi", "Gần biển", "Bữa sáng", "Bãi đậu xe"));
+        binhYen.setLatitude(10.3460);
+        binhYen.setLongitude(107.0843);
         binhYen.setRatingStar(4);
-        binhYen.setReviewCount(126);
-        binhYen.setStatus("active");
+        binhYen.setIsActive(true);
+        binhYen.setApprovalStatus("approved");
         hotels.add(binhYen);
 
-        Hotel ocean = new Hotel(
-                "demo_ocean_breeze",
-                "Ocean Breeze Hotel",
-                "Tran Phu, Nha Trang",
-                720000,
-                8.9f,
+        Hotel ocean = new Hotel();
+        ocean.setId("demo_ocean_breeze");
+        ocean.setName("Ocean Breeze Hotel");
+        ocean.setAddress("Trần Phú, Nha Trang");
+        ocean.setLocation("Nha Trang");
+        ocean.setPrice(720000);
+        ocean.setRating(8.9);
+        ocean.setImageUrl("https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200");
+        ocean.setDescription("Khách sạn ven biển với phòng rộng, view đẹp và khu vực trung tâm.");
+        ocean.setImageUrls(Arrays.asList(
                 "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200",
-                "Khach san",
-                "Khach san ven bien voi phong rong, view dep va khu vuc trung tam.",
-                Arrays.asList(
-                        "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200",
-                        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200"
-                ),
-                Arrays.asList("Wifi", "Nha hang", "Ho boi", "Gym", "View bien"),
-                12.2388,
-                109.1967
-        );
+                "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200"
+        ));
+        ocean.setAmenities(Arrays.asList("Wifi", "Nhà hàng", "Hồ bơi", "Gym", "View biển"));
+        ocean.setLatitude(12.2388);
+        ocean.setLongitude(109.1967);
         ocean.setRatingStar(4);
-        ocean.setReviewCount(98);
-        ocean.setStatus("active");
+        ocean.setIsActive(true);
+        ocean.setApprovalStatus("approved");
         hotels.add(ocean);
 
         return hotels;
@@ -132,41 +129,41 @@ public class DemoHotelData {
     public static List<DemoRoom> rooms(String hotelId) {
         if ("demo_binh_yen".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_binh_yen_vip", "Phong VIP huong bien", "VIP", "1 giuong doi lon",
-                            "2 nguoi lon, 1 tre em", 1500000, 5, "AVAILABLE", 42),
-                    new DemoRoom("demo_binh_yen_standard", "Standard Room", "Standard", "1 giuong doi",
-                            "2 nguoi lon", 650000, 3, "AVAILABLE", 28)
+                    new DemoRoom("demo_binh_yen_vip", "Phòng VIP hướng biển", "VIP", "1 giường đôi lớn",
+                            "2 người lớn, 1 trẻ em", 1500000, 5, "AVAILABLE", 42),
+                    new DemoRoom("demo_binh_yen_standard", "Standard Room", "Standard", "1 giường đôi",
+                            "2 người lớn", 650000, 3, "AVAILABLE", 28)
             );
         }
 
         if ("demo_ocean_breeze".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_ocean_deluxe", "Deluxe Sea View", "Deluxe", "1 giuong doi",
-                            "2 nguoi lon", 980000, 4, "AVAILABLE", 35),
-                    new DemoRoom("demo_ocean_family", "Family Room", "Family", "2 giuong doi",
-                            "4 nguoi lon", 1350000, 0, "SUSPENDED", 45)
+                    new DemoRoom("demo_ocean_deluxe", "Deluxe Sea View", "Deluxe", "1 giường đôi",
+                            "2 người lớn", 980000, 4, "AVAILABLE", 35),
+                    new DemoRoom("demo_ocean_family", "Family Room", "Family", "2 giường đôi",
+                            "4 người lớn", 1350000, 0, "SUSPENDED", 45)
             );
         }
 
         return Arrays.asList(
-                new DemoRoom("demo_passion_deluxe", "Deluxe Double Room", "Phong Deluxe", "1 giuong doi",
-                        "2 nguoi lon, 1 tre em", 650000, 5, "AVAILABLE", 32),
-                new DemoRoom("demo_passion_standard", "Standard Room", "Phong Standard", "1 giuong doi",
-                        "2 nguoi lon", 450000, 2, "AVAILABLE", 24)
+                new DemoRoom("demo_passion_deluxe", "Deluxe Double Room", "Phòng Deluxe", "1 giường đôi",
+                        "2 người lớn, 1 trẻ em", 650000, 5, "AVAILABLE", 32),
+                new DemoRoom("demo_passion_standard", "Standard Room", "Phòng Standard", "1 giường đôi",
+                        "2 người lớn", 450000, 2, "AVAILABLE", 24)
         );
     }
 
     public static List<DemoReview> reviews(String hotelId) {
         if ("demo_binh_yen".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoReview("Tran Minh", 5, "Phong VIP huong bien dep, nhan vien ho tro nhanh."),
-                    new DemoReview("Le Phuong", 4, "Khach san sach se, vi tri thuan tien o Vung Tau.")
+                    new DemoReview("Trần Minh", 5, "Phòng VIP hướng biển đẹp, nhân viên hỗ trợ nhanh."),
+                    new DemoReview("Lê Phương", 4, "Khách sạn sạch sẽ, vị trí thuận tiện ở Vũng Tàu.")
             );
         }
 
         return Arrays.asList(
-                new DemoReview("Nguyen Van A", 5, "Khach san sach se, gan san bay, nhan vien than thien."),
-                new DemoReview("Hoang My", 4, "Phong dep, gia hop ly, di chuyen ra san bay nhanh.")
+                new DemoReview("Nguyễn Văn A", 5, "Khách sạn sạch sẽ, gần sân bay, nhân viên thân thiện."),
+                new DemoReview("Hoàng Mỹ", 4, "Phòng đẹp, giá hợp lý, di chuyển ra sân bay nhanh.")
         );
     }
 }

@@ -1,0 +1,45 @@
+package com.example.hotelbooking.ui.admin;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import com.example.hotelbooking.R;
+import com.example.hotelbooking.ui.auth.LoginActivity;
+import com.google.firebase.auth.FirebaseAuth;
+
+public class AdminDashboardActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_admin_dashboard);
+
+        CardView btnApprovePartner = findViewById(R.id.btnApprovePartner);
+        CardView btnApproveHotel = findViewById(R.id.btnApproveHotel);
+        CardView btnManageAllBookings = findViewById(R.id.btnManageAllBookings);
+        Button btnLogout = findViewById(R.id.btnLogoutAdmin);
+
+        btnApprovePartner.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminPartnerApprovalActivity.class));
+        });
+
+        btnApproveHotel.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminHotelApprovalActivity.class));
+        });
+
+        btnManageAllBookings.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminBookingManagementActivity.class));
+        });
+
+        btnLogout.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
+    }
+}

@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
         android:name=".MainApplication"
@@ -31,24 +33,39 @@
             android:name=".ui.map.HotelMapActivity"
             android:exported="false" />
 
+        <!-- Admin Flow -->
         <activity
-            android:name=".ui.owner.AdminDashboardActivity"
+            android:name=".ui.admin.AdminDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminPartnerApprovalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminPartnerDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminHotelApprovalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminHotelDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminBookingManagementActivity"
+            android:exported="false" />
+
+        <!-- Partner Flow -->
+        <activity
+            android:name=".ui.partner.PartnerDashboardActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.owner.OwnerDashboardActivity"
+            android:name=".ui.partner.PartnerPendingActivity"
             android:exported="false" />
-
         <activity
-            android:name=".ui.owner.PartnerPendingActivity"
+            android:name=".ui.partner.AddHotelActivity"
             android:exported="false" />
-
         <activity
-            android:name=".ui.owner.AddHotelActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.owner.AddRoomActivity"
+            android:name=".ui.partner.AddRoomActivity"
             android:exported="false" />
 
         <activity
@@ -88,9 +105,6 @@
             android:name=".ui.home.EditProfileActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".ui.welcome.WelcomeActivity"
-            android:exported="false" />
 
         <activity
             android:name=".ui.payment.ConfirmActivity"
@@ -105,7 +119,5 @@
             android:resource="@array/preloaded_fonts" />
 
     </application>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
 </manifest>

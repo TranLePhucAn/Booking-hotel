@@ -4,7 +4,6 @@ import java.io.Serializable;
 import com.google.firebase.firestore.PropertyName;
 import java.util.ArrayList;
 import java.util.List;
-// class chứa thông tin chi tiết phòng
 public class Room implements Serializable {
     private String id;
     private List<String> amenities = new ArrayList<>();

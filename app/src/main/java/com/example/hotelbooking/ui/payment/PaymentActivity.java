@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.ui.home.HomeActivity;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -62,15 +63,13 @@ public class PaymentActivity extends AppCompatActivity {
             hotel = (Hotel) intent.getSerializableExtra("EXTRA_HOTEL");
 
             if(hotel != null) {
-                double reviewScore = hotel.getReviewScore();
-                int reviewCount = hotel.getReviewCount();
-                String scoreText = reviewScore > 0 ? formatNumber(reviewScore) + "/10" : "Chưa có điểm";
-                String reviewText = reviewCount > 0 ? reviewCount + " đánh giá" : "Chưa có đánh giá";
+                double rating = hotel.getRating();
+                String scoreText = rating > 0 ? formatNumber(rating) + "/10" : "Chưa có điểm";
 
-                tvHotelName.setText(hotel.getHotelName());
+                tvHotelName.setText(hotel.getName());
                 ratingBar.setRating((float) hotel.getRatingStar());
                 tvRatingScore.setText(scoreText);
-                tvReviewCount.setText(reviewText);
+                tvReviewCount.setText(""); 
             }
 
             tvTotalPrice.setText(formatVND(totalPrice));
@@ -129,7 +128,7 @@ public class PaymentActivity extends AppCompatActivity {
 
             if(selectedMethodId == R.id.rb_credit_card) {
                 if (validateCardFields()) {
-                    processFirebasePaymentUpdate("CREDIT_CARD");
+                    processFirebasePaymentUpdate(AppConstants.PAYMENT_PAID);
                 }
             } else if(selectedMethodId == R.id.rb_digital_payment) {
                 showQRDialog();
@@ -145,9 +144,9 @@ public class PaymentActivity extends AppCompatActivity {
         ImageView imgQrCode = dialogView.findViewById(R.id.img_qr_code);
         Button btnPaidConfirm = dialogView.findViewById(R.id.btn_paid_confirm);
 
-        String bankId = "MB"; // Mã định danh ngân hàng
-        String accountNo = "0342689642"; // Số tài khoản ngân hàng thật
-        String accountName = "NGUYEN THI HONG HANH"; // Tên chủ tài khoản
+        String bankId = "MB"; 
+        String accountNo = "0342689642"; 
+        String accountName = "NGUYEN THI HONG HANH"; 
 
         String description = "Thanh toan ma phong " + reservationId;
 
@@ -163,27 +162,26 @@ public class PaymentActivity extends AppCompatActivity {
 
         btnPaidConfirm.setOnClickListener(v -> {
             dialog.dismiss();
-            processFirebasePaymentUpdate("QR_CODE");
+            processFirebasePaymentUpdate(AppConstants.PAYMENT_PAID);
         });
 
         dialog.show();
     }
 
-    private void processFirebasePaymentUpdate(String paymentMethod) {
-        // todo: thanh toán chuyển trạng thái thủ công
+    private void processFirebasePaymentUpdate(String paymentStatus) {
         btnBooking.setEnabled(false);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("reservations").document(reservationId).get()
+        db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if(documentSnapshot.exists()) {
                         Timestamp paymentDeadline = documentSnapshot.getTimestamp("payment_deadline");
                         Timestamp now = Timestamp.now();
                         if(paymentDeadline != null && now.compareTo(paymentDeadline) > 0) {
-                            db.collection("reservations").document(reservationId)
-                                    .update("status", "CANCELLED")
+                            db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId)
+                                    .update("status", AppConstants.BOOKING_CANCELLED)
                                     .addOnCompleteListener(task -> {
                                         Toast.makeText(PaymentActivity.this,
-                                                "Đơn đặt phòng của bạn đã hết hạn 20 phút giữ phòng! Vui lòng đặt lại.",
+                                                "Đơn đặt phòng của bạn đã hết hạn! Vui lòng đặt lại.",
                                                 Toast.LENGTH_LONG).show();
 
                                         Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
@@ -195,15 +193,15 @@ public class PaymentActivity extends AppCompatActivity {
                         }
 
                         Map<String, Object> updates = new HashMap<>();
-                        updates.put("status", "PAID");
-                        updates.put("payment_method", paymentMethod);
+                        updates.put("status", AppConstants.BOOKING_CONFIRMED);
+                        updates.put("payment_status", AppConstants.PAYMENT_PAID);
                         updates.put("paid_at", now);
 
-                        db.collection("reservations").document(reservationId)
+                        db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId)
                                 .update(updates)
                                 .addOnSuccessListener(runnable -> {
                                     Toast.makeText(PaymentActivity.this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
-                                    Intent intent = new Intent(PaymentActivity.this, HomeActivity.class); // chuyển về trang lịch sử booking
+                                    Intent intent = new Intent(PaymentActivity.this, HomeActivity.class); 
                                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(intent);
                                     finish();
@@ -219,7 +217,7 @@ public class PaymentActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     btnBooking.setEnabled(true);
-                    Toast.makeText(PaymentActivity.this, "Lỗi kết nối hệ thống: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PaymentActivity.this, "Lỗi kết nối: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 

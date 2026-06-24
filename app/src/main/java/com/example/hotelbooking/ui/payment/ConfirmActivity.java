@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.model.Section;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -40,7 +41,7 @@ public class ConfirmActivity extends AppCompatActivity {
 
     private Date checkInDate;
     private Date checkOutDate;
-    private int numberOfNights = 1; // mặc định là 1 đêm
+    private int numberOfNights = 1; 
     private int availableRooms;
     private String checkInText, checkOutText, checkInTimeText, checkOutTimeText;
 
@@ -65,8 +66,7 @@ public class ConfirmActivity extends AppCompatActivity {
         if (currentUser != null) {
             String displayName = currentUser.getDisplayName();
             String email = currentUser.getEmail();
-            String phoneNumber = currentUser.getPhoneNumber();
-
+            
             if (displayName != null && !displayName.isEmpty()) {
                 etGuestName.setText(displayName);
             }
@@ -74,28 +74,15 @@ public class ConfirmActivity extends AppCompatActivity {
             if (email != null && !email.isEmpty()) {
                 etGuestEmail.setText(email);
             }
-
-            if (phoneNumber != null && !phoneNumber.isEmpty()) {
-                etGuestPhone.setText(phoneNumber);
-            }
-
-            // reservationData.put("customer_id", currentUser.getUid());
-
-        } else {
-            /* Toast.makeText(this, "Vui lòng đăng nhập để tiếp tục!", Toast.LENGTH_SHORT).show();
-            Intent loginIntent = new Intent(ConfirmActivity.this, LoginActivity.class);
-            startActivity(loginIntent);
-            finish();
-            */
         }
     }
 
     private void initViews() {
-        tvHotelName = findViewById(R.id.textView); // ID của Tên khách sạn
+        tvHotelName = findViewById(R.id.textView); 
         ratingBar = findViewById(R.id.ratingBar);
         tvRatingScore = findViewById(R.id.textView2);
         tvReviewCount = findViewById(R.id.textView3);
-        tvRoomStyle = findViewById(R.id.textView5); // ID của Tên hạng phòng
+        tvRoomStyle = findViewById(R.id.textView5); 
         tvBasePrice = findViewById(R.id.tv_base_price);
         tvTaxPrice = findViewById(R.id.tv_tax_price);
         tvTotalPrice = findViewById(R.id.tv_total_price);
@@ -123,8 +110,6 @@ public class ConfirmActivity extends AppCompatActivity {
             section = (Section) intent.getSerializableExtra("EXTRA_SECTION");
             availableRooms = intent.getIntExtra("EXTRA_AVAILABLE_ROOMS", 1);
 
-            // Giả định nhận thêm ngày check-in/out từ bộ lọc tìm kiếm màn hình trước
-            // nếu không có thì lấy ngày hôm nay và ngày mai làm mặc định mẫu
             long checkInMillis = intent.getLongExtra("EXTRA_CHECK_IN", System.currentTimeMillis());
             long checkOutMillis = intent.getLongExtra("EXTRA_CHECK_OUT", System.currentTimeMillis() + 86400000);
 
@@ -133,16 +118,13 @@ public class ConfirmActivity extends AppCompatActivity {
 
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("EEEE, d 'thg' M", new java.util.Locale("vi", "VN"));
 
-            // ngày
             checkInText = sdf.format(checkInDate);
             checkOutText = sdf.format(checkOutDate);
 
-            // giờ
             java.text.SimpleDateFormat sdfTime = new java.text.SimpleDateFormat("HH:mm", new java.util.Locale("vi", "VN"));
             checkInTimeText = sdfTime.format(checkInDate);
             checkOutTimeText = sdfTime.format(checkOutDate);
 
-            // Tính số đêm
             long diff = checkOutMillis - checkInMillis;
             if (diff > 0) {
                 numberOfNights = (int) (diff / (1000 * 60 * 60 * 24));
@@ -150,15 +132,13 @@ public class ConfirmActivity extends AppCompatActivity {
             }
 
             if(hotel != null && section != null) {
-                double reviewScore = hotel.getReviewScore();
-                int reviewCount = hotel.getReviewCount();
-                String scoreText = reviewScore > 0 ? formatNumber(reviewScore) + "/10" : "Chưa có điểm";
-                String reviewText = reviewCount > 0 ? reviewCount + " đánh giá" : "Chưa có đánh giá";
-
-                tvHotelName.setText(hotel.getHotelName());
+                double rating = hotel.getRating();
+                String scoreText = rating > 0 ? formatNumber(rating) + "/10" : "Chưa có điểm";
+                
+                tvHotelName.setText(hotel.getName());
                 ratingBar.setRating((float) hotel.getRatingStar());
                 tvRatingScore.setText(scoreText);
-                tvReviewCount.setText(reviewText);
+                tvReviewCount.setText(""); // Cần field reviewCount chuẩn trong Hotel nếu muốn hiện
                 tvRoomStyle.setText("(1x) " + section.getRoomStyle());
                 tvAvailableRooms.setText("Chỉ còn " + availableRooms + " phòng");
                 tvDateFrom.setText(checkInText);
@@ -168,7 +148,7 @@ public class ConfirmActivity extends AppCompatActivity {
                 tvCheckOutTime.setText("Đến " + checkOutTimeText);
 
                 double basePrice = section.getBasePrice() * numberOfNights;
-                double taxPrice = basePrice * 0.1; // thuế 10%
+                double taxPrice = basePrice * 0.1; 
                 finalPrice = basePrice + taxPrice;
 
                 tvBasePrice.setText(formatVND(basePrice));
@@ -182,41 +162,40 @@ public class ConfirmActivity extends AppCompatActivity {
         return String.format(Locale.getDefault(), "%.1f", value);
     }
 
-    // Xử lý nút áp dụng mã giảm giá
     private void setupPromoLogic() {
         btnApplyPromo.setOnClickListener(view -> {
-            String promoCode = etPromoCode.getText().toString().trim();
-            // Todo: Code xử lý Firebase kiểm tra mã giảm giá của bạn ở đây
             Toast.makeText(this, "Mã giảm giá không hợp lệ hoặc đã hết hạn", Toast.LENGTH_SHORT).show();
         });
     }
 
-    // xử lý nút xác nhận đặt phòng
     private void setupBookingLogic() {
         btnConfirmBooking.setOnClickListener(view -> {
             String name = etGuestName.getText().toString().trim();
             String phone = etGuestPhone.getText().toString().trim();
             String email = etGuestEmail.getText().toString().trim();
 
-            // kiểm tra dl
             if (name.isEmpty()) { etGuestName.setError("Vui lòng nhập tên"); return; }
             if (phone.isEmpty()) { etGuestPhone.setError("Vui lòng nhập số điện thoại"); return; }
             if (email.isEmpty()) { etGuestEmail.setError("Vui lòng nhập Email"); return; }
 
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            
             Date now = new Date();
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(now);
-            calendar.add(Calendar.MINUTE, 20); // Giữ phòng trong 20 phút
+            calendar.add(Calendar.MINUTE, 20); 
             Date deadline = calendar.getTime();
 
             Map<String, Object> reservationData = new HashMap<>();
-            reservationData.put("hotel_id", hotel.getId()); // Lấy Document ID của khách sạn
-            reservationData.put("section_id", section.getId()); // Lấy Document ID của hạng phòng
-//            reservationData.put("customer_id", realUserId);
+            reservationData.put("hotel_id", hotel.getId()); 
+            reservationData.put("section_id", section.getId()); 
+            if (currentUser != null) {
+                reservationData.put("customer_id", currentUser.getUid());
+            }
 
-            reservationData.put("check_in", new Timestamp(checkInDate));
-            reservationData.put("check_out", new Timestamp(checkOutDate));
+            reservationData.put("day_start", new Timestamp(checkInDate));
+            reservationData.put("day_end", new Timestamp(checkOutDate));
             reservationData.put("number_of_nights", numberOfNights);
 
             reservationData.put("guest_name", name);
@@ -225,20 +204,21 @@ public class ConfirmActivity extends AppCompatActivity {
 
             reservationData.put("base_price", section.getBasePrice());
             reservationData.put("tax_fee", section.getBasePrice() * 0.1);
-//            reservationData.put("discount_price", tvOldTotalPrice.getVisibility() == View.VISIBLE ? discountValue : 0);
             reservationData.put("total_price", finalPrice);
 
-            reservationData.put("status", "PENDING"); // chờ thanh toán
+            reservationData.put("status", AppConstants.BOOKING_PENDING_PAYMENT); 
             reservationData.put("created_at", new Timestamp(now));
-            reservationData.put("payment_deadline", new Timestamp(deadline)); // deadline thanh toán
-            reservationData.put("room_id", ""); // Chưa xếp phòng vật lý cụ thể khi chưa trả tiền
+            reservationData.put("payment_deadline", new Timestamp(deadline)); 
+            reservationData.put("room_id", ""); 
 
             btnConfirmBooking.setEnabled(false);
 
-            firestore.collection("reservations")
+            firestore.collection(AppConstants.COLLECTION_RESERVATIONS)
                     .add(reservationData)
                     .addOnSuccessListener(documentReference -> {
                         String reservationId = documentReference.getId();
+                        documentReference.update("id", reservationId); // Sync ID field
+
                         Toast.makeText(ConfirmActivity.this, "Giữ phòng thành công! Đang chuyển tới trang thanh toán.", Toast.LENGTH_SHORT).show();
 
                         Intent intentPayment = new Intent(ConfirmActivity.this, PaymentActivity.class);

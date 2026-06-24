@@ -3,7 +3,6 @@ package com.example.hotelbooking.data.model;
 import com.google.firebase.firestore.PropertyName;
 
 import java.io.Serializable;
-// class thể hiện vùng có thuộc tính city, district
 public class Location implements Serializable {
     private String id;
     private String city;

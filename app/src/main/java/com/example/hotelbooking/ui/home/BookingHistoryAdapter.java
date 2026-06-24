@@ -11,20 +11,24 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
+import com.example.hotelbooking.data.model.Reservation;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.android.material.imageview.ShapeableImageView;
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAdapter.ViewHolder> {
 
-    private final List<DocumentSnapshot> bookings = new ArrayList<>();
+    private final List<Reservation> reservations = new ArrayList<>();
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-    public void updateData(List<DocumentSnapshot> newBookings) {
-        bookings.clear();
-        bookings.addAll(newBookings);
+    public void updateData(List<Reservation> newReservations) {
+        reservations.clear();
+        reservations.addAll(newReservations);
         notifyDataSetChanged();
     }
 
@@ -38,44 +42,37 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        DocumentSnapshot booking = bookings.get(position);
-        holder.tvHotelName.setText(stringValue(booking, "hotel_name", "Khach san"));
-        holder.tvStatus.setText(stringValue(booking, "status", "booked"));
-        holder.tvDate.setText(stringValue(booking, "check_in", "") + " - " + stringValue(booking, "check_out", ""));
-        holder.tvPrice.setText(formatMoney(doubleValue(booking, "total_price", 0)));
-
-        String imageUrl = stringValue(booking, "hotel_image", "");
-        if (!imageUrl.isEmpty()) {
-            Glide.with(holder.itemView.getContext())
-                    .load(imageUrl)
-                    .placeholder(android.R.drawable.ic_menu_gallery)
-                    .into(holder.imgThumbnail);
+        Reservation res = reservations.get(position);
+        holder.tvHotelName.setText("Mã Đặt Phòng: " + res.getId());
+        holder.tvStatus.setText(res.getStatus());
+        
+        String dateStr = "";
+        if (res.getDayStart() != null && res.getDayEnd() != null) {
+            dateStr = dateFormat.format(res.getDayStart().toDate()) + " - " + dateFormat.format(res.getDayEnd().toDate());
+        }
+        holder.tvDate.setText(dateStr);
+        holder.tvPrice.setText(String.format(Locale.getDefault(), "%,.0f VNĐ", res.getTotalPrice()));
+        if (AppConstants.BOOKING_CONFIRMED.equals(res.getStatus()) ||
+            AppConstants.BOOKING_PENDING_PAYMENT.equals(res.getStatus())) {
+            holder.btnCancel.setVisibility(View.VISIBLE);
+        } else {
+            holder.btnCancel.setVisibility(View.GONE);
         }
 
-        holder.btnCancel.setOnClickListener(v ->
-                booking.getReference().update("status", "cancelled"));
+        holder.btnCancel.setOnClickListener(v -> {
+            FirebaseFirestore.getInstance().collection(AppConstants.COLLECTION_RESERVATIONS)
+                    .document(res.getId())
+                    .update("status", AppConstants.BOOKING_CANCELLED)
+                    .addOnSuccessListener(aVoid -> {
+                        res.setStatus(AppConstants.BOOKING_CANCELLED);
+                        notifyItemChanged(position);
+                    });
+        });
     }
 
     @Override
     public int getItemCount() {
-        return bookings.size();
-    }
-
-    private String stringValue(DocumentSnapshot document, String field, String fallback) {
-        String value = document.getString(field);
-        return value == null ? fallback : value;
-    }
-
-    private double doubleValue(DocumentSnapshot document, String field, double fallback) {
-        Object value = document.get(field);
-        if (value instanceof Number) {
-            return ((Number) value).doubleValue();
-        }
-        return fallback;
-    }
-
-    private String formatMoney(double value) {
-        return String.format(Locale.getDefault(), "%,.0f VND", value);
+        return reservations.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

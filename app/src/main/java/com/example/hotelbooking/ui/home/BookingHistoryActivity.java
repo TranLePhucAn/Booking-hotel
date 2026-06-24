@@ -1,26 +1,30 @@
 package com.example.hotelbooking.ui.home;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hotelbooking.R;
+import com.example.hotelbooking.data.model.Reservation;
+import com.example.hotelbooking.utils.AppConstants;
+import com.example.hotelbooking.viewmodels.BookingViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BookingHistoryActivity extends AppCompatActivity {
 
-    private final List<DocumentSnapshot> allBookings = new ArrayList<>();
-    private final BookingHistoryAdapter adapter = new BookingHistoryAdapter();
+    private BookingViewModel viewModel;
+    private BookingHistoryAdapter adapter;
+    private List<Reservation> allReservations = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,41 +36,44 @@ public class BookingHistoryActivity extends AppCompatActivity {
         RecyclerView rvBookingHistory = findViewById(R.id.rvBookingHistory);
 
         rvBookingHistory.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new BookingHistoryAdapter();
         rvBookingHistory.setAdapter(adapter);
 
-        btnFilterUpcoming.setOnClickListener(v -> showBookings(false));
-        btnFilterCompleted.setOnClickListener(v -> showBookings(true));
+        viewModel = new ViewModelProvider(this).get(BookingViewModel.class);
 
-        loadBookings();
+        viewModel.reservations.observe(this, reservations -> {
+            allReservations = reservations;
+            showFilteredReservations(false);
+        });
+
+        viewModel.error.observe(this, error -> {
+            if (error != null) Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
+        });
+
+        btnFilterUpcoming.setOnClickListener(v -> showFilteredReservations(false));
+        btnFilterCompleted.setOnClickListener(v -> showFilteredReservations(true));
+
+        loadData();
     }
 
-    private void loadBookings() {
+    private void loadData() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
-            Toast.makeText(this, "Vui long dang nhap de xem lich su", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng đăng nhập để xem lịch sử", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        FirebaseFirestore.getInstance()
-                .collection("bookings")
-                .whereEqualTo("user_id", user.getUid())
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    allBookings.clear();
-                    allBookings.addAll(querySnapshot.getDocuments());
-                    showBookings(false);
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Khong tai duoc lich su: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        viewModel.fetchUserBookings(user.getUid());
     }
 
-    private void showBookings(boolean completedOnly) {
-        List<DocumentSnapshot> result = new ArrayList<>();
-        for (DocumentSnapshot booking : allBookings) {
-            String status = booking.getString("status");
-            boolean completed = "completed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status);
-            if (completedOnly == completed) {
-                result.add(booking);
+    private void showFilteredReservations(boolean completedOnly) {
+        List<Reservation> result = new ArrayList<>();
+        for (Reservation res : allReservations) {
+            String status = res.getStatus();
+            boolean isCompleted = AppConstants.BOOKING_COMPLETED.equalsIgnoreCase(status) 
+                    || AppConstants.BOOKING_CANCELLED.equalsIgnoreCase(status);
+            
+            if (completedOnly == isCompleted) {
+                result.add(res);
             }
         }
         adapter.updateData(result);

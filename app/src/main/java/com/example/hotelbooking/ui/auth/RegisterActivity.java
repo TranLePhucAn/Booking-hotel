@@ -8,18 +8,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.utils.LoadingDialog;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.example.hotelbooking.viewmodels.AuthViewModel;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -28,7 +21,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText edtPassword;
     private Button btnRegister;
 
-    private FirebaseAuth auth;
+    private AuthViewModel authViewModel;
     private LoadingDialog loadingDialog;
 
     @Override
@@ -37,8 +30,11 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         initViews();
-        auth = FirebaseClient.getAuth();
         loadingDialog = new LoadingDialog(this);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        observeViewModel();
+
         btnRegister.setOnClickListener(v -> register());
     }
 
@@ -49,70 +45,47 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
     }
 
+    private void observeViewModel() {
+        authViewModel.isLoading.observe(this, isLoading -> {
+            if (isLoading) loadingDialog.show();
+            else loadingDialog.dismiss();
+        });
+
+        authViewModel.userSession.observe(this, firebaseUser -> {
+            if (firebaseUser != null) {
+                authViewModel.logout();
+                Toast.makeText(this, "Đăng ký thành công. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        });
+
+        authViewModel.error.observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void register() {
         String name = edtName.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
 
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Vui long nhap day du thong tin", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Email khong dung dinh dang", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (password.length() < 6) {
-            Toast.makeText(this, "Mat khau phai co it nhat 6 ky tu", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Mật khẩu phải có ít nhất 6 ký tự", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        loadingDialog.show();
-        auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    loadingDialog.dismiss();
-                    if (!task.isSuccessful() || auth.getCurrentUser() == null) {
-                        String message = task.getException() != null ? task.getException().getMessage() : "Khong tao duoc tai khoan";
-                        Toast.makeText(this, "Loi tao tai khoan: " + message, Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    FirebaseUser firebaseUser = auth.getCurrentUser();
-                    firebaseUser.updateProfile(new UserProfileChangeRequest.Builder()
-                            .setDisplayName(name)
-                            .build());
-                    saveUserProfile(firebaseUser.getUid(), name, email);
-                });
-    }
-
-    private void saveUserProfile(String uid, String name, String email) {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("uid", uid);
-        userData.put("fullName", name);
-        userData.put("email", email);
-        userData.put("role", "customer");
-        userData.put("phone", "");
-        userData.put("avatarUrl", "");
-        userData.put("gender", "");
-        userData.put("date_of_birth", "");
-        userData.put("country", "");
-        userData.put("created_at", FieldValue.serverTimestamp());
-
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .set(userData)
-                .addOnSuccessListener(unused -> {
-                    auth.signOut();
-                    Toast.makeText(this, "Dang ky thanh cong. Vui long dang nhap.", Toast.LENGTH_LONG).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    auth.signOut();
-                    Toast.makeText(this, "Tai khoan da tao, nhung chua luu duoc ho so: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    finish();
-                });
+        authViewModel.register(email, password, name, "");
     }
 }
