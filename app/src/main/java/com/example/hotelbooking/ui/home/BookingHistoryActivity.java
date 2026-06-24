@@ -1,6 +1,7 @@
 package com.example.hotelbooking.ui.home;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -34,8 +35,17 @@ public class BookingHistoryActivity extends AppCompatActivity {
         rvBookingHistory.setLayoutManager(new LinearLayoutManager(this));
         rvBookingHistory.setAdapter(adapter);
 
-        btnFilterUpcoming.setOnClickListener(v -> showBookings(false));
-        btnFilterCompleted.setOnClickListener(v -> showBookings(true));
+        btnFilterUpcoming.setOnClickListener(v -> {
+            btnFilterUpcoming.setBackgroundTintList(getColorStateList(R.color.ocean_blue));
+            btnFilterCompleted.setBackgroundTintList(getColorStateList(R.color.separate_color));
+            showBookings(false);
+        });
+
+        btnFilterCompleted.setOnClickListener(v -> {
+            btnFilterCompleted.setBackgroundTintList(getColorStateList(R.color.ocean_blue));
+            btnFilterUpcoming.setBackgroundTintList(getColorStateList(R.color.separate_color));
+            showBookings(true);
+        });
 
         loadBookings();
     }
@@ -43,29 +53,42 @@ public class BookingHistoryActivity extends AppCompatActivity {
     private void loadBookings() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
-            Toast.makeText(this, "Vui long dang nhap de xem lich su", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng đăng nhập để xem lịch sử", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        String currentEmail = user.getEmail();
+
         FirebaseFirestore.getInstance()
-                .collection("bookings")
-                .whereEqualTo("user_id", user.getUid())
+                .collection("reservations")
+                .whereEqualTo("guest_email", currentEmail)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
+
                     allBookings.clear();
                     allBookings.addAll(querySnapshot.getDocuments());
+
+                    if (allBookings.isEmpty()) {
+                        Toast.makeText(this, "Bạn chưa có đơn đặt phòng nào", Toast.LENGTH_SHORT).show();
+                    }
+
                     showBookings(false);
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Khong tai duoc lich su: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Không tải được lịch sử: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
     }
 
     private void showBookings(boolean completedOnly) {
         List<DocumentSnapshot> result = new ArrayList<>();
         for (DocumentSnapshot booking : allBookings) {
             String status = booking.getString("status");
-            boolean completed = "completed".equalsIgnoreCase(status) || "cancelled".equalsIgnoreCase(status);
-            if (completedOnly == completed) {
+
+            if (status == null) status = "";
+
+            boolean isCompleted = "COMPLETED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status);
+
+            if (completedOnly == isCompleted) {
                 result.add(booking);
             }
         }
