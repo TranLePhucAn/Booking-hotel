@@ -63,6 +63,7 @@ public class HotelDetailActivity extends AppCompatActivity {
     private int selectedAvailableRooms;
     private long checkInDateMillis;
     private long checkOutDateMillis;
+    private boolean isOpeningConfirm;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
     @Override
@@ -134,6 +135,12 @@ public class HotelDetailActivity extends AppCompatActivity {
                     .addOnFailureListener(e ->
                             Toast.makeText(this, "Lỗi kiểm tra phòng: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isOpeningConfirm = false;
     }
 
     private void loadHotelFromFirestore() {
@@ -426,20 +433,36 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void setupBookingControls() {
         binding.btnCheckInDate.setOnClickListener(v -> showDatePicker(true));
-        binding.btnCheckOutDate.setOnClickListener(v -> showDatePicker(false));
+        binding.btnCheckOutDate.setOnClickListener(v -> {
+            if (checkInDateMillis <= 0) {
+                Toast.makeText(this, "Vui long chon ngay den truoc", Toast.LENGTH_SHORT).show();
+                showDatePicker(true);
+                return;
+            }
+            showDatePicker(false);
+        });
     }
 
     private void showDatePicker(boolean isCheckIn) {
+        if (!isCheckIn && checkInDateMillis <= 0) {
+            Toast.makeText(this, "Vui long chon ngay den truoc", Toast.LENGTH_SHORT).show();
+            showDatePicker(true);
+            return;
+        }
+
         Calendar calendar = Calendar.getInstance();
         long currentValue = isCheckIn ? checkInDateMillis : checkOutDateMillis;
         if (currentValue > 0) {
             calendar.setTimeInMillis(currentValue);
+        } else if (!isCheckIn) {
+            calendar.setTimeInMillis(checkInDateMillis);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
 
         DatePickerDialog dialog = new DatePickerDialog(this,
                 (view, year, month, dayOfMonth) -> {
                     Calendar selectedDate = Calendar.getInstance();
-                    selectedDate.set(year, month, dayOfMonth, 0, 0, 0);
+                    selectedDate.set(year, month, dayOfMonth, isCheckIn ? 13 : 12, 0, 0);
                     selectedDate.set(Calendar.MILLISECOND, 0);
                     long selectedMillis = selectedDate.getTimeInMillis();
 
@@ -455,7 +478,8 @@ public class HotelDetailActivity extends AppCompatActivity {
                             checkOutDateMillis = 0;
                             binding.btnCheckOutDate.setText("Bam chon ngay di");
                         }
-                        showDatePicker(false);
+                        Toast.makeText(this, "Vui long chon ngay ban muon tra phong", Toast.LENGTH_SHORT).show();
+                        binding.getRoot().postDelayed(() -> showDatePicker(false), 250);
                     } else {
                         if (checkInDateMillis <= 0) {
                             Toast.makeText(this, "Hay chon ngay den truoc", Toast.LENGTH_SHORT).show();
@@ -467,14 +491,31 @@ public class HotelDetailActivity extends AppCompatActivity {
                         }
                         checkOutDateMillis = selectedMillis;
                         binding.btnCheckOutDate.setText(dateFormat.format(new Date(checkOutDateMillis)));
+                        Toast.makeText(this, "Dang chuyen sang trang xac nhan dat phong", Toast.LENGTH_SHORT).show();
+                        binding.getRoot().postDelayed(() -> continueToConfirmAfterDateSelection(), 250);
                     }
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
 
-        dialog.getDatePicker().setMinDate(todayStartMillis());
+        dialog.setTitle(isCheckIn ? "Chon ngay den" : "Chon ngay di");
+        dialog.setMessage(isCheckIn
+                ? "Vui long chon ngay ban muon den nhan phong."
+                : "Vui long chon ngay ban muon tra phong.");
+        dialog.getDatePicker().setMinDate(isCheckIn ? todayStartMillis() : checkoutMinDateMillis());
         dialog.show();
+    }
+
+    private long checkoutMinDateMillis() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(checkInDateMillis);
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
     }
 
     private long todayStartMillis() {
@@ -501,6 +542,7 @@ public class HotelDetailActivity extends AppCompatActivity {
 
         binding.tvSelectedRoom.setText("Da chon: " + selectedRoomName + " - " + formatMoney(selectedRoomPrice));
         binding.tvPrice.setText(formatMoney(selectedRoomPrice) + " / dem");
+        binding.btnBookNow.setText("Chon ngay");
         Toast.makeText(this, "Da chon phong", Toast.LENGTH_SHORT).show();
     }
 
@@ -551,12 +593,39 @@ public class HotelDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void continueToConfirmAfterDateSelection() {
+        if (isOpeningConfirm) {
+            return;
+        }
+        if (selectedRoom == null) {
+            Toast.makeText(this, "Vui long chon hang phong", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (checkInDateMillis <= 0 || checkOutDateMillis <= 0) {
+            Toast.makeText(this, "Vui long chon du ngay den va ngay di", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (checkOutDateMillis <= checkInDateMillis) {
+            Toast.makeText(this, "Ngay di phai sau ngay den", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (selectedAvailableRooms <= 0) {
+            Toast.makeText(this, "Phong da chon khong con trong", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        openBookingWithRoom(selectedRoom);
+    }
+
     private void openBookingWithRoom(Room room) {
+        if (isOpeningConfirm) {
+            return;
+        }
         if (hotel == null || room == null) {
             Toast.makeText(this, "Dữ liệu đang tải, vui lòng thử lại!", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        isOpeningConfirm = true;
         Intent intent = new Intent(this, ConfirmActivity.class);
 
         String sectionId = (room.getSectionId() != null && !room.getSectionId().isEmpty()) ? room.getSectionId() : room.getId();
