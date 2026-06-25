@@ -1,11 +1,13 @@
 package com.example.hotelbooking.ui.home;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hotelbooking.R;
@@ -16,6 +18,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
 
     private List<String> categories;
     private OnItemClickListener listener;
+    private int selectedPosition = 0; // Mặc định chọn "Tất cả" (vị trí 0)
 
     public interface OnItemClickListener {
         void onItemClick(String category);
@@ -37,7 +40,30 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         String category = categories.get(position);
         holder.tvCategoryName.setText(category);
-        holder.itemView.setOnClickListener(v -> listener.onItemClick(category));
+
+        // Xử lý hiển thị dựa trên trạng thái chọn
+        if (position == selectedPosition) {
+            // Khi được chọn: Nền xanh, chữ trắng
+            holder.tvCategoryName.setBackgroundResource(R.drawable.bg_category_selected);
+            holder.tvCategoryName.setTextColor(Color.WHITE);
+        } else {
+            // Khi không chọn: Nền xám nhạt, chữ đen
+            holder.tvCategoryName.setBackgroundResource(R.drawable.bg_category_unselected);
+            holder.tvCategoryName.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.id.tvCategoryName == 0 ? android.R.color.black : R.color.text_primary));
+            // Sửa lại dòng trên để an toàn hơn
+            holder.tvCategoryName.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_primary));
+        }
+
+        holder.itemView.setOnClickListener(v -> {
+            int previousPosition = selectedPosition;
+            selectedPosition = holder.getAdapterPosition();
+            
+            // Cập nhật lại giao diện cho mục cũ và mục mới
+            notifyItemChanged(previousPosition);
+            notifyItemChanged(selectedPosition);
+            
+            listener.onItemClick(category);
+        });
     }
 
     @Override
