@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="16dp"
     app:cardElevation="4dp">
 
     <LinearLayout
@@ -12,12 +12,34 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/imgHotel"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="180dp"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery" />
+            android:layout_height="180dp">
+
+            <ImageView
+                android:id="@+id/imgHotel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery" />
+
+            <TextView
+                android:id="@+id/tvBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_margin="12dp"
+                android:background="@drawable/bg_badge"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="Ưu đãi"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -29,6 +51,8 @@
                 android:id="@+id/txtName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text="Hotel Name"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
@@ -39,6 +63,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:text="Location"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
@@ -55,8 +81,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="$200 / night"
-                    android:textColor="@color/accent"
+                    android:text="Tu 500.000 VND"
+                    android:textColor="@color/ocean_blue"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -67,6 +93,7 @@
                     android:layout_height="wrap_content"
                     android:isIndicator="true"
                     android:numStars="5"
+                    android:progressTint="@color/accent"
                     android:stepSize="0.5" />
             </LinearLayout>
 

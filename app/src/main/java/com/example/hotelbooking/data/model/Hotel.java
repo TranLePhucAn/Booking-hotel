@@ -1,40 +1,45 @@
 package com.example.hotelbooking.data.model;
 
 import com.google.firebase.firestore.DocumentSnapshot;
-
 import com.google.firebase.firestore.PropertyName;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-// class thông tin khách sạn
+
+/**
+ * Class thông tin khách sạn
+ */
 public class Hotel implements Serializable {
-    private String id; // id
-    private String hotelName; // tên khách sạn
-    private String address; // địa chỉ của khách sạn
-    private double price; // Giá phòng tiêu chuẩn hoặc giá trung bình tính theo đêm
-    private String imageUrl; // Đường dẫn link ảnh đại diện chính của khách sạn (Kiểu String URL)
-    private String category; // Danh mục/Phân loại khách sạn (Dùng để lọc: Resort, Villa, Khách sạn 3 sao...)
-    private String description; // mô tả chi tiết giới thiệu về khách sạn
+    private String id;
+    private String hotelName;
+    private String address;
+    private double price;
+    private String imageUrl;
+    private String category;
+    private String description;
 
-    // phục vụ giao diện detail
-    private List<String> secondaryImages = new ArrayList<>(); // Danh sách các link ảnh phụ để chạy slide hình ảnh
-    private List<String> amenities = new ArrayList<>(); // Danh sách tiện ích (Ví dụ: Wifi, Hồ bơi, Điều hòa...)
+    private List<String> secondaryImages = new ArrayList<>();
+    private List<String> amenities = new ArrayList<>();
 
-    // Bản đồ và Định vị GPS
-    private double latitude; // Vĩ độ (Tọa độ GPS phục vụ việc cắm ghim trên Google Maps)
-    private double longitude; // Kinh độ (Tọa độ GPS phục vụ việc cắm ghim trên Google Maps)
-    private String locationId; // Mã ID liên kết sang bảng "locations" để lấy thông tin Thành phố (Ví dụ: Hồ Chí Minh)
+    private double latitude;
+    private double longitude;
+    private String locationId;
 
-    // Điểm số và Đánh giá từ khách hàng
-    private double ratingStar; // Số sao cấu trúc của khách sạn (Ví dụ: 2 sao, 4 sao, 5 sao)
-    private double reviewScore; // Điểm số đánh giá trung bình từ khách hàng (Ví dụ: 8.3/10)
-    private int reviewCount; // Tổng số lượng bài đánh giá/bình luận của khách hàng (Ví dụ: 84 đánh giá)
+    private double ratingStar;
+    private double reviewScore;
+    private int reviewCount;
 
-    // Quản lý hệ thống
-    private String status; // Trạng thái hoạt động của khách sạn (Ví dụ: ACTIVE, MAINTENANCE, CLOSED)
-    private String ownerId; // Mã ID tài khoản của chủ khách sạn (Dùng để phân quyền quản lý)
+    private String status;
+    private String ownerId;
+
+    // Thuộc tính hỗ trợ sắp xếp, lọc và badges
+    private boolean isFeatured;
+    private long createdAt;
+    private boolean isOffer;
+    private boolean isSoldOut;
 
     public Hotel() {
+        this.createdAt = System.currentTimeMillis();
     }
 
     public Hotel(String id, String hotelName, String address, double price, float ratingFallback,
@@ -45,7 +50,7 @@ public class Hotel implements Serializable {
         this.hotelName = hotelName;
         this.address = address;
         this.price = price;
-        this.reviewScore = ratingFallback; // Điểm số đánh giá truyền từ số thực 8.3f
+        this.reviewScore = ratingFallback;
         this.imageUrl = imageUrl;
         this.category = category;
         this.description = description;
@@ -53,6 +58,7 @@ public class Hotel implements Serializable {
         this.amenities = amenities;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.createdAt = System.currentTimeMillis();
     }
 
     public Hotel(String id, String hotelName, String address, double price, String imageUrl, String category, String description, List<String> secondaryImages, List<String> amenities, double latitude, double longitude, String locationId, double ratingStar, double reviewScore, int reviewCount, String status, String ownerId) {
@@ -73,6 +79,7 @@ public class Hotel implements Serializable {
         this.reviewCount = reviewCount;
         this.status = status;
         this.ownerId = ownerId;
+        this.createdAt = System.currentTimeMillis();
     }
 
     public String getId() { return id; }
@@ -146,6 +153,26 @@ public class Hotel implements Serializable {
     @PropertyName("owner_id")
     public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
 
+    @PropertyName("is_featured")
+    public boolean isFeatured() { return isFeatured; }
+    @PropertyName("is_featured")
+    public void setFeatured(boolean featured) { isFeatured = featured; }
+
+    @PropertyName("created_at")
+    public long getCreatedAt() { return createdAt; }
+    @PropertyName("created_at")
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+
+    @PropertyName("is_offer")
+    public boolean isOffer() { return isOffer; }
+    @PropertyName("is_offer")
+    public void setOffer(boolean offer) { isOffer = offer; }
+
+    @PropertyName("is_sold_out")
+    public boolean isSoldOut() { return isSoldOut; }
+    @PropertyName("is_sold_out")
+    public void setSoldOut(boolean soldOut) { isSoldOut = soldOut; }
+
     public float getRating() { return (float) ratingStar; }
 
     public static Hotel fromDocument(DocumentSnapshot document) {
@@ -180,6 +207,16 @@ public class Hotel implements Serializable {
             hotel.setReviewCount(((Number) document.get("review_count")).intValue());
         } else {
             hotel.setReviewCount(0);
+        }
+
+        hotel.setFeatured(document.contains("is_featured") && document.getBoolean("is_featured") != null && document.getBoolean("is_featured"));
+        hotel.setOffer(document.contains("is_offer") && document.getBoolean("is_offer") != null && document.getBoolean("is_offer"));
+        hotel.setSoldOut(document.contains("is_sold_out") && document.getBoolean("is_sold_out") != null && document.getBoolean("is_sold_out"));
+
+        if (document.contains("created_at") && document.get("created_at") != null) {
+            hotel.setCreatedAt(((Number) document.get("created_at")).longValue());
+        } else {
+            hotel.setCreatedAt(0);
         }
 
         hotel.setSecondaryImages(imageListValue(document, hotel.getImageUrl()));

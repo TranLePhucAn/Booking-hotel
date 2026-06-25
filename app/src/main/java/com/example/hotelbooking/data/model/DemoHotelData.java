@@ -385,4 +385,11 @@ public class DemoHotelData {
                 new DemoReview("Hoang My", 4, "Phong dep, gia hop ly, di chuyen ra san bay nhanh.")
         );
     }
+
+    public static List<String> getLocations() {
+        return Arrays.asList(
+                "TP.HCM", "Ha Noi", "Da Nang", "Nha Trang", "Vung Tau",
+                "Da Lat", "Hoi An", "Phu Quoc", "Hue", "Can Thr", "Sapa", "Ha Long"
+        );
+    }
 }

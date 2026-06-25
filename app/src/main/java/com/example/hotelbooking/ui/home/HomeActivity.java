@@ -2,11 +2,14 @@ package com.example.hotelbooking.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.denzcoskun.imageslider.constants.ScaleTypes;
+import com.denzcoskun.imageslider.models.SlideModel;
 import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
@@ -23,8 +26,13 @@ public class HomeActivity extends AppCompatActivity {
 
     private ActivityHomeBinding binding;
     private CategoryAdapter categoryAdapter;
-    private HotelAdapter hotelAdapter;
+    private HotelAdapter featuredAdapter;
+    private HotelAdapter suggestionsAdapter;
+    
+    private final List<Hotel> allHotels = new ArrayList<>();
     private final List<Hotel> featuredHotels = new ArrayList<>();
+    private final List<Hotel> suggestionHotels = new ArrayList<>();
+    
     private FirebaseFirestore db;
 
     @Override
@@ -36,9 +44,10 @@ public class HomeActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         initViews();
+        setupBanner();
         setupCategories();
-        setupFeaturedHotels();
-        loadActiveHotels();
+        setupHotelRecyclerViews();
+        loadHotels();
     }
 
     private void initViews() {
@@ -64,63 +73,153 @@ public class HomeActivity extends AppCompatActivity {
 
         binding.btnFilter.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
+        
+        binding.btnRetry.setOnClickListener(v -> loadHotels());
+        
+        binding.tvSeeAllFeatured.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private void setupBanner() {
+        List<SlideModel> slideModels = new ArrayList<>();
+        slideModels.add(new SlideModel("https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200", "Khám phá StayHub", ScaleTypes.CENTER_CROP));
+        slideModels.add(new SlideModel("https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200", "Ưu đãi hè rực rỡ", ScaleTypes.CENTER_CROP));
+        slideModels.add(new SlideModel("https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=1200", "Đặt phòng ngay hôm nay", ScaleTypes.CENTER_CROP));
+        
+        binding.bannerSlider.setImageList(slideModels);
     }
 
     private void setupCategories() {
         List<String> categories = Arrays.asList("Tat ca", "Resort", "Khach san", "Villa", "Homestay", "Can ho");
-        categoryAdapter = new CategoryAdapter(categories, category ->
-                Toast.makeText(this, "Danh muc: " + category, Toast.LENGTH_SHORT).show());
+        CategoryAdapter categoryAdapter = new CategoryAdapter(categories, this::filterByCategory);
 
         binding.rvCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.rvCategories.setAdapter(categoryAdapter);
     }
 
-    private void setupFeaturedHotels() {
-        hotelAdapter = new HotelAdapter(featuredHotels, new HotelAdapter.OnHotelClickListener() {
+    private void setupHotelRecyclerViews() {
+        // Featured Hotels - Horizontal
+        featuredAdapter = new HotelAdapter(featuredHotels, true, new HotelAdapter.OnHotelClickListener() {
             @Override
-            public void onHotelClick(Hotel hotel) {
-                openHotelDetail(hotel);
-            }
-
+            public void onHotelClick(Hotel hotel) { openHotelDetail(hotel); }
             @Override
-            public void onBookClick(Hotel hotel) {
-                openHotelDetail(hotel);
-            }
+            public void onBookClick(Hotel hotel) { openHotelDetail(hotel); }
         });
+        binding.rvFeaturedHotels.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.rvFeaturedHotels.setAdapter(featuredAdapter);
 
-        binding.rvFeaturedHotels.setLayoutManager(new LinearLayoutManager(this));
-        binding.rvFeaturedHotels.setAdapter(hotelAdapter);
+        // Suggestions - Vertical
+        suggestionsAdapter = new HotelAdapter(suggestionHotels, false, new HotelAdapter.OnHotelClickListener() {
+            @Override
+            public void onHotelClick(Hotel hotel) { openHotelDetail(hotel); }
+            @Override
+            public void onBookClick(Hotel hotel) { openHotelDetail(hotel); }
+        });
+        binding.rvSuggestions.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvSuggestions.setAdapter(suggestionsAdapter);
     }
 
-    private void loadActiveHotels() {
+    private void loadHotels() {
+        showLoading();
+        
+        allHotels.clear();
+        allHotels.addAll(DemoHotelData.hotels());
+
         db.collection("hotels")
                 .whereEqualTo("status", "active")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    featuredHotels.clear();
-                    querySnapshot.getDocuments().forEach(document ->
-                            featuredHotels.add(Hotel.fromDocument(document)));
-                    addDemoHotelsIfNeeded();
-                    hotelAdapter.updateData(featuredHotels);
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                        querySnapshot.getDocuments().forEach(document -> {
+                            Hotel h = Hotel.fromDocument(document);
+                            if (!containsHotel(h.getId())) {
+                                allHotels.add(h);
+                            }
+                        });
+                    }
+                    processAndDisplayData();
                 })
                 .addOnFailureListener(e -> {
-                    featuredHotels.clear();
-                    featuredHotels.addAll(DemoHotelData.hotels());
-                    hotelAdapter.updateData(featuredHotels);
-                    Toast.makeText(this, "Dang hien thi du lieu mau", Toast.LENGTH_SHORT).show();
+                    if (allHotels.isEmpty()) {
+                        showError();
+                    } else {
+                        processAndDisplayData();
+                        Toast.makeText(this, "Lỗi kết nối, đang dùng dữ liệu tạm thời", Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 
-    private void addDemoHotelsIfNeeded() {
-        for (Hotel demoHotel : DemoHotelData.hotels()) {
-            if (!containsHotel(demoHotel.getId())) {
-                featuredHotels.add(demoHotel);
+    private void processAndDisplayData() {
+        showContent();
+        
+        featuredHotels.clear();
+        suggestionHotels.clear();
+        
+        for (Hotel hotel : allHotels) {
+            if (hotel.isFeatured()) {
+                featuredHotels.add(hotel);
+            } else {
+                suggestionHotels.add(hotel);
             }
+        }
+        
+        // If not enough featured, take some from suggestions
+        if (featuredHotels.size() < 3 && !suggestionHotels.isEmpty()) {
+            for (int i = 0; i < Math.min(3, suggestionHotels.size()); i++) {
+                featuredHotels.add(suggestionHotels.get(i));
+            }
+        }
+
+        featuredAdapter.updateData(featuredHotels);
+        suggestionsAdapter.updateData(suggestionHotels);
+    }
+
+    private void filterByCategory(String category) {
+        suggestionHotels.clear();
+        if (category.equalsIgnoreCase("Tat ca")) {
+            for (Hotel h : allHotels) {
+                if (!h.isFeatured()) suggestionHotels.add(h);
+            }
+        } else {
+            for (Hotel hotel : allHotels) {
+                if (hotel.getCategory() != null && hotel.getCategory().equalsIgnoreCase(category)) {
+                    suggestionHotels.add(hotel);
+                }
+            }
+        }
+        
+        suggestionsAdapter.updateData(suggestionHotels);
+        
+        if (suggestionHotels.isEmpty() && !category.equalsIgnoreCase("Tat ca")) {
+            Toast.makeText(this, "Không có kết quả cho: " + category, Toast.LENGTH_SHORT).show();
         }
     }
 
+    private void showLoading() {
+        binding.stateLayout.setVisibility(View.VISIBLE);
+        binding.loadingView.setVisibility(View.VISIBLE);
+        binding.emptyView.setVisibility(View.GONE);
+        binding.errorView.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.GONE);
+    }
+
+    private void showError() {
+        binding.stateLayout.setVisibility(View.VISIBLE);
+        binding.loadingView.setVisibility(View.GONE);
+        binding.emptyView.setVisibility(View.GONE);
+        binding.errorView.setVisibility(View.VISIBLE);
+        binding.mainContent.setVisibility(View.GONE);
+    }
+
+    private void showContent() {
+        binding.stateLayout.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.VISIBLE);
+    }
+
     private boolean containsHotel(String hotelId) {
-        for (Hotel hotel : featuredHotels) {
+        for (Hotel hotel : allHotels) {
             if (hotelId != null && hotelId.equals(hotel.getId())) {
                 return true;
             }
