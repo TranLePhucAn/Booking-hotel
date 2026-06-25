@@ -24,7 +24,8 @@ public class HomeActivity extends AppCompatActivity {
     private ActivityHomeBinding binding;
     private CategoryAdapter categoryAdapter;
     private HotelAdapter hotelAdapter;
-    private final List<Hotel> featuredHotels = new ArrayList<>();
+    private final List<Hotel> allHotels = new ArrayList<>(); // Master list containing all loaded hotels
+    private final List<Hotel> displayedHotels = new ArrayList<>(); // List used by the adapter
     private FirebaseFirestore db;
 
     @Override
@@ -37,14 +38,16 @@ public class HomeActivity extends AppCompatActivity {
 
         initViews();
         setupCategories();
-        setupFeaturedHotels();
-        loadActiveHotels();
+        setupHotelRecyclerView();
+        loadHotels();
     }
 
     private void initViews() {
+        // Search bar navigation
         binding.searchBar.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
 
+        // Profile display name
         if (FirebaseClient.getAuth().getCurrentUser() != null) {
             String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
             if (name != null && !name.isEmpty()) {
@@ -52,9 +55,11 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
 
+        // Profile navigation
         binding.btnProfile.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
 
+        // Logout
         binding.btnLogout.setOnClickListener(v -> {
             FirebaseClient.getAuth().signOut();
             Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
@@ -62,21 +67,24 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Filter button navigation
         binding.btnFilter.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
     }
 
     private void setupCategories() {
+        // Defined categories matching DemoHotelData
         List<String> categories = Arrays.asList("Tat ca", "Resort", "Khach san", "Villa", "Homestay", "Can ho");
-        categoryAdapter = new CategoryAdapter(categories, category ->
-                Toast.makeText(this, "Danh muc: " + category, Toast.LENGTH_SHORT).show());
+        
+        // Initialize adapter with actual filtering logic
+        categoryAdapter = new CategoryAdapter(categories, this::filterByCategory);
 
         binding.rvCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.rvCategories.setAdapter(categoryAdapter);
     }
 
-    private void setupFeaturedHotels() {
-        hotelAdapter = new HotelAdapter(featuredHotels, new HotelAdapter.OnHotelClickListener() {
+    private void setupHotelRecyclerView() {
+        hotelAdapter = new HotelAdapter(displayedHotels, new HotelAdapter.OnHotelClickListener() {
             @Override
             public void onHotelClick(Hotel hotel) {
                 openHotelDetail(hotel);
@@ -92,35 +100,65 @@ public class HomeActivity extends AppCompatActivity {
         binding.rvFeaturedHotels.setAdapter(hotelAdapter);
     }
 
-    private void loadActiveHotels() {
+    private void loadHotels() {
+        // 1. Load Demo data immediately for "chạy thử"
+        allHotels.clear();
+        allHotels.addAll(DemoHotelData.hotels());
+        
+        // Initial display showing everything
+        updateDisplayedHotels("Tat ca");
+
+        // 2. Fetch from Firestore to sync real data if available
         db.collection("hotels")
                 .whereEqualTo("status", "active")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    featuredHotels.clear();
-                    querySnapshot.getDocuments().forEach(document ->
-                            featuredHotels.add(Hotel.fromDocument(document)));
-                    addDemoHotelsIfNeeded();
-                    hotelAdapter.updateData(featuredHotels);
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                        querySnapshot.getDocuments().forEach(document -> {
+                            Hotel h = Hotel.fromDocument(document);
+                            if (!containsHotel(h.getId())) {
+                                allHotels.add(h);
+                            }
+                        });
+                        // Refresh with merged data
+                        updateDisplayedHotels("Tat ca");
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    featuredHotels.clear();
-                    featuredHotels.addAll(DemoHotelData.hotels());
-                    hotelAdapter.updateData(featuredHotels);
-                    Toast.makeText(this, "Dang hien thi du lieu mau", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Hien thi du lieu mau tu DemoHotelData", Toast.LENGTH_SHORT).show();
                 });
     }
 
-    private void addDemoHotelsIfNeeded() {
-        for (Hotel demoHotel : DemoHotelData.hotels()) {
-            if (!containsHotel(demoHotel.getId())) {
-                featuredHotels.add(demoHotel);
+    private void filterByCategory(String category) {
+        // Perform real filtering
+        updateDisplayedHotels(category);
+        
+        if (displayedHotels.isEmpty() && !category.equalsIgnoreCase("Tat ca")) {
+            Toast.makeText(this, "Khong tim thay ket qua cho: " + category, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateDisplayedHotels(String category) {
+        displayedHotels.clear();
+        if (category.equalsIgnoreCase("Tat ca")) {
+            displayedHotels.addAll(allHotels);
+        } else {
+            for (Hotel hotel : allHotels) {
+                // Case-insensitive check to match DemoHotelData categories
+                if (hotel.getCategory() != null && hotel.getCategory().equalsIgnoreCase(category)) {
+                    displayedHotels.add(hotel);
+                }
             }
+        }
+        
+        // Update adapter data
+        if (hotelAdapter != null) {
+            hotelAdapter.updateData(displayedHotels);
         }
     }
 
     private boolean containsHotel(String hotelId) {
-        for (Hotel hotel : featuredHotels) {
+        for (Hotel hotel : allHotels) {
             if (hotelId != null && hotelId.equals(hotel.getId())) {
                 return true;
             }
