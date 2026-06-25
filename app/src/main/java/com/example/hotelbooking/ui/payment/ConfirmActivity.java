@@ -142,12 +142,7 @@ public class ConfirmActivity extends AppCompatActivity {
             checkInTimeText = sdfTime.format(checkInDate);
             checkOutTimeText = sdfTime.format(checkOutDate);
 
-            // Tính số đêm
-            long diff = checkOutMillis - checkInMillis;
-            if (diff > 0) {
-                numberOfNights = (int) (diff / (1000 * 60 * 60 * 24));
-                if (numberOfNights == 0) numberOfNights = 1;
-            }
+            numberOfNights = calculateNumberOfNights(checkInMillis, checkOutMillis);
 
             if(hotel != null && section != null) {
                 double reviewScore = hotel.getReviewScore();
@@ -183,6 +178,29 @@ public class ConfirmActivity extends AppCompatActivity {
     }
 
     // Xử lý nút áp dụng mã giảm giá
+    private int calculateNumberOfNights(long checkInMillis, long checkOutMillis) {
+        Calendar checkInCalendar = Calendar.getInstance();
+        checkInCalendar.setTimeInMillis(checkInMillis);
+        resetToStartOfDay(checkInCalendar);
+
+        Calendar checkOutCalendar = Calendar.getInstance();
+        checkOutCalendar.setTimeInMillis(checkOutMillis);
+        resetToStartOfDay(checkOutCalendar);
+
+        long diff = checkOutCalendar.getTimeInMillis() - checkInCalendar.getTimeInMillis();
+        if (diff <= 0) {
+            return 1;
+        }
+        return Math.max(1, (int) (diff / (1000 * 60 * 60 * 24)));
+    }
+
+    private void resetToStartOfDay(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+    }
+
     private void setupPromoLogic() {
         btnApplyPromo.setOnClickListener(view -> {
             String promoCode = etPromoCode.getText().toString().trim();

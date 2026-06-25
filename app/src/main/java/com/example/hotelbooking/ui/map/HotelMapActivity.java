@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,6 +41,10 @@ public class HotelMapActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Configuration.getInstance().load(
+                getApplicationContext(),
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+        );
         Configuration.getInstance().setUserAgentValue(getPackageName());
         setContentView(R.layout.activity_hotel_map);
 
@@ -63,6 +68,8 @@ public class HotelMapActivity extends AppCompatActivity {
         osmMap = findViewById(R.id.osmMap);
         osmMap.setTileSource(TileSourceFactory.MAPNIK);
         osmMap.setMultiTouchControls(true);
+        osmMap.setBuiltInZoomControls(true);
+        osmMap.setTilesScaledToDpi(true);
 
         showHotelLocation();
         checkAndRequestLocationPermission();
@@ -70,10 +77,14 @@ public class HotelMapActivity extends AppCompatActivity {
 
     private void showHotelLocation() {
         if (latitude == 0 && longitude == 0) {
-            latitude = 10.8131;
-            longitude = 106.6658;
+            useAddressCoordinateFallback();
+        }
+
+        if (latitude == 0 && longitude == 0) {
+            latitude = 10.762622;
+            longitude = 106.660172;
             tvMapDistance.setText("Khoang cach tu ban: khach san chua co toa do chinh xac");
-            Toast.makeText(this, "Dang hien thi vi tri gan san bay Tan Son Nhat", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Dang hien thi vi tri trung tam TP.HCM", Toast.LENGTH_SHORT).show();
         }
 
         GeoPoint hotelPoint = new GeoPoint(latitude, longitude);
@@ -83,10 +94,41 @@ public class HotelMapActivity extends AppCompatActivity {
         Marker marker = new Marker(osmMap);
         marker.setPosition(hotelPoint);
         marker.setTitle(valueOrDefault(hotelName, "Khach san"));
+        marker.setSubDescription(valueOrDefault(address, ""));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
         osmMap.getOverlays().add(marker);
         osmMap.invalidate();
+    }
+
+    private void useAddressCoordinateFallback() {
+        String normalized = valueOrDefault(address, "").toLowerCase(Locale.ROOT);
+        if (normalized.contains("da lat") || normalized.contains("dalat")) {
+            latitude = 11.9404;
+            longitude = 108.4583;
+        } else if (normalized.contains("vung tau")) {
+            latitude = 10.4114;
+            longitude = 107.1362;
+        } else if (normalized.contains("da nang")) {
+            latitude = 16.0678;
+            longitude = 108.2453;
+        } else if (normalized.contains("hoi an")) {
+            latitude = 15.8801;
+            longitude = 108.3380;
+        } else if (normalized.contains("ha noi") || normalized.contains("hanoi")) {
+            latitude = 21.0285;
+            longitude = 105.8542;
+        } else if (normalized.contains("nha trang")) {
+            latitude = 12.2388;
+            longitude = 109.1967;
+        } else if (normalized.contains("tp.hcm")
+                || normalized.contains("ho chi minh")
+                || normalized.contains("hồ chí minh")
+                || normalized.contains("sai gon")
+                || normalized.contains("saigon")) {
+            latitude = 10.762622;
+            longitude = 106.660172;
+        }
     }
 
     private void checkAndRequestLocationPermission() {
@@ -112,10 +154,22 @@ public class HotelMapActivity extends AppCompatActivity {
                 return;
             }
 
-            float[] results = new float[1];
-            Location.distanceBetween(location.getLatitude(), location.getLongitude(), latitude, longitude, results);
-            tvMapDistance.setText(String.format(Locale.getDefault(), "Khoang cach tu ban: %.1f km", results[0] / 1000));
+            double distanceKm = calculateDistanceKm(location.getLatitude(), location.getLongitude(), latitude, longitude);
+            tvMapDistance.setText(String.format(Locale.getDefault(), "Khoang cach tu ban: %.1f km", distanceKm));
         });
+    }
+
+    private double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
+        final int earthRadiusKm = 6371;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadiusKm * c;
     }
 
     @Override

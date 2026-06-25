@@ -155,14 +155,14 @@ public class Hotel implements Serializable {
         hotel.setHotelName(document.contains("hotel_name") ? document.getString("hotel_name") : "Khách sạn");
         hotel.setAddress(document.contains("address") ? document.getString("address") : "Chưa cập nhật địa chỉ");
         hotel.setDescription(document.contains("description") ? document.getString("description") : "Chưa cập nhật mô tả");
+        hotel.setAddress(firstStringValue(document, hotel.getAddress(), "address", "address_text"));
         hotel.setCategory(document.contains("category") ? document.getString("category") : "Hotel");
         hotel.setStatus(document.contains("status") ? document.getString("status") : "active");
-        hotel.setImageUrl(document.contains("image_url") ? document.getString("image_url") : "");
+        hotel.setImageUrl(firstStringValue(document, "", "image_url", "imageUrl"));
         hotel.setLocationId(document.contains("location_id") ? document.getString("location_id") : "");
-        hotel.setOwnerId(document.contains("ownerId") ? document.getString("ownerId") : "");
+        hotel.setOwnerId(firstStringValue(document, "", "owner_id", "ownerId"));
 
-        hotel.setPrice(document.contains("price") && document.get("price") != null ?
-                ((Number) document.get("price")).doubleValue() : 0.0);
+        hotel.setPrice(firstDoubleValue(document, 0.0, "price", "price_from"));
 
         hotel.setReviewScore(document.contains("review_score") && document.get("review_score") != null ?
                 ((Number) document.get("review_score")).doubleValue() : 0.0);
@@ -182,7 +182,7 @@ public class Hotel implements Serializable {
             hotel.setReviewCount(0);
         }
 
-        hotel.setSecondaryImages(stringListValue(document, "image_urls"));
+        hotel.setSecondaryImages(imageListValue(document, hotel.getImageUrl()));
         hotel.setAmenities(stringListValue(document, "amenities"));
 
         return hotel;
@@ -201,6 +201,26 @@ public class Hotel implements Serializable {
         return fallback;
     }
 
+    private static String firstStringValue(DocumentSnapshot document, String fallback, String... fields) {
+        for (String field : fields) {
+            String value = document.getString(field);
+            if (value != null && !value.trim().isEmpty()) {
+                return value;
+            }
+        }
+        return fallback;
+    }
+
+    private static double firstDoubleValue(DocumentSnapshot document, double fallback, String... fields) {
+        for (String field : fields) {
+            Object value = document.get(field);
+            if (value instanceof Number) {
+                return ((Number) value).doubleValue();
+            }
+        }
+        return fallback;
+    }
+
     private static List<String> stringListValue(DocumentSnapshot document, String field) {
         List<String> result = new ArrayList<>();
         Object value = document.get(field);
@@ -212,5 +232,19 @@ public class Hotel implements Serializable {
             }
         }
         return result;
+    }
+
+    private static List<String> imageListValue(DocumentSnapshot document, String mainImageUrl) {
+        List<String> result = stringListValue(document, "image_urls");
+        addIfMissing(result, mainImageUrl);
+        addIfMissing(result, firstStringValue(document, "", "imageUrl", "image_url"));
+        return result;
+    }
+
+    private static void addIfMissing(List<String> values, String value) {
+        if (value == null || value.trim().isEmpty() || values.contains(value)) {
+            return;
+        }
+        values.add(value);
     }
 }
