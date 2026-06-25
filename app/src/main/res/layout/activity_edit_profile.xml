@@ -35,8 +35,7 @@
                 android:id="@+id/btnEditAvatar"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:layout_gravity="end|bottom"
-                android:src="@android:drawable/ic_menu_edit"/>
+                android:layout_gravity="end|bottom"/>
         </FrameLayout>
 
         <TextView
