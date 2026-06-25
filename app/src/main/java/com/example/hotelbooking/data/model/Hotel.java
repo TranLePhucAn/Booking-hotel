@@ -16,6 +16,7 @@ public class Hotel implements Serializable {
     private double price;
     private double rating;
     private double ratingStar;
+    private int reviewCount; 
     private String imageUrl;
     private List<String> imageUrls = new ArrayList<>();
     private List<String> amenities = new ArrayList<>();
@@ -24,6 +25,9 @@ public class Hotel implements Serializable {
     private String ownerId;
     private String approvalStatus;
     private boolean isActive;
+    private boolean soldOut;
+    private boolean offer;
+    private boolean featured;
     private String adminNote;
     private Timestamp createdAt;
     private Timestamp updatedAt;
@@ -38,7 +42,6 @@ public class Hotel implements Serializable {
     @PropertyName("name")
     public void setName(String name) { this.name = name; }
 
-    // Fallback cho code cũ dùng hotel_name
     @PropertyName("hotel_name")
     public String getHotelName() { return name; }
     @PropertyName("hotel_name")
@@ -49,7 +52,6 @@ public class Hotel implements Serializable {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
-
 
     @PropertyName("location_id")
     public String getLocationId() { return location; }
@@ -62,9 +64,10 @@ public class Hotel implements Serializable {
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
 
+    @PropertyName("rating")
     public double getRating() { return rating; }
+    @PropertyName("rating")
     public void setRating(double rating) { this.rating = rating; }
-
 
     @PropertyName("review_score")
     public double getReviewScore() { return rating; }
@@ -76,11 +79,15 @@ public class Hotel implements Serializable {
     @PropertyName("rating_star")
     public void setRatingStar(double ratingStar) { this.ratingStar = ratingStar; }
 
+    @PropertyName("review_count")
+    public int getReviewCount() { return reviewCount; }
+    @PropertyName("review_count")
+    public void setReviewCount(int reviewCount) { this.reviewCount = reviewCount; }
+
     @PropertyName("imageUrl")
     public String getImageUrl() { return imageUrl; }
     @PropertyName("imageUrl")
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-
 
     @PropertyName("image_url")
     public String getImageUrlOld() { return imageUrl; }
@@ -120,6 +127,21 @@ public class Hotel implements Serializable {
     public boolean getIsActive() { return isActive; }
     @PropertyName("is_active")
     public void setIsActive(boolean active) { isActive = active; }
+
+    @PropertyName("is_sold_out")
+    public boolean isSoldOut() { return soldOut; }
+    @PropertyName("is_sold_out")
+    public void setSoldOut(boolean soldOut) { this.soldOut = soldOut; }
+
+    @PropertyName("is_offer")
+    public boolean isOffer() { return offer; }
+    @PropertyName("is_offer")
+    public void setOffer(boolean offer) { this.offer = offer; }
+
+    @PropertyName("is_featured")
+    public boolean isFeatured() { return featured; }
+    @PropertyName("is_featured")
+    public void setFeatured(boolean featured) { this.featured = featured; }
 
     @PropertyName("admin_note")
     public String getAdminNote() { return adminNote; }

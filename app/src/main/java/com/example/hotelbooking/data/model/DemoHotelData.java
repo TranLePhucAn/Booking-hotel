@@ -2,7 +2,9 @@ package com.example.hotelbooking.data.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DemoHotelData {
 
@@ -16,9 +18,10 @@ public class DemoHotelData {
         public final int availableRooms;
         public final String status;
         public final double size;
+        public final String imageUrl;
 
         public DemoRoom(String id, String name, String type, String bedType, String capacity,
-                        double price, int availableRooms, String status, double size) {
+                        double price, int availableRooms, String status, double size, String imageUrl) {
             this.id = id;
             this.name = name;
             this.type = type;
@@ -28,6 +31,7 @@ public class DemoHotelData {
             this.availableRooms = availableRooms;
             this.status = status;
             this.size = size;
+            this.imageUrl = imageUrl;
         }
     }
 
@@ -46,9 +50,20 @@ public class DemoHotelData {
     private DemoHotelData() {
     }
 
+    public static List<String> getLocations() {
+        Set<String> locations = new HashSet<>();
+        for (Hotel hotel : hotels()) {
+            if (hotel.getLocation() != null && !hotel.getLocation().isEmpty()) {
+                locations.add(hotel.getLocation());
+            }
+        }
+        return new ArrayList<>(locations);
+    }
+
     public static List<Hotel> hotels() {
         List<Hotel> hotels = new ArrayList<>();
 
+        // Hotel 1: Passion Lux
         Hotel passion = new Hotel();
         passion.setId("demo_passion_lux");
         passion.setName("The Passion Lux Airport");
@@ -71,6 +86,7 @@ public class DemoHotelData {
         passion.setApprovalStatus("approved");
         hotels.add(passion);
 
+        // Hotel 2: Bình Yên
         Hotel binhYen = new Hotel();
         binhYen.setId("demo_binh_yen");
         binhYen.setName("Khách Sạn Bình Yên");
@@ -93,6 +109,7 @@ public class DemoHotelData {
         binhYen.setApprovalStatus("approved");
         hotels.add(binhYen);
 
+        // Hotel 3: Ocean Breeze
         Hotel ocean = new Hotel();
         ocean.setId("demo_ocean_breeze");
         ocean.setName("Ocean Breeze Hotel");
@@ -130,26 +147,26 @@ public class DemoHotelData {
         if ("demo_binh_yen".equals(hotelId)) {
             return Arrays.asList(
                     new DemoRoom("demo_binh_yen_vip", "Phòng VIP hướng biển", "VIP", "1 giường đôi lớn",
-                            "2 người lớn, 1 trẻ em", 1500000, 5, "AVAILABLE", 42),
+                            "2 người lớn, 1 trẻ em", 1500000, 5, "AVAILABLE", 42, "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"),
                     new DemoRoom("demo_binh_yen_standard", "Standard Room", "Standard", "1 giường đôi",
-                            "2 người lớn", 650000, 3, "AVAILABLE", 28)
+                            "2 người lớn", 650000, 3, "AVAILABLE", 28, "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800")
             );
         }
 
         if ("demo_ocean_breeze".equals(hotelId)) {
             return Arrays.asList(
                     new DemoRoom("demo_ocean_deluxe", "Deluxe Sea View", "Deluxe", "1 giường đôi",
-                            "2 người lớn", 980000, 4, "AVAILABLE", 35),
+                            "2 người lớn", 980000, 4, "AVAILABLE", 35, "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800"),
                     new DemoRoom("demo_ocean_family", "Family Room", "Family", "2 giường đôi",
-                            "4 người lớn", 1350000, 0, "SUSPENDED", 45)
+                            "4 người lớn", 1350000, 0, "SUSPENDED", 45, "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800")
             );
         }
 
         return Arrays.asList(
                 new DemoRoom("demo_passion_deluxe", "Deluxe Double Room", "Phòng Deluxe", "1 giường đôi",
-                        "2 người lớn, 1 trẻ em", 650000, 5, "AVAILABLE", 32),
+                        "2 người lớn, 1 trẻ em", 650000, 5, "AVAILABLE", 32, "https://pix10.agoda.net/hotelImages/56801030/-1/ea01218c2f62d0c80f2f22e54553d748.jpg"),
                 new DemoRoom("demo_passion_standard", "Standard Room", "Phòng Standard", "1 giường đôi",
-                        "2 người lớn", 450000, 2, "AVAILABLE", 24)
+                        "2 người lớn", 450000, 2, "AVAILABLE", 24, "https://pix10.agoda.net/hotelImages/56801030/-1/f8c527a2f31b0c2a141ddc884b7d7cd8.jpg")
         );
     }
 

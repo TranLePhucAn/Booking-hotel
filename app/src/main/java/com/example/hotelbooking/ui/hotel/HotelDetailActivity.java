@@ -30,6 +30,7 @@ import com.example.hotelbooking.data.model.Section;
 import com.example.hotelbooking.databinding.ActivityHotelDetailBinding;
 import com.example.hotelbooking.ui.map.HotelMapActivity;
 import com.example.hotelbooking.ui.payment.ConfirmActivity;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -66,7 +67,6 @@ public class HotelDetailActivity extends AppCompatActivity {
     private boolean isOpeningConfirm;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-    // ĐÃ SỬA: Thêm biến toàn cục để lưu số lượng đánh giá load từ Firestore
     private int reviewCount = 0;
 
     @Override
@@ -84,11 +84,9 @@ public class HotelDetailActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("");
         }
 
-        // Nhận thông tin từ dữ liệu thật truyền qua Intent
         hotelId = getIntent().getStringExtra("hotel_id");
         hotel = (Hotel) getIntent().getSerializableExtra("hotel");
 
-        // lấy id hotel hiện tại
         if ((hotelId == null || hotelId.isEmpty()) && hotel != null) {
             hotelId = hotel.getId();
         }
@@ -105,18 +103,15 @@ public class HotelDetailActivity extends AppCompatActivity {
             loadHotelFromFirestore();
         }
 
-        // hiển thị bảng đồ
         binding.btnShowMap.setOnClickListener(v -> openMap());
         binding.btnWriteReview.setOnClickListener(v -> checkReviewEligibility());
         setupBookingControls();
 
-        // xử lý nút đặt ngay bằng cách tự động chọn phòng có trạng thái available đầu tiên
         binding.btnBookNow.setOnClickListener(v -> {
             if (proceedBooking()) {
                 return;
             }
-            // truy vấn bảng rooms
-            db.collection("rooms")
+            db.collection(AppConstants.COLLECTION_ROOMS)
                     .whereEqualTo("hotel_id", hotelId)
                     .whereEqualTo("status", "AVAILABLE")
                     .limit(1)
@@ -127,7 +122,6 @@ public class HotelDetailActivity extends AppCompatActivity {
                             Room targetRoom = firstRoomSnapshot.toObject(Room.class);
                             if (targetRoom != null) {
                                 targetRoom.setId(firstRoomSnapshot.getId());
-                                // gửi dl phòng đầu tiên qua trang confirm
                                 openBookingWithRoom(targetRoom);
                             }
                         } else {
@@ -146,7 +140,7 @@ public class HotelDetailActivity extends AppCompatActivity {
     }
 
     private void loadHotelFromFirestore() {
-        db.collection("hotels")
+        db.collection(AppConstants.COLLECTION_HOTELS)
                 .document(hotelId)
                 .get()
                 .addOnSuccessListener(document -> {
@@ -177,16 +171,19 @@ public class HotelDetailActivity extends AppCompatActivity {
         binding.tvDescription.setText(valueOrDefault(hotel.getDescription(), "Đang cập nhật mô tả"));
         binding.tvPrice.setText(formatMoney(hotel.getPrice()) + " / đêm");
         binding.ratingBar.setRating((float) hotel.getRatingStar());
+        
+        // Cập nhật reviewCount từ đối tượng hotel nếu có dữ liệu sẵn
+        if (hotel.getReviewCount() > 0) {
+            this.reviewCount = hotel.getReviewCount();
+        }
         binding.tvHotelRatingInfo.setText(formatHotelRatingInfo());
 
-        // Hiển thị Amenities
         if (hotel.getAmenities() != null && !hotel.getAmenities().isEmpty()) {
             binding.tvAmenities.setText(String.join(", ", hotel.getAmenities()));
         } else {
             binding.tvAmenities.setText("Đang cập nhật tiện ích");
         }
 
-        // Xử lý Image Slider lấy từ `image_url` và mảng ảnh phụ `image_urls`
         loadImageSlider();
     }
 
@@ -200,7 +197,7 @@ public class HotelDetailActivity extends AppCompatActivity {
     private void loadImageSlider() {
         binding.imageSlider.setVisibility(View.GONE);
 
-        db.collection("hotels")
+        db.collection(AppConstants.COLLECTION_HOTELS)
                 .document(hotelId)
                 .get()
                 .addOnSuccessListener(document -> {
@@ -281,13 +278,11 @@ public class HotelDetailActivity extends AppCompatActivity {
     private void loadRooms() {
         binding.layoutRooms.removeAllViews();
 
-        // Tìm các phòng có trường hotel_id trùng khớp với ID khách sạn hiện tại
-        db.collection("rooms")
+        db.collection(AppConstants.COLLECTION_ROOMS)
                 .whereEqualTo("hotel_id", hotelId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot.isEmpty()) {
-                        // Nếu trống, hiển thị thông báo kèm mã ID khách sạn
                         binding.layoutRooms.addView(createText("Chưa có phòng nào liên kết với hotel_id: " + hotelId, false));
                         return;
                     }
@@ -341,7 +336,6 @@ public class HotelDetailActivity extends AppCompatActivity {
         bookButton.setText(canBook ? "Chọn" : "Hết phòng");
         bookButton.setEnabled(canBook);
 
-        // gửi dl phòng được chọn qua trang confirm
         bookButton.setOnClickListener(v -> selectRoom(room, roomImage));
         if (canBook) {
             box.setOnClickListener(v -> selectRoom(room, roomImage));
@@ -437,7 +431,7 @@ public class HotelDetailActivity extends AppCompatActivity {
         binding.btnCheckInDate.setOnClickListener(v -> showDatePicker(true));
         binding.btnCheckOutDate.setOnClickListener(v -> {
             if (checkInDateMillis <= 0) {
-                Toast.makeText(this, "Vui long chon ngay den truoc", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Vui lòng chọn ngày đến trước", Toast.LENGTH_SHORT).show();
                 showDatePicker(true);
                 return;
             }
@@ -447,7 +441,7 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void showDatePicker(boolean isCheckIn) {
         if (!isCheckIn && checkInDateMillis <= 0) {
-            Toast.makeText(this, "Vui long chon ngay den truoc", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn ngày đến trước", Toast.LENGTH_SHORT).show();
             showDatePicker(true);
             return;
         }
@@ -470,7 +464,7 @@ public class HotelDetailActivity extends AppCompatActivity {
 
                     if (isCheckIn) {
                         if (selectedMillis < todayStartMillis()) {
-                            Toast.makeText(this, "Ngay den khong duoc nho hon hom nay", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Ngày đến không được nhỏ hơn hôm nay", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         checkInDateMillis = selectedMillis;
@@ -478,22 +472,22 @@ public class HotelDetailActivity extends AppCompatActivity {
 
                         if (checkOutDateMillis > 0 && checkOutDateMillis <= checkInDateMillis) {
                             checkOutDateMillis = 0;
-                            binding.btnCheckOutDate.setText("Bam chon ngay di");
+                            binding.btnCheckOutDate.setText("Bấm chọn ngày đi");
                         }
-                        Toast.makeText(this, "Vui long chon ngay ban muon tra phong", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Vui lòng chọn ngày bạn muốn trả phòng", Toast.LENGTH_SHORT).show();
                         binding.getRoot().postDelayed(() -> showDatePicker(false), 250);
                     } else {
                         if (checkInDateMillis <= 0) {
-                            Toast.makeText(this, "Hay chon ngay den truoc", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Hãy chọn ngày đến trước", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         if (selectedMillis <= checkInDateMillis) {
-                            Toast.makeText(this, "Ngay di phai sau ngay den", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Ngày đi phải sau ngày đến", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         checkOutDateMillis = selectedMillis;
                         binding.btnCheckOutDate.setText(dateFormat.format(new Date(checkOutDateMillis)));
-                        Toast.makeText(this, "Dang chuyen sang trang xac nhan dat phong", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Đang chuyển sang trang xác nhận đặt phòng", Toast.LENGTH_SHORT).show();
                         binding.getRoot().postDelayed(() -> continueToConfirmAfterDateSelection(), 250);
                     }
                 },
@@ -501,10 +495,7 @@ public class HotelDetailActivity extends AppCompatActivity {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
 
-        dialog.setTitle(isCheckIn ? "Chon ngay den" : "Chon ngay di");
-        dialog.setMessage(isCheckIn
-                ? "Vui long chon ngay ban muon den nhan phong."
-                : "Vui long chon ngay ban muon tra phong.");
+        dialog.setTitle(isCheckIn ? "Chọn ngày đến" : "Chọn ngày đi");
         dialog.getDatePicker().setMinDate(isCheckIn ? todayStartMillis() : checkoutMinDateMillis());
         dialog.show();
     }
@@ -531,53 +522,48 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void selectRoom(Room room, String roomImage) {
         if (room == null || room.getAvailableRooms() <= 0 || !"AVAILABLE".equalsIgnoreCase(room.getStatus())) {
-            Toast.makeText(this, "Phong nay hien khong con trong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Phòng này hiện không còn trống", Toast.LENGTH_SHORT).show();
             return;
         }
 
         selectedRoom = room;
         selectedRoomId = room.getId();
-        selectedRoomName = valueOrDefault(room.getRoomName(), "Phong");
+        selectedRoomName = valueOrDefault(room.getRoomName(), "Phòng");
         selectedRoomPrice = room.getPricePerNight() > 0 ? room.getPricePerNight() : hotel.getPrice();
         selectedRoomImage = roomImage;
         selectedAvailableRooms = room.getAvailableRooms();
 
-        binding.tvSelectedRoom.setText("Da chon: " + selectedRoomName + " - " + formatMoney(selectedRoomPrice));
-        binding.tvPrice.setText(formatMoney(selectedRoomPrice) + " / dem");
-        binding.btnBookNow.setText("Chon ngay");
-        Toast.makeText(this, "Da chon phong", Toast.LENGTH_SHORT).show();
+        binding.tvSelectedRoom.setText("Đã chọn: " + selectedRoomName + " - " + formatMoney(selectedRoomPrice));
+        binding.tvPrice.setText(formatMoney(selectedRoomPrice) + " / đêm");
+        binding.btnBookNow.setText("Tiếp tục");
+        Toast.makeText(this, "Đã chọn phòng", Toast.LENGTH_SHORT).show();
     }
 
     private boolean proceedBooking() {
         if (selectedRoom == null || selectedRoomId == null || selectedRoomId.isEmpty()) {
-            Toast.makeText(this, "Vui long chon hang phong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn hạng phòng", Toast.LENGTH_SHORT).show();
             return true;
         }
         if (checkInDateMillis <= 0) {
-            Toast.makeText(this, "Vui long chon ngay den", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn ngày đến", Toast.LENGTH_SHORT).show();
             showDatePicker(true);
             return true;
         }
         if (checkOutDateMillis <= 0) {
-            Toast.makeText(this, "Vui long chon ngay di", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn ngày đi", Toast.LENGTH_SHORT).show();
             showDatePicker(false);
             return true;
         }
         if (checkInDateMillis < todayStartMillis()) {
-            Toast.makeText(this, "Ngay den khong duoc nho hon hom nay", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Ngày đến không được nhỏ hơn hôm nay", Toast.LENGTH_SHORT).show();
             return true;
         }
         if (checkOutDateMillis <= checkInDateMillis) {
-            Toast.makeText(this, "Ngay di phai sau ngay den", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Ngày đi phải sau ngày đến", Toast.LENGTH_SHORT).show();
             return true;
         }
         if (selectedAvailableRooms <= 0) {
-            Toast.makeText(this, "Phong da chon khong con trong", Toast.LENGTH_SHORT).show();
-            return true;
-        }
-        int capacity = selectedRoom.getCapacityAdults() + selectedRoom.getCapacityChildren();
-        if (capacity > 0 && getGuestCount() > capacity) {
-            Toast.makeText(this, "So khach vuot qua suc chua phong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Phòng đã chọn không còn trống", Toast.LENGTH_SHORT).show();
             return true;
         }
 
@@ -600,19 +586,19 @@ public class HotelDetailActivity extends AppCompatActivity {
             return;
         }
         if (selectedRoom == null) {
-            Toast.makeText(this, "Vui long chon hang phong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn hạng phòng", Toast.LENGTH_SHORT).show();
             return;
         }
         if (checkInDateMillis <= 0 || checkOutDateMillis <= 0) {
-            Toast.makeText(this, "Vui long chon du ngay den va ngay di", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn đủ ngày đến và ngày đi", Toast.LENGTH_SHORT).show();
             return;
         }
         if (checkOutDateMillis <= checkInDateMillis) {
-            Toast.makeText(this, "Ngay di phai sau ngay den", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Ngày đi phải sau ngày đến", Toast.LENGTH_SHORT).show();
             return;
         }
         if (selectedAvailableRooms <= 0) {
-            Toast.makeText(this, "Phong da chon khong con trong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Phòng đã chọn không còn trống", Toast.LENGTH_SHORT).show();
             return;
         }
         openBookingWithRoom(selectedRoom);
@@ -658,7 +644,6 @@ public class HotelDetailActivity extends AppCompatActivity {
                             roomStyleText = documentSnapshot.getString("room_style");
                         }
                     } else {
-                        // Không tìm thấy Section: Dùng cơ chế bọc lót (Fallback) lấy giá từ bảng Room
                         realPrice = room.getPricePerNight() > 0 ? room.getPricePerNight() : hotel.getPrice();
                     }
                     if (realPrice <= 0) {
@@ -691,8 +676,6 @@ public class HotelDetailActivity extends AppCompatActivity {
                     );
 
                     intent.putExtra("EXTRA_SECTION", targetSection);
-
-                    // lấy số lượng phòng trống
                     intent.putExtra("EXTRA_AVAILABLE_ROOMS", room.getAvailableRooms());
                     intent.putExtra("EXTRA_CHECK_IN", checkInDateMillis);
                     intent.putExtra("EXTRA_CHECK_OUT", checkOutDateMillis);
@@ -700,16 +683,16 @@ public class HotelDetailActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Lỗi tải thông tin gói phòng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    isOpeningConfirm = false;
                 });
     }
 
     private void loadReviews() {
         binding.layoutReviews.removeAllViews();
-        db.collection("reviews")
+        db.collection(AppConstants.COLLECTION_REVIEWS)
                 .whereEqualTo("hotel_id", hotelId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    // ĐÃ SỬA: Đếm tổng số review từ Firestore và gập nhật lại TextView thông tin
                     reviewCount = querySnapshot.isEmpty() ? 0 : querySnapshot.size();
                     binding.tvHotelRatingInfo.setText(formatHotelRatingInfo());
 
@@ -735,7 +718,7 @@ public class HotelDetailActivity extends AppCompatActivity {
         box.addView(createText(userName + ": " + formatNumber(rating) + " sao", true));
         box.addView(createText(comment, false));
         if (!reviewDate.isEmpty()) {
-            box.addView(createText("Ngay danh gia: " + reviewDate, false));
+            box.addView(createText("Ngày đánh giá: " + reviewDate, false));
         }
         binding.layoutReviews.addView(box);
     }
@@ -758,11 +741,11 @@ public class HotelDetailActivity extends AppCompatActivity {
     private void checkReviewEligibility() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
-            Toast.makeText(this, "Vui long dang nhap de danh gia", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng đăng nhập để đánh giá", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        db.collection("reservations")
+        db.collection(AppConstants.COLLECTION_RESERVATIONS)
                 .whereEqualTo("hotel_id", hotelId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
@@ -776,19 +759,19 @@ public class HotelDetailActivity extends AppCompatActivity {
                     }
 
                     if (completedReservation == null) {
-                        Toast.makeText(this, "Ban chi co the danh gia sau khi don da hoan thanh", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Bạn chỉ có thể đánh giá sau khi đơn đã hoàn thành", Toast.LENGTH_LONG).show();
                         return;
                     }
 
                     checkDuplicateReviewAndOpenDialog(completedReservation, currentUser);
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Khong kiem tra duoc don dat phong: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Không kiểm tra được đơn đặt phòng: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private boolean isCompletedReservation(DocumentSnapshot reservation) {
         String status = reservation.getString("status");
-        return "completed".equalsIgnoreCase(status);
+        return AppConstants.BOOKING_COMPLETED.equalsIgnoreCase(status);
     }
 
     private boolean isReservationOfCurrentUser(DocumentSnapshot reservation, String uid) {
@@ -799,19 +782,19 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void checkDuplicateReviewAndOpenDialog(DocumentSnapshot reservation, FirebaseUser currentUser) {
         String reservationId = reservation.getId();
-        db.collection("reviews")
+        db.collection(AppConstants.COLLECTION_REVIEWS)
                 .whereEqualTo("reservation_id", reservationId)
                 .limit(1)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (!querySnapshot.isEmpty()) {
-                        Toast.makeText(this, "Don nay da duoc danh gia", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Đơn này đã được đánh giá", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     showReviewDialog(reservationId, currentUser);
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Khong kiem tra duoc danh gia cu: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Không kiểm tra được đánh giá cũ: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private void showReviewDialog(String reservationId, FirebaseUser currentUser) {
@@ -825,7 +808,7 @@ public class HotelDetailActivity extends AppCompatActivity {
         ratingBar.setRating(5);
 
         EditText commentInput = new EditText(this);
-        commentInput.setHint("Nhap noi dung danh gia");
+        commentInput.setHint("Nhập nội dung đánh giá");
         commentInput.setMinLines(3);
         commentInput.setBackgroundResource(R.drawable.bg_input);
         commentInput.setPadding(dp(12), dp(8), dp(12), dp(8));
@@ -834,21 +817,21 @@ public class HotelDetailActivity extends AppCompatActivity {
         form.addView(commentInput);
 
         new AlertDialog.Builder(this)
-                .setTitle("Gui danh gia")
+                .setTitle("Gửi đánh giá")
                 .setView(form)
-                .setNegativeButton("Huy", null)
-                .setPositiveButton("Gui", (dialog, which) ->
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Gửi", (dialog, which) ->
                         submitReview(reservationId, currentUser, ratingBar.getRating(), commentInput.getText().toString().trim()))
                 .show();
     }
 
     private void submitReview(String reservationId, FirebaseUser currentUser, float rating, String comment) {
         if (rating <= 0) {
-            Toast.makeText(this, "Vui long chon so sao", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn số sao", Toast.LENGTH_SHORT).show();
             return;
         }
         if (comment.isEmpty()) {
-            Toast.makeText(this, "Vui long nhap noi dung danh gia", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập nội dung đánh giá", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -856,20 +839,20 @@ public class HotelDetailActivity extends AppCompatActivity {
         reviewData.put("hotel_id", hotelId);
         reviewData.put("reservation_id", reservationId);
         reviewData.put("user_id", currentUser.getUid());
-        reviewData.put("user_name", valueOrDefault(currentUser.getDisplayName(), "Khach hang"));
+        reviewData.put("user_name", valueOrDefault(currentUser.getDisplayName(), "Khách hàng"));
         reviewData.put("rating", rating);
         reviewData.put("comment", comment);
         reviewData.put("created_at", FieldValue.serverTimestamp());
         reviewData.put("created_at_millis", System.currentTimeMillis());
 
-        db.collection("reviews")
+        db.collection(AppConstants.COLLECTION_REVIEWS)
                 .add(reviewData)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Da gui danh gia", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Đã gửi đánh giá", Toast.LENGTH_SHORT).show();
                     loadReviews();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Khong gui duoc danh gia: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Không gửi được đánh giá: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private void openMap() {
@@ -898,7 +881,7 @@ public class HotelDetailActivity extends AppCompatActivity {
     private void openMapWithCurrentLocation() {
         useAddressCoordinateFallback();
         if (latitude == 0 && longitude == 0) {
-            Toast.makeText(this, "Khach san chua co toa do ban do", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Khách sạn chưa có tọa độ bản đồ", Toast.LENGTH_SHORT).show();
             return;
         }
         Intent intent = new Intent(this, HotelMapActivity.class);

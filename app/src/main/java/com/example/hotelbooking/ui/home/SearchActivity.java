@@ -25,6 +25,7 @@ import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.Normalizer;
@@ -132,7 +133,6 @@ public class SearchActivity extends AppCompatActivity {
     private void loadHotels() {
         showLoading();
         
-        // Luôn nạp dữ liệu mẫu trước để đảm bảo có kết quả chạy thử
         allHotels.clear();
         allHotels.addAll(DemoHotelData.hotels());
 
@@ -155,7 +155,6 @@ public class SearchActivity extends AppCompatActivity {
                     if (allHotels.isEmpty()) {
                         showError();
                     } else {
-                        // Nếu đã có dữ liệu mẫu thì vẫn cho phép tìm kiếm và hiện Toast
                         applyFilters();
                         Toast.makeText(this, "Lỗi kết nối Firestore, đang dùng dữ liệu mẫu", Toast.LENGTH_SHORT).show();
                     }
@@ -170,8 +169,11 @@ public class SearchActivity extends AppCompatActivity {
         filteredHotels.clear();
 
         for (Hotel hotel : allHotels) {
-            String normalizedName = removeAccents(hotel.getHotelName());
-            String normalizedLocation = removeAccents(hotel.getAddress());
+            String hName = hotel.getName() != null ? hotel.getName() : (hotel.getHotelName() != null ? hotel.getHotelName() : "");
+            String hAddress = hotel.getAddress() != null ? hotel.getAddress() : "";
+            
+            String normalizedName = removeAccents(hName);
+            String normalizedLocation = removeAccents(hAddress);
             
             boolean matchQuery = normalizedQuery.isEmpty() || 
                                 normalizedName.contains(normalizedQuery) || 
@@ -179,7 +181,7 @@ public class SearchActivity extends AppCompatActivity {
                                 
             boolean matchPrice = hotel.getPrice() <= maxPriceFilter;
             
-            double score = hotel.getReviewScore() > 0 ? hotel.getReviewScore() : hotel.getRatingStar();
+            double score = hotel.getRating() > 0 ? hotel.getRating() : hotel.getRatingStar();
             boolean matchRating = score >= minRatingFilter;
 
             if (matchQuery && matchPrice && matchRating) {
@@ -237,13 +239,20 @@ public class SearchActivity extends AppCompatActivity {
                 break;
             case 3: // Rating cao nhất
                 Collections.sort(filteredHotels, (h1, h2) -> {
-                    double s1 = h1.getReviewScore() > 0 ? h1.getReviewScore() : h1.getRatingStar();
-                    double s2 = h2.getReviewScore() > 0 ? h2.getReviewScore() : h2.getRatingStar();
+                    double s1 = h1.getRating() > 0 ? h1.getRating() : h1.getRatingStar();
+                    double s2 = h2.getRating() > 0 ? h2.getRating() : h2.getRatingStar();
                     return Double.compare(s2, s1);
                 });
                 break;
             case 4: // Mới nhất
-                Collections.sort(filteredHotels, (h1, h2) -> Long.compare(h2.getCreatedAt(), h1.getCreatedAt()));
+                Collections.sort(filteredHotels, (h1, h2) -> {
+                    Timestamp t1 = h1.getCreatedAt();
+                    Timestamp t2 = h2.getCreatedAt();
+                    if (t1 == null && t2 == null) return 0;
+                    if (t1 == null) return 1;
+                    if (t2 == null) return -1;
+                    return t2.compareTo(t1);
+                });
                 break;
             case 5: // Nổi bật
                 Collections.sort(filteredHotels, (h1, h2) -> Boolean.compare(h2.isFeatured(), h1.isFeatured()));
