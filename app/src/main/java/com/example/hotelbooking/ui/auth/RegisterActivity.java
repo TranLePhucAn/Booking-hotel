@@ -1,5 +1,6 @@
 package com.example.hotelbooking.ui.auth;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.hotelbooking.R;
+import com.example.hotelbooking.ui.home.HomeActivity;
 import com.example.hotelbooking.utils.LoadingDialog;
 import com.example.hotelbooking.viewmodels.AuthViewModel;
 
@@ -53,8 +55,11 @@ public class RegisterActivity extends AppCompatActivity {
 
         authViewModel.userSession.observe(this, firebaseUser -> {
             if (firebaseUser != null) {
-                authViewModel.logout();
-                Toast.makeText(this, "Đăng ký thành công. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+                // CHỈNH SỬA: Đăng ký thành công thì vào thẳng Trang chủ
+                Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(RegisterActivity.this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
                 finish();
             }
         });
@@ -95,7 +100,6 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // Regex mạnh: ít nhất 1 chữ hoa, 1 chữ thường, 1 số, 1 ký tự đặc biệt, tối thiểu 8 ký tự
         String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
         if (!password.matches(passwordPattern)) {
             edtPassword.setError("Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt");

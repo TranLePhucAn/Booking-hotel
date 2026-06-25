@@ -251,7 +251,7 @@ public class SearchActivity extends AppCompatActivity {
                     if (t1 == null && t2 == null) return 0;
                     if (t1 == null) return 1;
                     if (t2 == null) return -1;
-                    return t2.compareTo(t1); // Sửa lỗi so sánh Timestamp
+                    return t2.compareTo(t1);
                 });
                 break;
             case 5: // Nổi bật
