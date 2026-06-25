@@ -1,12 +1,14 @@
 package com.example.hotelbooking.data.model;
 
 import com.google.firebase.firestore.DocumentSnapshot;
-
 import com.google.firebase.firestore.PropertyName;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-// class thông tin khách sạn
+
+/**
+ * Class thông tin khách sạn
+ */
 public class Hotel implements Serializable {
     private String id; // id
     private String hotelName; // tên khách sạn
@@ -34,7 +36,12 @@ public class Hotel implements Serializable {
     private String status; // Trạng thái hoạt động của khách sạn (Ví dụ: ACTIVE, MAINTENANCE, CLOSED)
     private String ownerId; // Mã ID tài khoản của chủ khách sạn (Dùng để phân quyền quản lý)
 
+    // Thuộc tính hỗ trợ sắp xếp và lọc
+    private boolean isFeatured; // Khách sạn nổi bật
+    private long createdAt; // Thời gian tạo (dùng để xác định khách sạn mới)
+
     public Hotel() {
+        this.createdAt = System.currentTimeMillis();
     }
 
     public Hotel(String id, String hotelName, String address, double price, float ratingFallback,
@@ -45,7 +52,7 @@ public class Hotel implements Serializable {
         this.hotelName = hotelName;
         this.address = address;
         this.price = price;
-        this.reviewScore = ratingFallback; // Điểm số đánh giá truyền từ số thực 8.3f
+        this.reviewScore = ratingFallback;
         this.imageUrl = imageUrl;
         this.category = category;
         this.description = description;
@@ -53,6 +60,7 @@ public class Hotel implements Serializable {
         this.amenities = amenities;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.createdAt = System.currentTimeMillis();
     }
 
     public Hotel(String id, String hotelName, String address, double price, String imageUrl, String category, String description, List<String> secondaryImages, List<String> amenities, double latitude, double longitude, String locationId, double ratingStar, double reviewScore, int reviewCount, String status, String ownerId) {
@@ -73,6 +81,7 @@ public class Hotel implements Serializable {
         this.reviewCount = reviewCount;
         this.status = status;
         this.ownerId = ownerId;
+        this.createdAt = System.currentTimeMillis();
     }
 
     public String getId() { return id; }
@@ -146,6 +155,16 @@ public class Hotel implements Serializable {
     @PropertyName("owner_id")
     public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
 
+    @PropertyName("is_featured")
+    public boolean isFeatured() { return isFeatured; }
+    @PropertyName("is_featured")
+    public void setFeatured(boolean featured) { isFeatured = featured; }
+
+    @PropertyName("created_at")
+    public long getCreatedAt() { return createdAt; }
+    @PropertyName("created_at")
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+
     public float getRating() { return (float) ratingStar; }
 
     public static Hotel fromDocument(DocumentSnapshot document) {
@@ -180,6 +199,14 @@ public class Hotel implements Serializable {
             hotel.setReviewCount(((Number) document.get("review_count")).intValue());
         } else {
             hotel.setReviewCount(0);
+        }
+
+        hotel.setFeatured(document.contains("is_featured") && document.getBoolean("is_featured") != null && document.getBoolean("is_featured"));
+        
+        if (document.contains("created_at") && document.get("created_at") != null) {
+            hotel.setCreatedAt(((Number) document.get("created_at")).longValue());
+        } else {
+            hotel.setCreatedAt(0);
         }
 
         hotel.setSecondaryImages(imageListValue(document, hotel.getImageUrl()));

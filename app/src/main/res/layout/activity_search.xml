@@ -23,18 +23,20 @@
             android:src="@android:drawable/ic_menu_revert"
             app:tint="@color/text_primary" />
 
-        <EditText
+        <androidx.appcompat.widget.AppCompatAutoCompleteTextView
             android:id="@+id/etSearch"
             android:layout_width="0dp"
             android:layout_height="45dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:background="@drawable/bg_search"
-            android:hint="Tìm khách sạn..."
+            android:hint="Tìm khách sạn hoặc địa điểm..."
             android:paddingHorizontal="16dp"
             android:singleLine="true"
             android:imeOptions="actionSearch"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:completionThreshold="1"
+            android:inputType="text" />
 
         <ImageView
             android:id="@+id/btnFilterSearch"

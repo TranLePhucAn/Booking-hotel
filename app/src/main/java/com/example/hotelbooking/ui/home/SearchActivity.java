@@ -5,10 +5,13 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,13 +26,16 @@ import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 public class SearchActivity extends AppCompatActivity {
 
-    private EditText etSearch;
+    private AutoCompleteTextView etSearch;
     private ImageView btnBack;
     private ImageView btnFilter;
     private RecyclerView rvSearchResults;
@@ -39,6 +45,16 @@ public class SearchActivity extends AppCompatActivity {
 
     private double maxPriceFilter = 10000000;
     private float minRatingFilter = 0;
+    private int selectedSortIndex = 0;
+
+    private final String[] sortOptions = {
+            "Mặc định",
+            "Giá tăng dần",
+            "Giá giảm dần",
+            "Rating cao nhất",
+            "Mới nhất",
+            "Nổi bật"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +62,7 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
 
         initViews();
+        setupAutoComplete();
         setupRecyclerView();
         setupListeners();
         loadHotels();
@@ -56,6 +73,14 @@ public class SearchActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btnBack);
         btnFilter = findViewById(R.id.btnFilterSearch);
         rvSearchResults = findViewById(R.id.rvSearchResults);
+    }
+
+    private void setupAutoComplete() {
+        if (etSearch == null) return;
+        List<String> locations = DemoHotelData.getLocations();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, locations);
+        etSearch.setAdapter(adapter);
     }
 
     private void setupRecyclerView() {
@@ -75,44 +100,54 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        btnBack.setOnClickListener(v -> finish());
-        btnFilter.setOnClickListener(v -> showFilterDialog());
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+        if (btnFilter != null) btnFilter.setOnClickListener(v -> showFilterDialog());
 
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+        if (etSearch != null) {
+            // Xử lý khi chọn một gợi ý từ AutoComplete
+            etSearch.setOnItemClickListener((parent, view, position, id) -> {
                 applyFilters();
-            }
+            });
 
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
+            etSearch.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    applyFilters();
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        }
     }
 
     private void loadHotels() {
+        // Ưu tiên nạp dữ liệu mẫu để đảm bảo luôn có kết quả khi tìm kiếm
+        allHotels.clear();
+        allHotels.addAll(DemoHotelData.hotels());
+        applyFilters();
+
+        // Cập nhật thêm từ Firestore nếu có kết nối
         FirebaseFirestore.getInstance()
                 .collection("hotels")
                 .whereEqualTo("status", "active")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    allHotels.clear();
-                    querySnapshot.getDocuments().forEach(document ->
-                            allHotels.add(Hotel.fromDocument(document)));
-                    if (allHotels.isEmpty()) {
-                        allHotels.addAll(DemoHotelData.hotels());
+                    if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                        // Nếu có dữ liệu từ Firebase, ta có thể gộp hoặc thay thế
+                        // Ở đây ta gộp để phong phú dữ liệu
+                        querySnapshot.getDocuments().forEach(document -> {
+                            Hotel h = Hotel.fromDocument(document);
+                            // Kiểm tra trùng lặp ID nếu cần
+                            allHotels.add(h);
+                        });
+                        applyFilters();
                     }
-                    applyFilters();
-                })
-                .addOnFailureListener(e -> {
-                    allHotels.clear();
-                    allHotels.addAll(DemoHotelData.hotels());
-                    applyFilters();
-                    Toast.makeText(this, "Dang tim kiem tren du lieu mau", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -121,58 +156,119 @@ public class SearchActivity extends AppCompatActivity {
         View view = getLayoutInflater().inflate(R.layout.dialog_filter, null);
         dialog.setContentView(view);
 
+        Spinner spSort = view.findViewById(R.id.spSort);
         SeekBar sbPrice = view.findViewById(R.id.sbPrice);
         TextView tvPriceValue = view.findViewById(R.id.tvPriceValue);
         android.widget.RatingBar rbStars = view.findViewById(R.id.rbStars);
         Button btnApply = view.findViewById(R.id.btnApplyFilter);
 
-        int progress = (int) Math.min(maxPriceFilter, sbPrice.getMax());
-        sbPrice.setProgress(progress);
-        tvPriceValue.setText(formatMoney(progress));
-        rbStars.setRating(minRatingFilter);
+        if (spSort != null) {
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortOptions);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spSort.setAdapter(adapter);
+            spSort.setSelection(selectedSortIndex);
+        }
 
-        sbPrice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                tvPriceValue.setText(formatMoney(progress));
-            }
+        if (sbPrice != null) {
+            int progress = (int) Math.min(maxPriceFilter, sbPrice.getMax());
+            sbPrice.setProgress(progress);
+            if (tvPriceValue != null) tvPriceValue.setText(formatMoney(progress));
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
+            sbPrice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (tvPriceValue != null) tvPriceValue.setText(formatMoney(progress));
+                }
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {}
 
-        btnApply.setOnClickListener(v -> {
-            maxPriceFilter = sbPrice.getProgress();
-            minRatingFilter = rbStars.getRating();
-            applyFilters();
-            dialog.dismiss();
-        });
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {}
+            });
+        }
+
+        if (rbStars != null) {
+            rbStars.setRating(minRatingFilter);
+        }
+
+        if (btnApply != null) {
+            btnApply.setOnClickListener(v -> {
+                if (spSort != null) selectedSortIndex = spSort.getSelectedItemPosition();
+                if (sbPrice != null) maxPriceFilter = sbPrice.getProgress();
+                if (rbStars != null) minRatingFilter = rbStars.getRating();
+                applyFilters();
+                dialog.dismiss();
+            });
+        }
 
         dialog.show();
     }
 
     private void applyFilters() {
-        String query = etSearch.getText().toString().trim().toLowerCase(Locale.ROOT);
+        if (etSearch == null) return;
+        String rawQuery = etSearch.getText().toString().trim();
+        String normalizedQuery = removeAccents(rawQuery); // Loại bỏ dấu khi tìm kiếm
+        
         filteredHotels.clear();
 
         for (Hotel hotel : allHotels) {
-            String name = safeLower(hotel.getHotelName());
-            String location = safeLower(hotel.getAddress());
-            boolean matchQuery = query.isEmpty() || name.contains(query) || location.contains(query);
+            String normalizedName = removeAccents(hotel.getHotelName());
+            String normalizedLocation = removeAccents(hotel.getAddress());
+            
+            // So sánh chuỗi đã loại bỏ dấu
+            boolean matchQuery = normalizedQuery.isEmpty() || 
+                                normalizedName.contains(normalizedQuery) || 
+                                normalizedLocation.contains(normalizedQuery);
+                                
             boolean matchPrice = hotel.getPrice() <= maxPriceFilter;
-            boolean matchRating = hotel.getRating() >= minRatingFilter;
+            
+            double score = hotel.getReviewScore() > 0 ? hotel.getReviewScore() : hotel.getRatingStar();
+            boolean matchRating = score >= minRatingFilter;
 
             if (matchQuery && matchPrice && matchRating) {
                 filteredHotels.add(hotel);
             }
         }
 
-        hotelAdapter.updateData(filteredHotels);
+        applySorting();
+        if (hotelAdapter != null) {
+            hotelAdapter.updateData(filteredHotels);
+        }
+    }
+
+    private void applySorting() {
+        switch (selectedSortIndex) {
+            case 1: // Giá tăng dần
+                Collections.sort(filteredHotels, (h1, h2) -> Double.compare(h1.getPrice(), h2.getPrice()));
+                break;
+            case 2: // Giá giảm dần
+                Collections.sort(filteredHotels, (h1, h2) -> Double.compare(h2.getPrice(), h1.getPrice()));
+                break;
+            case 3: // Rating cao nhất
+                Collections.sort(filteredHotels, (h1, h2) -> {
+                    double s1 = h1.getReviewScore() > 0 ? h1.getReviewScore() : h1.getRatingStar();
+                    double s2 = h2.getReviewScore() > 0 ? h2.getReviewScore() : h2.getRatingStar();
+                    return Double.compare(s2, s1);
+                });
+                break;
+            case 4: // Mới nhất
+                Collections.sort(filteredHotels, (h1, h2) -> Long.compare(h2.getCreatedAt(), h1.getCreatedAt()));
+                break;
+            case 5: // Nổi bật
+                Collections.sort(filteredHotels, (h1, h2) -> Boolean.compare(h2.isFeatured(), h1.isFeatured()));
+                break;
+        }
+    }
+
+    private String removeAccents(String str) {
+        if (str == null) return "";
+        String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        String result = pattern.matcher(nfdNormalizedString).replaceAll("");
+        return result.toLowerCase(Locale.ROOT)
+                .replace("đ", "d")
+                .replace("Đ", "d");
     }
 
     private void openHotelDetail(Hotel hotel) {
