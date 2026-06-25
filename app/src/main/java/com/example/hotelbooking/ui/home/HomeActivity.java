@@ -8,6 +8,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.denzcoskun.imageslider.constants.ScaleTypes;
+import com.denzcoskun.imageslider.models.SlideModel;
 import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
@@ -24,11 +26,14 @@ public class HomeActivity extends AppCompatActivity {
 
     private ActivityHomeBinding binding;
     private CategoryAdapter categoryAdapter;
-    private HotelAdapter hotelAdapter;
-    private final List<Hotel> allHotels = new ArrayList<>(); // Master list containing all loaded hotels
-    private final List<Hotel> displayedHotels = new ArrayList<>(); // List used by the adapter
+    private HotelAdapter featuredAdapter;
+    private HotelAdapter suggestionsAdapter;
+    
+    private final List<Hotel> allHotels = new ArrayList<>();
+    private final List<Hotel> featuredHotels = new ArrayList<>();
+    private final List<Hotel> suggestionHotels = new ArrayList<>();
+    
     private FirebaseFirestore db;
-    private String currentCategory = "Tat ca";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +44,9 @@ public class HomeActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         initViews();
+        setupBanner();
         setupCategories();
-        setupHotelRecyclerView();
+        setupHotelRecyclerViews();
         loadHotels();
     }
 
@@ -69,37 +75,55 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
         
         binding.btnRetry.setOnClickListener(v -> loadHotels());
+        
+        binding.tvSeeAllFeatured.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    private void setupBanner() {
+        List<SlideModel> slideModels = new ArrayList<>();
+        slideModels.add(new SlideModel("https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200", "Khám phá StayHub", ScaleTypes.CENTER_CROP));
+        slideModels.add(new SlideModel("https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200", "Ưu đãi hè rực rỡ", ScaleTypes.CENTER_CROP));
+        slideModels.add(new SlideModel("https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=1200", "Đặt phòng ngay hôm nay", ScaleTypes.CENTER_CROP));
+        
+        binding.bannerSlider.setImageList(slideModels);
     }
 
     private void setupCategories() {
         List<String> categories = Arrays.asList("Tat ca", "Resort", "Khach san", "Villa", "Homestay", "Can ho");
-        categoryAdapter = new CategoryAdapter(categories, this::filterByCategory);
+        CategoryAdapter categoryAdapter = new CategoryAdapter(categories, this::filterByCategory);
 
         binding.rvCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.rvCategories.setAdapter(categoryAdapter);
     }
 
-    private void setupHotelRecyclerView() {
-        hotelAdapter = new HotelAdapter(displayedHotels, new HotelAdapter.OnHotelClickListener() {
+    private void setupHotelRecyclerViews() {
+        // Featured Hotels - Horizontal
+        featuredAdapter = new HotelAdapter(featuredHotels, true, new HotelAdapter.OnHotelClickListener() {
             @Override
-            public void onHotelClick(Hotel hotel) {
-                openHotelDetail(hotel);
-            }
-
+            public void onHotelClick(Hotel hotel) { openHotelDetail(hotel); }
             @Override
-            public void onBookClick(Hotel hotel) {
-                openHotelDetail(hotel);
-            }
+            public void onBookClick(Hotel hotel) { openHotelDetail(hotel); }
         });
+        binding.rvFeaturedHotels.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        binding.rvFeaturedHotels.setAdapter(featuredAdapter);
 
-        binding.rvFeaturedHotels.setLayoutManager(new LinearLayoutManager(this));
-        binding.rvFeaturedHotels.setAdapter(hotelAdapter);
+        // Suggestions - Vertical
+        suggestionsAdapter = new HotelAdapter(suggestionHotels, false, new HotelAdapter.OnHotelClickListener() {
+            @Override
+            public void onHotelClick(Hotel hotel) { openHotelDetail(hotel); }
+            @Override
+            public void onBookClick(Hotel hotel) { openHotelDetail(hotel); }
+        });
+        binding.rvSuggestions.setLayoutManager(new LinearLayoutManager(this));
+        binding.rvSuggestions.setAdapter(suggestionsAdapter);
     }
 
     private void loadHotels() {
         showLoading();
         
-        // Nạp dữ liệu mẫu trước
         allHotels.clear();
         allHotels.addAll(DemoHotelData.hotels());
 
@@ -115,41 +139,61 @@ public class HomeActivity extends AppCompatActivity {
                             }
                         });
                     }
-                    updateDisplay(currentCategory);
+                    processAndDisplayData();
                 })
                 .addOnFailureListener(e -> {
                     if (allHotels.isEmpty()) {
                         showError();
                     } else {
-                        // Vẫn còn dữ liệu mẫu thì hiển thị content kèm thông báo
-                        updateDisplay(currentCategory);
-                        Toast.makeText(this, "Loi ket noi, dang dung du lieu tam thoi", Toast.LENGTH_SHORT).show();
+                        processAndDisplayData();
+                        Toast.makeText(this, "Lỗi kết nối, đang dùng dữ liệu tạm thời", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    private void filterByCategory(String category) {
-        this.currentCategory = category;
-        updateDisplay(category);
+    private void processAndDisplayData() {
+        showContent();
+        
+        featuredHotels.clear();
+        suggestionHotels.clear();
+        
+        for (Hotel hotel : allHotels) {
+            if (hotel.isFeatured()) {
+                featuredHotels.add(hotel);
+            } else {
+                suggestionHotels.add(hotel);
+            }
+        }
+        
+        // If not enough featured, take some from suggestions
+        if (featuredHotels.size() < 3 && !suggestionHotels.isEmpty()) {
+            for (int i = 0; i < Math.min(3, suggestionHotels.size()); i++) {
+                featuredHotels.add(suggestionHotels.get(i));
+            }
+        }
+
+        featuredAdapter.updateData(featuredHotels);
+        suggestionsAdapter.updateData(suggestionHotels);
     }
 
-    private void updateDisplay(String category) {
-        displayedHotels.clear();
+    private void filterByCategory(String category) {
+        suggestionHotels.clear();
         if (category.equalsIgnoreCase("Tat ca")) {
-            displayedHotels.addAll(allHotels);
+            for (Hotel h : allHotels) {
+                if (!h.isFeatured()) suggestionHotels.add(h);
+            }
         } else {
             for (Hotel hotel : allHotels) {
                 if (hotel.getCategory() != null && hotel.getCategory().equalsIgnoreCase(category)) {
-                    displayedHotels.add(hotel);
+                    suggestionHotels.add(hotel);
                 }
             }
         }
         
-        if (displayedHotels.isEmpty()) {
-            showEmpty();
-        } else {
-            showContent();
-            hotelAdapter.updateData(displayedHotels);
+        suggestionsAdapter.updateData(suggestionHotels);
+        
+        if (suggestionHotels.isEmpty() && !category.equalsIgnoreCase("Tat ca")) {
+            Toast.makeText(this, "Không có kết quả cho: " + category, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -157,14 +201,6 @@ public class HomeActivity extends AppCompatActivity {
         binding.stateLayout.setVisibility(View.VISIBLE);
         binding.loadingView.setVisibility(View.VISIBLE);
         binding.emptyView.setVisibility(View.GONE);
-        binding.errorView.setVisibility(View.GONE);
-        binding.mainContent.setVisibility(View.GONE);
-    }
-
-    private void showEmpty() {
-        binding.stateLayout.setVisibility(View.VISIBLE);
-        binding.loadingView.setVisibility(View.GONE);
-        binding.emptyView.setVisibility(View.VISIBLE);
         binding.errorView.setVisibility(View.GONE);
         binding.mainContent.setVisibility(View.GONE);
     }
