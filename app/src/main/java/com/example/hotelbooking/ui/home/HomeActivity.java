@@ -2,6 +2,7 @@ package com.example.hotelbooking.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +28,7 @@ public class HomeActivity extends AppCompatActivity {
     private final List<Hotel> allHotels = new ArrayList<>(); // Master list containing all loaded hotels
     private final List<Hotel> displayedHotels = new ArrayList<>(); // List used by the adapter
     private FirebaseFirestore db;
+    private String currentCategory = "Tat ca";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,11 +45,9 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        // Search bar navigation
         binding.searchBar.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
 
-        // Profile display name
         if (FirebaseClient.getAuth().getCurrentUser() != null) {
             String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
             if (name != null && !name.isEmpty()) {
@@ -55,11 +55,9 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
 
-        // Profile navigation
         binding.btnProfile.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
 
-        // Logout
         binding.btnLogout.setOnClickListener(v -> {
             FirebaseClient.getAuth().signOut();
             Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
@@ -67,16 +65,14 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Filter button navigation
         binding.btnFilter.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
+        
+        binding.btnRetry.setOnClickListener(v -> loadHotels());
     }
 
     private void setupCategories() {
-        // Defined categories matching DemoHotelData
         List<String> categories = Arrays.asList("Tat ca", "Resort", "Khach san", "Villa", "Homestay", "Can ho");
-        
-        // Initialize adapter with actual filtering logic
         categoryAdapter = new CategoryAdapter(categories, this::filterByCategory);
 
         binding.rvCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -101,14 +97,12 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void loadHotels() {
-        // 1. Load Demo data immediately for "chạy thử"
+        showLoading();
+        
+        // Nạp dữ liệu mẫu trước
         allHotels.clear();
         allHotels.addAll(DemoHotelData.hotels());
-        
-        // Initial display showing everything
-        updateDisplayedHotels("Tat ca");
 
-        // 2. Fetch from Firestore to sync real data if available
         db.collection("hotels")
                 .whereEqualTo("status", "active")
                 .get()
@@ -120,41 +114,72 @@ public class HomeActivity extends AppCompatActivity {
                                 allHotels.add(h);
                             }
                         });
-                        // Refresh with merged data
-                        updateDisplayedHotels("Tat ca");
                     }
+                    updateDisplay(currentCategory);
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Hien thi du lieu mau tu DemoHotelData", Toast.LENGTH_SHORT).show();
+                    if (allHotels.isEmpty()) {
+                        showError();
+                    } else {
+                        // Vẫn còn dữ liệu mẫu thì hiển thị content kèm thông báo
+                        updateDisplay(currentCategory);
+                        Toast.makeText(this, "Loi ket noi, dang dung du lieu tam thoi", Toast.LENGTH_SHORT).show();
+                    }
                 });
     }
 
     private void filterByCategory(String category) {
-        // Perform real filtering
-        updateDisplayedHotels(category);
-        
-        if (displayedHotels.isEmpty() && !category.equalsIgnoreCase("Tat ca")) {
-            Toast.makeText(this, "Khong tim thay ket qua cho: " + category, Toast.LENGTH_SHORT).show();
-        }
+        this.currentCategory = category;
+        updateDisplay(category);
     }
 
-    private void updateDisplayedHotels(String category) {
+    private void updateDisplay(String category) {
         displayedHotels.clear();
         if (category.equalsIgnoreCase("Tat ca")) {
             displayedHotels.addAll(allHotels);
         } else {
             for (Hotel hotel : allHotels) {
-                // Case-insensitive check to match DemoHotelData categories
                 if (hotel.getCategory() != null && hotel.getCategory().equalsIgnoreCase(category)) {
                     displayedHotels.add(hotel);
                 }
             }
         }
         
-        // Update adapter data
-        if (hotelAdapter != null) {
+        if (displayedHotels.isEmpty()) {
+            showEmpty();
+        } else {
+            showContent();
             hotelAdapter.updateData(displayedHotels);
         }
+    }
+
+    private void showLoading() {
+        binding.stateLayout.setVisibility(View.VISIBLE);
+        binding.loadingView.setVisibility(View.VISIBLE);
+        binding.emptyView.setVisibility(View.GONE);
+        binding.errorView.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.GONE);
+    }
+
+    private void showEmpty() {
+        binding.stateLayout.setVisibility(View.VISIBLE);
+        binding.loadingView.setVisibility(View.GONE);
+        binding.emptyView.setVisibility(View.VISIBLE);
+        binding.errorView.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.GONE);
+    }
+
+    private void showError() {
+        binding.stateLayout.setVisibility(View.VISIBLE);
+        binding.loadingView.setVisibility(View.GONE);
+        binding.emptyView.setVisibility(View.GONE);
+        binding.errorView.setVisibility(View.VISIBLE);
+        binding.mainContent.setVisibility(View.GONE);
+    }
+
+    private void showContent() {
+        binding.stateLayout.setVisibility(View.GONE);
+        binding.mainContent.setVisibility(View.VISIBLE);
     }
 
     private boolean containsHotel(String hotelId) {
