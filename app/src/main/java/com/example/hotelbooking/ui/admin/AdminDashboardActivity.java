@@ -7,7 +7,7 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.ui.auth.LoginActivity;
+import com.example.hotelbooking.ui.home.HomeActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class AdminDashboardActivity extends AppCompatActivity {
@@ -36,7 +36,8 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         btnLogout.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(this, LoginActivity.class);
+            // CHỈNH SỬA: Quay về Trang chủ thay vì Login
+            Intent intent = new Intent(this, HomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();

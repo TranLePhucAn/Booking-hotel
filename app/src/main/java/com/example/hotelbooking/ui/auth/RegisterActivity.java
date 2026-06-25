@@ -71,18 +71,35 @@ public class RegisterActivity extends AppCompatActivity {
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(name)) {
+            edtName.setError("Vui lòng nhập họ tên");
+            edtName.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(email)) {
+            edtEmail.setError("Vui lòng nhập Email");
+            edtEmail.requestFocus();
             return;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
+            edtEmail.setError("Email không đúng định dạng");
+            edtEmail.requestFocus();
             return;
         }
 
-        if (password.length() < 6) {
-            Toast.makeText(this, "Mật khẩu phải có ít nhất 6 ký tự", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(password)) {
+            edtPassword.setError("Vui lòng nhập mật khẩu");
+            edtPassword.requestFocus();
+            return;
+        }
+
+        // Regex mạnh: ít nhất 1 chữ hoa, 1 chữ thường, 1 số, 1 ký tự đặc biệt, tối thiểu 8 ký tự
+        String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        if (!password.matches(passwordPattern)) {
+            edtPassword.setError("Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
+            edtPassword.requestFocus();
             return;
         }
 

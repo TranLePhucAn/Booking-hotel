@@ -169,11 +169,11 @@ public class SearchActivity extends AppCompatActivity {
         filteredHotels.clear();
 
         for (Hotel hotel : allHotels) {
-            String hName = hotel.getName() != null ? hotel.getName() : (hotel.getHotelName() != null ? hotel.getHotelName() : "");
-            String hAddress = hotel.getAddress() != null ? hotel.getAddress() : "";
+            String hotelName = hotel.getName() != null ? hotel.getName() : (hotel.getHotelName() != null ? hotel.getHotelName() : "");
+            String hotelAddress = hotel.getAddress() != null ? hotel.getAddress() : "";
             
-            String normalizedName = removeAccents(hName);
-            String normalizedLocation = removeAccents(hAddress);
+            String normalizedName = removeAccents(hotelName);
+            String normalizedLocation = removeAccents(hotelAddress);
             
             boolean matchQuery = normalizedQuery.isEmpty() || 
                                 normalizedName.contains(normalizedQuery) || 
@@ -251,7 +251,7 @@ public class SearchActivity extends AppCompatActivity {
                     if (t1 == null && t2 == null) return 0;
                     if (t1 == null) return 1;
                     if (t2 == null) return -1;
-                    return t2.compareTo(t1);
+                    return t2.compareTo(t1); // Sửa lỗi so sánh Timestamp
                 });
                 break;
             case 5: // Nổi bật
@@ -328,10 +328,6 @@ public class SearchActivity extends AppCompatActivity {
         intent.putExtra("hotel_id", hotel.getId());
         intent.putExtra("hotel", hotel);
         startActivity(intent);
-    }
-
-    private String safeLower(String value) {
-        return value == null ? "" : value.toLowerCase(Locale.ROOT);
     }
 
     private String formatMoney(double value) {
