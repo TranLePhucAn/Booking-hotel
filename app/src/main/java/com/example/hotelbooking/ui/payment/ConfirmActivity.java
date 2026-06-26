@@ -233,10 +233,14 @@ public class ConfirmActivity extends AppCompatActivity {
             Map<String, Object> reservationData = new HashMap<>();
             reservationData.put("hotel_id", hotel.getId()); // Lấy Document ID của khách sạn
             reservationData.put("section_id", section.getId()); // Lấy Document ID của hạng phòng
-//            reservationData.put("customer_id", realUserId);
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+                reservationData.put("customer_id", FirebaseAuth.getInstance().getCurrentUser().getUid());
+            } else {
+                reservationData.put("customer_id", "");
+            }
 
-            reservationData.put("check_in", new Timestamp(checkInDate));
-            reservationData.put("check_out", new Timestamp(checkOutDate));
+            reservationData.put("day_start", new Timestamp(checkInDate));
+            reservationData.put("day_end", new Timestamp(checkOutDate));
             reservationData.put("number_of_nights", numberOfNights);
 
             reservationData.put("guest_name", name);

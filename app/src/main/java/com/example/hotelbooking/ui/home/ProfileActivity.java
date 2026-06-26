@@ -9,12 +9,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.ui.auth.LoginActivity;
+import com.example.hotelbooking.viewmodels.UserViewModel;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -24,6 +25,9 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView tvProfileGenderDisplay;
     private TextView tvProfileDobDisplay;
     private TextView tvProfileCountryDisplay;
+    private TextView tvPartnerStatus;
+
+    private UserViewModel userViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +35,10 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_profile);
 
         initViews();
+
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        observeViewModel();
+
         loadUserData();
     }
 
@@ -43,6 +51,7 @@ public class ProfileActivity extends AppCompatActivity {
         tvProfileGenderDisplay = findViewById(R.id.tvProfileGenderDisplay);
         tvProfileDobDisplay = findViewById(R.id.tvProfileDobDisplay);
         tvProfileCountryDisplay = findViewById(R.id.tvProfileCountryDisplay);
+        tvPartnerStatus = findViewById(R.id.tvPartnerStatus);
 
         LinearLayout menuEditAccount = findViewById(R.id.menuEditAccount);
         LinearLayout menuBookingHistory = findViewById(R.id.menuBookingHistory);
@@ -72,7 +81,7 @@ public class ProfileActivity extends AppCompatActivity {
             menuLogout.setOnClickListener(v -> {
                 FirebaseClient.getAuth().signOut();
 
-                Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+                Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
@@ -80,48 +89,73 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    private void observeViewModel() {
+        userViewModel.userData.observe(this, data -> {
+            if (data != null) {
+                String fullName = (String) data.get("fullName");
+                String email = (String) data.get("email");
+                String phone = (String) data.get("phone");
+                String gender = (String) data.get("gender");
+                String dob = (String) data.get("date_of_birth");
+                String country = (String) data.get("country");
+                String partnerStatus = (String) data.get("partnerStatus");
+                String role = (String) data.get("role");
+
+                if (fullName != null && !fullName.isEmpty()) {
+                    tvProfileNameDisplay.setText(fullName);
+                } else {
+                    tvProfileNameDisplay.setText("Chưa cập nhật tên");
+                }
+
+                if (email != null && !email.isEmpty()) {
+                    tvProfileEmailDisplay.setText(email);
+                }
+
+                tvProfilePhoneDisplay.setText("Số điện thoại: " + (phone != null && !phone.isEmpty() ? phone : "---"));
+                tvProfileGenderDisplay.setText("Giới tính: " + (gender != null && !gender.isEmpty() ? gender : "---"));
+                tvProfileDobDisplay.setText("Ngày sinh: " + (dob != null && !dob.isEmpty() ? dob : "---"));
+                tvProfileCountryDisplay.setText("Quốc tịch: " + (country != null && !country.isEmpty() ? country : "---"));
+
+                if (tvPartnerStatus != null) {
+                    if ("pending".equals(partnerStatus)) {
+                        tvPartnerStatus.setVisibility(android.view.View.VISIBLE);
+                        tvPartnerStatus.setText("Hồ sơ cộng sự đang chờ duyệt");
+                    } else if ("rejected".equals(partnerStatus)) {
+                        tvPartnerStatus.setVisibility(android.view.View.VISIBLE);
+                        String adminNote = (String) data.get("admin_note");
+                        if (adminNote != null && !adminNote.isEmpty()) {
+                            tvPartnerStatus.setText("Hồ sơ cộng sự bị từ chối: " + adminNote);
+                        } else {
+                            tvPartnerStatus.setText("Hồ sơ cộng sự bị từ chối");
+                        }
+                    } else if ("approved".equals(partnerStatus) || "partner".equals(role)) {
+                        tvPartnerStatus.setVisibility(android.view.View.VISIBLE);
+                        tvPartnerStatus.setText("Trạng thái: Đối tác / Cộng sự");
+                        tvPartnerStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+                    } else {
+                        tvPartnerStatus.setVisibility(android.view.View.GONE);
+                    }
+                }
+            }
+        });
+
+        userViewModel.error.observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(ProfileActivity.this, "Không thể tải thông tin: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void loadUserData() {
         FirebaseUser currentUser = FirebaseClient.getAuth().getCurrentUser();
-
         if (currentUser != null) {
-            String uid = currentUser.getUid();
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-            db.collection("users").document(uid).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-
-                            String fullName = documentSnapshot.getString("fullName");
-                            String email = documentSnapshot.getString("email");
-                            String phone = documentSnapshot.getString("phone");
-                            String gender = documentSnapshot.getString("gender");
-                            String dob = documentSnapshot.getString("date_of_birth");
-                            String country = documentSnapshot.getString("country");
-
-
-                            if (fullName != null && !fullName.isEmpty()) {
-                                tvProfileNameDisplay.setText(fullName);
-                            } else {
-                                tvProfileNameDisplay.setText("Chưa cập nhật tên");
-                            }
-
-                            if (email != null && !email.isEmpty()) {
-                                tvProfileEmailDisplay.setText(email);
-                            }
-
-                            tvProfilePhoneDisplay.setText("Số điện thoại: " + (phone != null && !phone.isEmpty() ? phone : "---"));
-                            tvProfileGenderDisplay.setText("Giới tính: " + (gender != null && !gender.isEmpty() ? gender : "---"));
-                            tvProfileDobDisplay.setText("Ngày sinh: " + (dob != null && !dob.isEmpty() ? dob : "---"));
-                            tvProfileCountryDisplay.setText("Quốc tịch: " + (country != null && !country.isEmpty() ? country : "---"));
-
-                        } else {
-                            Log.d("ProfileActivity", "Document không tồn tại!");
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(ProfileActivity.this, "Không thể tải thông tin: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        Log.e("ProfileActivity", "Lỗi tải dữ liệu", e);
-                    });
+            userViewModel.fetchUser(currentUser.getUid());
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadUserData();
     }
 }
