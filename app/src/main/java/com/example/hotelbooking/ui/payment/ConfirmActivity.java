@@ -42,6 +42,7 @@ public class ConfirmActivity extends AppCompatActivity {
     private Date checkOutDate;
     private int numberOfNights = 1; // mặc định là 1 đêm
     private int availableRooms;
+    private String selectedRoomId;
     private String checkInText, checkOutText, checkInTimeText, checkOutTimeText;
 
     @Override
@@ -122,6 +123,7 @@ public class ConfirmActivity extends AppCompatActivity {
             hotel = (Hotel) intent.getSerializableExtra("EXTRA_HOTEL");
             section = (Section) intent.getSerializableExtra("EXTRA_SECTION");
             availableRooms = intent.getIntExtra("EXTRA_AVAILABLE_ROOMS", 1);
+            selectedRoomId = intent.getStringExtra("room_id");
 
             // Giả định nhận thêm ngày check-in/out từ bộ lọc tìm kiếm màn hình trước
             // nếu không có thì lấy ngày hôm nay và ngày mai làm mặc định mẫu
@@ -249,7 +251,7 @@ public class ConfirmActivity extends AppCompatActivity {
             reservationData.put("status", "PENDING"); // chờ thanh toán
             reservationData.put("created_at", new Timestamp(now));
             reservationData.put("payment_deadline", new Timestamp(deadline)); // deadline thanh toán
-            reservationData.put("room_id", ""); // Chưa xếp phòng vật lý cụ thể khi chưa trả tiền
+            reservationData.put("room_id", selectedRoomId == null ? "" : selectedRoomId);
 
             btnConfirmBooking.setEnabled(false);
 
