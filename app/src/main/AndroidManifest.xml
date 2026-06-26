@@ -65,6 +65,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.hotel.RoomDetailActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.hotel.MapActivity"
             android:exported="false" />
 
