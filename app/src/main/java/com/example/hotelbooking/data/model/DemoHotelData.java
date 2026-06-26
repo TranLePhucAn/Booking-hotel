@@ -62,7 +62,7 @@ public class DemoHotelData {
                 "119 Duong Bach Dang, Phuong 2, Tan Binh, TP.HCM",
                 500000,
                 8.3f,
-                "https://pix10.agoda.net/hotelImages/56801030/-1/96cc40d590a674ca39caebda5879fe97.jpg",
+                "https://kientructrangkim.com/wp-content/uploads/2019/09/tieu-chuan-khach-san-5-sao-c.jpg",
                 "Khach san",
                 "Khach san gan san bay, phong hien dai, phu hop cho du lich va cong tac.",
                 Arrays.asList(
@@ -85,7 +85,7 @@ public class DemoHotelData {
                 "Vung Tau",
                 650000,
                 8.7f,
-                "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsQEGBt--p2A_0oB2eHqQM0-gkCkPUcFBShC_D7pfgMy5vprgvhBs10kjf&s=10",
                 "Resort",
                 "Khach san yen tinh gan bien, co phong VIP huong bien va dich vu than thien.",
                 Arrays.asList(
