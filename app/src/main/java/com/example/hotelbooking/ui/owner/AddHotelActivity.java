@@ -1,4 +1,4 @@
-package com.example.hotelbooking.ui.partner;
+package com.example.hotelbooking.ui.owner;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,22 +10,24 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.model.Hotel;
-import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AddHotelActivity extends AppCompatActivity {
 
+    private EditText edtBusinessName;
     private EditText edtHotelName;
     private EditText edtDescription;
     private EditText edtAddress;
     private EditText edtCity;
+    private EditText edtDistrict;
     private EditText edtRatingStar;
-    private EditText edtPrice;
+    private EditText edtPriceFrom;
     private EditText edtAmenities;
     private EditText edtMainImageUrl;
     private EditText edtImageUrls;
@@ -46,12 +48,14 @@ public class AddHotelActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
+        edtBusinessName = findViewById(R.id.edtBusinessName);
         edtHotelName = findViewById(R.id.edtHotelName);
         edtDescription = findViewById(R.id.edtDescription);
         edtAddress = findViewById(R.id.edtAddress);
         edtCity = findViewById(R.id.edtCity);
+        edtDistrict = findViewById(R.id.edtDistrict);
         edtRatingStar = findViewById(R.id.edtRatingStar);
-        edtPrice = findViewById(R.id.edtPriceFrom); 
+        edtPriceFrom = findViewById(R.id.edtPriceFrom);
         edtAmenities = findViewById(R.id.edtAmenities);
         edtMainImageUrl = findViewById(R.id.edtMainImageUrl);
         edtImageUrls = findViewById(R.id.edtImageUrls);
@@ -63,12 +67,12 @@ public class AddHotelActivity extends AppCompatActivity {
         String hotelName = textOf(edtHotelName);
         String address = textOf(edtAddress);
         String description = textOf(edtDescription);
-        double price = doubleOf(edtPrice, 0);
+        double priceFrom = doubleOf(edtPriceFrom, 0);
         String mainImage = textOf(edtMainImageUrl);
 
         if (TextUtils.isEmpty(hotelName) || TextUtils.isEmpty(address) || TextUtils.isEmpty(description)
-                || price <= 0 || TextUtils.isEmpty(mainImage)) {
-            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin bắt buộc.", Toast.LENGTH_SHORT).show();
+                || priceFrom <= 0 || TextUtils.isEmpty(mainImage)) {
+            Toast.makeText(this, "Vui long nhap day du thong tin bat buoc.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -76,37 +80,64 @@ public class AddHotelActivity extends AppCompatActivity {
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
                 : "";
 
-        Hotel hotel = new Hotel();
-        hotel.setHotelName(hotelName);
-        hotel.setAddress(address);
-        // Note: locationId can be set from edtCity if needed, or ignored if not in model schema
-        hotel.setDescription(description);
-        hotel.setPrice(price);
-        hotel.setRatingStar(doubleOf(edtRatingStar, 0));
-        hotel.setImageUrl(mainImage);
-        
-        List<String> secondaryImages = listOf(textOf(edtImageUrls));
-        hotel.setSecondaryImages(secondaryImages);
-        
-        hotel.setAmenities(listOf(textOf(edtAmenities)));
-        hotel.setLatitude(doubleOf(edtLatitude, 0));
-        hotel.setLongitude(doubleOf(edtLongitude, 0));
-        hotel.setOwnerId(ownerId);
-        hotel.setStatus(AppConstants.STATUS_PENDING);
-        hotel.setCreatedAt(System.currentTimeMillis());
+        Map<String, Object> location = new HashMap<>();
+        location.put("address", address);
+        location.put("city", textOf(edtCity));
+        location.put("district", textOf(edtDistrict));
+        location.put("latitude", doubleOf(edtLatitude, 0));
+        location.put("longitude", doubleOf(edtLongitude, 0));
+        location.put("owner_id", ownerId);
+        location.put("created_at", System.currentTimeMillis());
 
-        db.collection(AppConstants.COLLECTION_HOTELS)
+        db.collection("locations")
+                .add(location)
+                .addOnSuccessListener(locationRef -> createHotel(ownerId, locationRef.getId()))
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Khong luu duoc vi tri: " + e.getMessage(), Toast.LENGTH_LONG).show());
+    }
+
+    private void createHotel(String ownerId, String locationId) {
+        List<String> secondaryImages = listOf(textOf(edtImageUrls));
+        List<String> allImages = new ArrayList<>();
+        String mainImage = textOf(edtMainImageUrl);
+        if (!mainImage.isEmpty()) {
+            allImages.add(mainImage);
+        }
+        allImages.addAll(secondaryImages);
+
+        Map<String, Object> hotel = new HashMap<>();
+        hotel.put("owner_id", ownerId);
+        hotel.put("business_id", ownerId);
+        hotel.put("business_name", textOf(edtBusinessName));
+        hotel.put("hotel_name", textOf(edtHotelName));
+        hotel.put("description", textOf(edtDescription));
+        hotel.put("address_text", textOf(edtAddress));
+        hotel.put("city", textOf(edtCity));
+        hotel.put("district", textOf(edtDistrict));
+        hotel.put("rating_star", (float) doubleOf(edtRatingStar, 0));
+        hotel.put("price_from", doubleOf(edtPriceFrom, 0));
+        hotel.put("amenities", listOf(textOf(edtAmenities)));
+        hotel.put("image_url", mainImage);
+        hotel.put("image_urls", allImages);
+        hotel.put("review_score", 0);
+        hotel.put("review_count", 0);
+        hotel.put("location_id", locationId);
+        hotel.put("status", "pending");
+        hotel.put("created_at", System.currentTimeMillis());
+        hotel.put("updated_at", System.currentTimeMillis());
+
+        db.collection("hotels")
                 .add(hotel)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Đã gửi yêu cầu tạo khách sạn. Vui lòng chờ duyệt.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Da tao khach san. Hay them danh sach phong.", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(this, AddRoomActivity.class);
                     intent.putExtra("hotel_id", documentReference.getId());
-                    intent.putExtra("hotel_name", hotelName);
+                    intent.putExtra("hotel_name", textOf(edtHotelName));
                     startActivity(intent);
                     finish();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Không lưu được khách sạn: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Khong luu duoc khach san: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private String textOf(EditText editText) {

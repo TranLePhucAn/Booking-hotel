@@ -1,4 +1,4 @@
-package com.example.hotelbooking.ui.partner;
+package com.example.hotelbooking.ui.owner;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,7 +20,7 @@ public class PartnerPendingActivity extends AppCompatActivity {
         Button btnLogoutPending = findViewById(R.id.btnLogoutPending);
         btnLogoutPending.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(this, com.example.hotelbooking.ui.home.HomeActivity.class);
+            Intent intent = new Intent(this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });

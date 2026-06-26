@@ -66,21 +66,12 @@
                 </RelativeLayout>
 
                 <TextView
-                    android:id="@+id/tvHistoryGuestName"
-                    style="@style/TextSubtitleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="👤 Khách: Nguyen Van A"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@color/text_primary"/>
-
-                <TextView
                     android:id="@+id/tvHistoryDate"
                     style="@style/TextSubtitleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="📅 22/06/2026 - 23/06/2026"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="6dp"
                     android:textColor="@color/text_secondary"/>
 
                 <TextView
@@ -116,32 +107,15 @@
                 android:text="Mã đặt phòng: #C4mpzN"
                 android:textColor="@color/gray_text" />
 
-            <LinearLayout
+            <Button
+                android:id="@+id/btnViewDetail"
+                style="@style/AppButtonStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:layout_alignParentEnd="true"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnCancelBooking"
-                    style="@style/AppButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Từ chối"
-                    android:backgroundTint="@color/error"
-                    android:layout_marginEnd="8dp"
-                    android:visibility="gone"
-                    app:cornerRadius="8dp"/>
-
-                <Button
-                    android:id="@+id/btnViewDetail"
-                    style="@style/AppButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Xem chi tiết"
-                    android:backgroundTint="@color/ocean_blue"
-                    app:cornerRadius="8dp"/>
-            </LinearLayout>
+                android:text="Xem chi tiết"
+                android:backgroundTint="@color/ocean_blue"
+                app:cornerRadius="8dp"/>
         </RelativeLayout>
 
     </LinearLayout>

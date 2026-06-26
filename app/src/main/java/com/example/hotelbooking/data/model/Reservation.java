@@ -1,10 +1,9 @@
 package com.example.hotelbooking.data.model;
 
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.PropertyName;
 
 import java.io.Serializable;
-
+import java.security.Timestamp;
 // class xử lý lưu thông tin đặt phòng
 public class Reservation implements Serializable {
     private String id;

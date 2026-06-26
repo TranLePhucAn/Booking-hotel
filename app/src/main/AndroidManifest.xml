@@ -31,38 +31,24 @@
             android:name=".ui.map.HotelMapActivity"
             android:exported="false" />
 
-        <!-- Admin Activities -->
         <activity
-            android:name=".ui.admin.AdminDashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.admin.AdminPartnerApprovalActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.admin.AdminPartnerDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.admin.AdminHotelApprovalActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.admin.AdminHotelDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.admin.AdminBookingManagementActivity"
+            android:name=".ui.owner.AdminDashboardActivity"
             android:exported="false" />
 
-        <!-- Partner Activities -->
         <activity
-            android:name=".ui.partner.PartnerDashboardActivity"
+            android:name=".ui.owner.OwnerDashboardActivity"
             android:exported="false" />
+
         <activity
-            android:name=".ui.partner.PartnerPendingActivity"
+            android:name=".ui.owner.PartnerPendingActivity"
             android:exported="false" />
+
         <activity
-            android:name=".ui.partner.AddHotelActivity"
+            android:name=".ui.owner.AddHotelActivity"
             android:exported="false" />
+
         <activity
-            android:name=".ui.partner.AddRoomActivity"
+            android:name=".ui.owner.AddRoomActivity"
             android:exported="false" />
 
         <activity

@@ -1,4 +1,4 @@
-package com.example.hotelbooking.ui.adapter;
+package com.example.hotelbooking.ui.home;
 
 import android.app.Dialog;
 import android.util.Log;
@@ -16,22 +16,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.model.Reservation;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAdapter.ViewHolder> {
 
-    private final List<Reservation> bookings = new ArrayList<>();
+    private final List<DocumentSnapshot> bookings = new ArrayList<>();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
-    public void updateData(List<Reservation> newBookings) {
+    public void updateData(List<DocumentSnapshot> newBookings) {
         bookings.clear();
         bookings.addAll(newBookings);
         notifyDataSetChanged();
@@ -47,26 +48,28 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Reservation res = bookings.get(position);
+        DocumentSnapshot booking = bookings.get(position);
 
-        String docId = res.getId();
-        String status = (res.getStatus() != null ? res.getStatus() : "BOOKED").toUpperCase();
-        double totalPrice = res.getTotalPrice();
-        String guestName = (res.getGuestName() != null ? res.getGuestName() : "Khách hàng");
+        String docId = booking.getId();
+        String status = stringValue(booking, "status", "BOOKED").toUpperCase();
+        double totalPrice = doubleValue(booking, "total_price", 0);
+        String guestName = stringValue(booking, "guest_name", "Khách hàng");
 
-        final String checkInStr = (res.getDayStart() != null) ? dateFormat.format(res.getDayStart().toDate()) : "N/A";
-        final String checkOutStr = (res.getDayEnd() != null) ? dateFormat.format(res.getDayEnd().toDate()) : "N/A";
+        Date dayStart = booking.getDate("check_in");
+        Date dayEnd = booking.getDate("check_out");
+
+        final String checkInStr = (dayStart != null) ? dateFormat.format(dayStart) : "N/A";
+        final String checkOutStr = (dayEnd != null) ? dateFormat.format(dayEnd) : "N/A";
 
         holder.tvDate.setText("📅 " + checkInStr + " - " + checkOutStr);
         holder.tvPrice.setText(formatMoney(totalPrice));
         holder.tvStatus.setText(status);
 
-        if (holder.tvBookingId != null && docId != null) {
+        if (holder.tvBookingId != null) {
             String displayId = docId.length() > 6 ? docId.substring(0, 6) : docId;
             holder.tvBookingId.setText("Mã: #" + displayId);
         }
 
-        // Cập nhật màu sắc trạng thái
         if ("PAID".equals(status) || "CONFIRMED".equals(status) || "BOOKED".equals(status)) {
             holder.tvStatus.setTextColor(android.graphics.Color.parseColor("#007BFF"));
         } else if ("COMPLETED".equals(status)) {
@@ -75,21 +78,22 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
             holder.tvStatus.setTextColor(android.graphics.Color.parseColor("#DC3545"));
         }
 
-        String hotelId = res.getHotelId();
-        String roomId = res.getRoomId();
+        String hotelId = stringValue(booking, "hotel_id", "");
+        String roomId = stringValue(booking, "room_id", "");
 
         holder.tvHotelName.setText("Đang tải tên khách sạn...");
         final String[] hotelDetails = {"Khách sạn chưa rõ", ""};
         final String[] roomDetails = {"Phòng chưa rõ"};
 
-        if (hotelId != null && !hotelId.isEmpty()) {
+        if (!hotelId.isEmpty()) {
             db.collection("hotels").document(hotelId).get().addOnSuccessListener(hotelDoc -> {
                 if (hotelDoc.exists()) {
-                    hotelDetails[0] = hotelDoc.getString("hotel_name");
-                    if (hotelDetails[0] == null) hotelDetails[0] = hotelDoc.getString("name");
-                    
+                    hotelDetails[0] = stringValue(hotelDoc, "name", "Tên khách sạn");
+
                     String imgUrl = hotelDoc.getString("image_url");
-                    if (imgUrl == null) imgUrl = hotelDoc.getString("imageUrl");
+                    if (imgUrl == null) {
+                        imgUrl = hotelDoc.getString("imageUrl");
+                    }
                     hotelDetails[1] = (imgUrl != null) ? imgUrl : "";
 
                     holder.tvHotelName.setText(hotelDetails[0]);
@@ -105,10 +109,10 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
             }).addOnFailureListener(e -> Log.e("Adapter", "Lỗi tải Hotel: " + e.getMessage()));
         }
 
-        if (roomId != null && !roomId.isEmpty()) {
+        if (!roomId.isEmpty()) {
             db.collection("rooms").document(roomId).get().addOnSuccessListener(roomDoc -> {
                 if (roomDoc.exists()) {
-                    roomDetails[0] = roomDoc.getString("name");
+                    roomDetails[0] = stringValue(roomDoc, "name", "Tên phòng");
                 }
             });
         }
@@ -163,13 +167,20 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
 
             if (btnBack != null) btnBack.setOnClickListener(view -> dialog.dismiss());
 
-            if (btnCancelReservation != null && docId != null) {
+            if (btnCancelReservation != null) {
                 btnCancelReservation.setOnClickListener(view -> {
-                    db.collection("reservations").document(docId).update("status", "CANCELLED")
+                    booking.getReference().update("status", "CANCELLED")
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(context, "Đã hủy đơn đặt phòng!", Toast.LENGTH_SHORT).show();
                                 dialog.dismiss();
                             });
+                });
+            }
+
+            if (btnReviewReservation != null) {
+                btnReviewReservation.setOnClickListener(view -> {
+                    Toast.makeText(context, "Tính năng đánh giá đang phát triển", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
                 });
             }
 
@@ -189,13 +200,30 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
         return bookings.size();
     }
 
+    private String stringValue(DocumentSnapshot document, String field, String fallback) {
+        String value = document.getString(field);
+        return value == null ? fallback : value;
+    }
+
+    private double doubleValue(DocumentSnapshot document, String field, double fallback) {
+        Object value = document.get(field);
+        if (value instanceof Number) {
+            return ((Number) value).doubleValue();
+        }
+        return fallback;
+    }
+
     private String formatMoney(double value) {
         return String.format(Locale.getDefault(), "%,.0f đ", value);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         ShapeableImageView imgThumbnail;
-        TextView tvHotelName, tvStatus, tvDate, tvPrice, tvBookingId;
+        TextView tvHotelName;
+        TextView tvStatus;
+        TextView tvDate;
+        TextView tvPrice;
+        TextView tvBookingId;
         Button btnViewDetail;
 
         ViewHolder(@NonNull View itemView) {

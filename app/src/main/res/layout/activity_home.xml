@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://tools.android.com/tools"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background">
@@ -18,29 +18,28 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/layoutUserActions"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Chào mừng bạn đến với Hotel Booking"
+                        android:text="Chào mừng đến StayHub"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Đặt phòng khách sạn ngay"
+                        android:text="Tìm nơi nghỉ lý tưởng"
                         android:textColor="@color/text_primary"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -50,43 +49,49 @@
                     android:id="@+id/layoutUserActions"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
                     <TextView
                         android:id="@+id/btnProfile"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Chào, Người dùng!"
+                        android:background="?android:attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:ellipsize="end"
+                        android:focusable="true"
+                        android:maxLines="1"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="6dp"
+                        android:text="Tài khoản"
                         android:textColor="@color/ocean_blue"
                         android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="8dp"
-                        android:background="?android:attr/selectableItemBackground"
-                        android:focusable="true"
-                        android:clickable="true" />
+                        android:textStyle="bold" />
 
+<!--                    <ImageView-->
+<!--                        android:id="@+id/btnLogout"-->
+<!--                        android:layout_width="40dp"-->
+<!--                        android:layout_height="40dp"-->
+<!--                        android:padding="10dp"-->
+<!--                        android:src="@android:drawable/ic_lock_power_off"-->
+<!--                        app:tint="@color/warn_text" />-->
                     <TextView
                         android:id="@+id/btnLogout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Đăng xuất"
-                        android:textColor="#FF3B30"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="6dp"
-                        android:layout_marginStart="4dp"
-                        android:visibility="visible"
+                        android:text="Đăng xuất"
+                        android:textColor="@color/warn_text"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
                         android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:focusable="true"
-                        android:clickable="true" />
+                        android:clickable="true"
+                        android:focusable="true" />
                 </LinearLayout>
-
-            </LinearLayout>
+            </RelativeLayout>
 
             <LinearLayout
                 android:id="@+id/searchBar"
@@ -96,9 +101,7 @@
                 android:background="@drawable/bg_search"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:clickable="true"
-                android:focusable="true">
+                android:paddingHorizontal="16dp">
 
                 <ImageView
                     android:layout_width="20dp"
@@ -124,166 +127,179 @@
         </LinearLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <FrameLayout
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/mainContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Main Content Layout -->
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/mainContent"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="visible">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
 
-            <LinearLayout
+            <!-- StayHub Banner -->
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="24dp">
+                android:layout_height="160dp"
+                android:layout_margin="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
 
                 <com.denzcoskun.imageslider.ImageSlider
                     android:id="@+id/bannerSlider"
                     android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:layout_margin="16dp"
+                    android:layout_height="match_parent"
                     app:iss_auto_cycle="true"
-                    app:iss_delay="0"
-                    app:iss_period="2000" />
+                    app:iss_delay="3000"
+                    app:iss_period="3000" />
+            </androidx.cardview.widget.CardView>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="16dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:text="Danh mục"
+                    android:text="Khách sạn nổi bật"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCategories"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:clipToPadding="false"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="12dp"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/item_category" />
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="24dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Khách sạn nổi bật"
-                        android:textColor="@color/text_primary"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvSeeAllFeatured"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:text="Xem tất cả"
-                        android:textColor="@color/primary"
-                        android:textSize="14sp" />
-                </RelativeLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvFeaturedHotels"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:nestedScrollingEnabled="false"
-                    android:paddingHorizontal="6dp" />
 
                 <TextView
+                    android:id="@+id/tvSeeAllFeatured"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="24dp"
-                    android:text="Gợi ý dành cho bạn"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="Xem tất cả"
+                    android:textColor="@color/primary"
                     android:textStyle="bold" />
+            </RelativeLayout>
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvSuggestions"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:nestedScrollingEnabled="false"
-                    android:paddingHorizontal="16dp" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFeaturedHotels"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingHorizontal="8dp" />
 
-            </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:text="Danh mục"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-        <!-- Loading/Error State Layout -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCategories"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:text="Gợi ý cho bạn"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSuggestions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false"
+                android:paddingHorizontal="8dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <FrameLayout
+        android:id="@+id/stateLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:visibility="gone"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ProgressBar
+            android:id="@+id/loadingView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
         <LinearLayout
-            android:id="@+id/stateLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:id="@+id/emptyView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:gravity="center"
             android:orientation="vertical"
             android:visibility="gone">
 
-            <ProgressBar
-                android:id="@+id/loadingView"
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@android:drawable/ic_menu_search"
+                app:tint="@color/text_secondary" />
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone" />
-
-            <LinearLayout
-                android:id="@+id/errorView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:src="@android:drawable/ic_dialog_alert"
-                    app:tint="@color/text_secondary" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:text="Đã có lỗi xảy ra"
-                    android:textColor="@color/text_primary" />
-
-                <Button
-                    android:id="@+id/btnRetry"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Thử lại" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/emptyView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Không tìm thấy khách sạn nào" />
-            </LinearLayout>
+                android:layout_marginTop="16dp"
+                android:text="Không tìm thấy khách sạn nào"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/errorView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@android:drawable/stat_notify_error"
+                app:tint="@color/warn_text" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Đã xảy ra lỗi khi tải dữ liệu"
+                android:textColor="@color/text_secondary"
+                android:textSize="16sp" />
+
+            <Button
+                android:id="@+id/btnRetry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Thử lại"
+                style="@style/Widget.MaterialComponents.Button.TextButton" />
+        </LinearLayout>
     </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
