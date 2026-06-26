@@ -707,6 +707,18 @@ public class HotelDetailActivity extends AppCompatActivity {
         if (isOpeningConfirm) {
             return;
         }
+        if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() == null) {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Yêu cầu đăng nhập")
+                .setMessage("Bạn cần đăng nhập để thực hiện đặt phòng.")
+                .setPositiveButton("Đăng nhập", (dialog, which) -> {
+                    Intent intent = new Intent(this, com.example.hotelbooking.ui.auth.LoginActivity.class);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                .show();
+            return;
+        }
         if (selectedRoom == null) {
             Toast.makeText(this, "Vui long chon hang phong", Toast.LENGTH_SHORT).show();
             return;
@@ -728,6 +740,18 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void openBookingWithRoom(Room room) {
         if (isOpeningConfirm) {
+            return;
+        }
+        if (com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser() == null) {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Yêu cầu đăng nhập")
+                .setMessage("Bạn cần đăng nhập để thực hiện đặt phòng.")
+                .setPositiveButton("Đăng nhập", (dialog, which) -> {
+                    Intent intent = new Intent(this, com.example.hotelbooking.ui.auth.LoginActivity.class);
+                    startActivity(intent);
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> dialog.dismiss())
+                .show();
             return;
         }
         if (hotel == null || room == null) {

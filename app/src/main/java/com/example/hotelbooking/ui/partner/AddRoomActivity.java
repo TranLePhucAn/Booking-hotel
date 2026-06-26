@@ -1,4 +1,4 @@
-package com.example.hotelbooking.ui.owner;
+package com.example.hotelbooking.ui.partner;
 
 import android.os.Bundle;
 import android.text.TextUtils;
