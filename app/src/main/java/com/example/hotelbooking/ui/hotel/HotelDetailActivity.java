@@ -61,6 +61,9 @@ public class HotelDetailActivity extends AppCompatActivity {
     private double selectedRoomPrice;
     private String selectedRoomImage;
     private int selectedAvailableRooms;
+    private Room lowestAvailableRoom;
+    private String lowestAvailableRoomImage;
+    private double lowestAvailableRoomPrice = Double.MAX_VALUE;
     private long checkInDateMillis;
     private long checkOutDateMillis;
     private boolean isOpeningConfirm;
@@ -126,7 +129,7 @@ public class HotelDetailActivity extends AppCompatActivity {
                             if (targetRoom != null) {
                                 targetRoom.setId(firstRoomSnapshot.getId());
                                 // gửi dl phòng đầu tiên qua trang confirm
-                                openBookingWithRoom(targetRoom);
+                                openRoomDetail(targetRoom, firstStringValue(firstRoomSnapshot, "", "image_url", "imageUrl"));
                             }
                         } else {
                             Toast.makeText(this, "Khách sạn hiện tại không còn phòng trống", Toast.LENGTH_SHORT).show();
@@ -278,6 +281,9 @@ public class HotelDetailActivity extends AppCompatActivity {
 
     private void loadRooms() {
         binding.layoutRooms.removeAllViews();
+        lowestAvailableRoom = null;
+        lowestAvailableRoomImage = "";
+        lowestAvailableRoomPrice = Double.MAX_VALUE;
 
         // Tìm các phòng có trường hotel_id trùng khớp với ID khách sạn hiện tại
         db.collection("rooms")
@@ -316,6 +322,7 @@ public class HotelDetailActivity extends AppCompatActivity {
 
         boolean canBook = "AVAILABLE".equalsIgnoreCase(room.getStatus()) && room.getAvailableRooms() > 0;
         String roomImage = firstStringValue(roomSnapshot, "", "image_url", "imageUrl");
+        rememberLowestAvailableRoom(room, roomImage, price, canBook);
 
         if (!roomImage.isEmpty()) {
             ImageView imageView = new ImageView(this);
@@ -336,13 +343,15 @@ public class HotelDetailActivity extends AppCompatActivity {
         box.addView(createText("Trạng thái: " + (canBook ? "Còn phòng (" + room.getAvailableRooms() + ")" : "Hết phòng"), false));
 
         Button bookButton = new Button(this);
+        bookButton.setText(canBook ? "Xem chi tiet" : "Het phong");
         bookButton.setText(canBook ? "Chọn" : "Hết phòng");
         bookButton.setEnabled(canBook);
+        bookButton.setText(canBook ? "Xem chi tiet" : "Het phong");
 
         // gửi dl phòng được chọn qua trang confirm
-        bookButton.setOnClickListener(v -> selectRoom(room, roomImage));
+        bookButton.setOnClickListener(v -> openRoomDetail(room, roomImage));
         if (canBook) {
-            box.setOnClickListener(v -> selectRoom(room, roomImage));
+            box.setOnClickListener(v -> openRoomDetail(room, roomImage));
         }
 
         box.addView(bookButton);
@@ -374,6 +383,7 @@ public class HotelDetailActivity extends AppCompatActivity {
     private void addDemoRoomView(Room room, String capacity, String roomImage) {
         LinearLayout box = createBox();
         boolean canBook = "AVAILABLE".equalsIgnoreCase(room.getStatus()) && room.getAvailableRooms() > 0;
+        rememberLowestAvailableRoom(room, roomImage, room.getPricePerNight(), canBook);
 
         if (roomImage != null && !roomImage.isEmpty()) {
             ImageView imageView = new ImageView(this);
@@ -394,11 +404,13 @@ public class HotelDetailActivity extends AppCompatActivity {
         box.addView(createText("Trang thai: " + (canBook ? "Con phong (" + room.getAvailableRooms() + ")" : "Het phong"), false));
 
         Button selectButton = new Button(this);
+        selectButton.setText(canBook ? "Xem chi tiet" : "Het phong");
         selectButton.setText(canBook ? "Chọn" : "Hết phòng");
         selectButton.setEnabled(canBook);
-        selectButton.setOnClickListener(v -> selectRoom(room, roomImage));
+        selectButton.setText(canBook ? "Xem chi tiet" : "Het phong");
+        selectButton.setOnClickListener(v -> openRoomDetail(room, roomImage));
         if (canBook) {
-            box.setOnClickListener(v -> selectRoom(room, roomImage));
+            box.setOnClickListener(v -> openRoomDetail(room, roomImage));
         }
 
         box.addView(selectButton);
@@ -546,11 +558,40 @@ public class HotelDetailActivity extends AppCompatActivity {
         Toast.makeText(this, "Da chon phong", Toast.LENGTH_SHORT).show();
     }
 
+    private void openRoomDetail(Room room, String roomImage) {
+        if (room == null || room.getAvailableRooms() <= 0 || !"AVAILABLE".equalsIgnoreCase(room.getStatus())) {
+            Toast.makeText(this, "Phong nay hien khong con trong", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent intent = new Intent(this, RoomDetailActivity.class);
+        intent.putExtra("EXTRA_HOTEL", hotel);
+        intent.putExtra("EXTRA_ROOM", room);
+        intent.putExtra("hotel_id", hotelId);
+        intent.putExtra("room_id", room.getId());
+        intent.putExtra("room_image", valueOrDefault(roomImage, room.getImageUrl()));
+        intent.putExtra("address", address);
+        startActivity(intent);
+    }
+
+    private void rememberLowestAvailableRoom(Room room, String roomImage, double price, boolean canBook) {
+        if (!canBook || room == null) {
+            return;
+        }
+        double roomPrice = price > 0 ? price : hotel.getPrice();
+        if (lowestAvailableRoom == null || roomPrice < lowestAvailableRoomPrice) {
+            lowestAvailableRoom = room;
+            lowestAvailableRoomImage = roomImage;
+            lowestAvailableRoomPrice = roomPrice;
+            binding.tvPrice.setText(formatMoney(roomPrice) + " / dem");
+        }
+    }
+
     private boolean proceedBooking() {
         if (selectedRoom == null || selectedRoomId == null || selectedRoomId.isEmpty()) {
-            Toast.makeText(this, "Vui long chon hang phong", Toast.LENGTH_SHORT).show();
+            autoBookLowestAvailableRoom();
             return true;
         }
+        ensureDefaultBookingDates();
         if (checkInDateMillis <= 0) {
             Toast.makeText(this, "Vui long chon ngay den", Toast.LENGTH_SHORT).show();
             showDatePicker(true);
@@ -581,6 +622,75 @@ public class HotelDetailActivity extends AppCompatActivity {
 
         openBookingWithRoom(selectedRoom);
         return true;
+    }
+
+    private void autoBookLowestAvailableRoom() {
+        if (lowestAvailableRoom != null) {
+            openRoomDetail(lowestAvailableRoom, lowestAvailableRoomImage);
+            return;
+        }
+
+        db.collection("rooms")
+                .whereEqualTo("hotel_id", hotelId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    Room cheapestRoom = null;
+                    String cheapestRoomImage = "";
+                    double cheapestPrice = Double.MAX_VALUE;
+
+                    for (DocumentSnapshot roomSnapshot : querySnapshot.getDocuments()) {
+                        Room room = roomSnapshot.toObject(Room.class);
+                        if (!isRoomAvailable(room)) {
+                            continue;
+                        }
+                        room.setId(roomSnapshot.getId());
+                        double price = room.getPricePerNight() > 0 ? room.getPricePerNight() : hotel.getPrice();
+                        if (price < cheapestPrice) {
+                            cheapestPrice = price;
+                            cheapestRoom = room;
+                            cheapestRoomImage = firstStringValue(roomSnapshot, "", "image_url", "imageUrl");
+                        }
+                    }
+
+                    if (cheapestRoom == null) {
+                        Toast.makeText(this, "Khach san hien tai khong con phong trong", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    openRoomDetail(cheapestRoom, cheapestRoomImage);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Khong tim duoc phong gia thap nhat: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private boolean isRoomAvailable(Room room) {
+        return room != null
+                && room.getAvailableRooms() > 0
+                && "AVAILABLE".equalsIgnoreCase(valueOrDefault(room.getStatus(), ""));
+    }
+
+    private void ensureDefaultBookingDates() {
+        if (checkInDateMillis <= 0) {
+            Calendar checkIn = Calendar.getInstance();
+            checkIn.set(Calendar.HOUR_OF_DAY, 13);
+            checkIn.set(Calendar.MINUTE, 0);
+            checkIn.set(Calendar.SECOND, 0);
+            checkIn.set(Calendar.MILLISECOND, 0);
+            checkInDateMillis = checkIn.getTimeInMillis();
+            binding.btnCheckInDate.setText(dateFormat.format(new Date(checkInDateMillis)));
+        }
+
+        if (checkOutDateMillis <= checkInDateMillis) {
+            Calendar checkOut = Calendar.getInstance();
+            checkOut.setTimeInMillis(checkInDateMillis);
+            checkOut.add(Calendar.DAY_OF_MONTH, 1);
+            checkOut.set(Calendar.HOUR_OF_DAY, 12);
+            checkOut.set(Calendar.MINUTE, 0);
+            checkOut.set(Calendar.SECOND, 0);
+            checkOut.set(Calendar.MILLISECOND, 0);
+            checkOutDateMillis = checkOut.getTimeInMillis();
+            binding.btnCheckOutDate.setText(dateFormat.format(new Date(checkOutDateMillis)));
+        }
     }
 
     private int getGuestCount() {
