@@ -1,0 +1,43 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Hàm helper kiểm tra đăng nhập
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Hàm helper kiểm tra chủ tài nguyên
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Hàm helper kiểm tra admin từ Firestore
+    function isAdmin() {
+      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Rules cho Avatars
+    match /avatars/{userId}.jpg {
+      allow read: if true; // Ai cũng xem được avatar người dùng
+      allow write: if isOwner(userId);
+    }
+
+    // Rules cho File Xác minh Đối tác
+    match /verification_files/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId);
+    }
+
+    // Rules cho ảnh Khách sạn và Phòng
+    match /hotels/{ownerId}/{fileName} {
+      allow read: if true; // Ai cũng xem được ảnh khách sạn
+      allow write: if isOwner(ownerId) || isAdmin();
+    }
+    
+    match /rooms/{ownerId}/{fileName} {
+      allow read: if true; // Ai cũng xem được ảnh phòng
+      allow write: if isOwner(ownerId) || isAdmin();
+    }
+  }
+}

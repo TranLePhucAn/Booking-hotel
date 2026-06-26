@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Hàm helper kiểm tra đăng nhập
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Hàm helper kiểm tra chủ tài khoản
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Hàm helper lấy dữ liệu user hiện tại
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    // Hàm helper kiểm tra admin
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'admin';
+    }
+    
+    // Hàm helper kiểm tra partner
+    function isPartner() {
+      return isSignedIn() && getUserData().role == 'partner';
+    }
+
+    // Rules cho Users collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Rules cho Partner Applications collection
+    match /partner_applications/{appId} {
+      allow read: if isOwner(appId) || isAdmin();
+      allow create: if isSignedIn();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Rules cho Hotels collection
+    match /hotels/{hotelId} {
+      allow read: if true; // Ai cũng xem được khách sạn
+      allow create: if isPartner() || isAdmin();
+      allow update, delete: if isAdmin() || (isPartner() && resource.data.owner_id == request.auth.uid);
+    }
+
+    // Rules cho Rooms collection
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create: if isPartner() || isAdmin();
+      allow update, delete: if isAdmin() || (isPartner() && resource.data.owner_id == request.auth.uid);
+    }
+
+    // Rules cho Reservations collection
+    match /reservations/{resId} {
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.customer_id == request.auth.uid || resource.data.owner_id == request.auth.uid));
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || (isSignedIn() && (resource.data.customer_id == request.auth.uid || resource.data.owner_id == request.auth.uid));
+      allow delete: if isAdmin();
+    }
+
+    // Rules cho Reviews collection
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.customer_id == request.auth.uid);
+    }
+
+    // Rules cho Notifications collection
+    match /notifications/{notiId} {
+      allow read: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow create: if isAdmin() || isPartner();
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.user_id == request.auth.uid);
+    }
+  }
+}
