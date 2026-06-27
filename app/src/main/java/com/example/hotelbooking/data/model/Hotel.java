@@ -2,6 +2,7 @@ package com.example.hotelbooking.data.model;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.PropertyName;
+import com.example.hotelbooking.utils.AppConstants;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +30,9 @@ public class Hotel implements Serializable {
     private double reviewScore;
     private int reviewCount;
 
-    private String status;
     private String ownerId;
+    private String approvalStatus;
+    private boolean active;
 
     // Thuộc tính hỗ trợ sắp xếp, lọc và badges
     private boolean isFeatured;
@@ -77,7 +79,7 @@ public class Hotel implements Serializable {
         this.ratingStar = ratingStar;
         this.reviewScore = reviewScore;
         this.reviewCount = reviewCount;
-        this.status = status;
+        setStatus(status);
         this.ownerId = ownerId;
         this.createdAt = System.currentTimeMillis();
     }
@@ -100,8 +102,25 @@ public class Hotel implements Serializable {
     public double getLongitude() { return longitude; }
     public void setLongitude(double longitude) { this.longitude = longitude; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getStatus() { return approvalStatus; }
+    public void setStatus(String status) {
+        if ("active".equalsIgnoreCase(status)) {
+            this.approvalStatus = AppConstants.STATUS_APPROVED;
+            this.active = true;
+        } else {
+            this.approvalStatus = status;
+        }
+    }
+
+    @PropertyName("approval_status")
+    public String getApprovalStatus() { return approvalStatus; }
+    @PropertyName("approval_status")
+    public void setApprovalStatus(String approvalStatus) { this.approvalStatus = approvalStatus; }
+
+    @PropertyName("is_active")
+    public boolean isActive() { return active; }
+    @PropertyName("is_active")
+    public void setActive(boolean active) { this.active = active; }
 
     @PropertyName("hotel_name")
     public String getHotelName() { return hotelName; }
@@ -182,9 +201,15 @@ public class Hotel implements Serializable {
         hotel.setHotelName(document.contains("hotel_name") ? document.getString("hotel_name") : "Khách sạn");
         hotel.setAddress(document.contains("address") ? document.getString("address") : "Chưa cập nhật địa chỉ");
         hotel.setDescription(document.contains("description") ? document.getString("description") : "Chưa cập nhật mô tả");
-        hotel.setAddress(firstStringValue(document, hotel.getAddress(), "address", "address_text"));
+        hotel.setAddress(firstStringValue(document,hotel.getAddress(), "address", "address_text"));
         hotel.setCategory(document.contains("category") ? document.getString("category") : "Hotel");
-        hotel.setStatus(document.contains("status") ? document.getString("status") : "active");
+        String approvalStatus = firstStringValue(document, "", "approval_status");
+        if (approvalStatus.isEmpty() && "active".equalsIgnoreCase(document.getString("status"))) {
+            approvalStatus = AppConstants.STATUS_APPROVED;
+        }
+        hotel.setApprovalStatus(approvalStatus.isEmpty() ? AppConstants.STATUS_PENDING : approvalStatus);
+        Boolean isActive = document.getBoolean("is_active");
+        hotel.setActive(isActive != null ? isActive : AppConstants.STATUS_APPROVED.equals(hotel.getApprovalStatus()));
         hotel.setImageUrl(firstStringValue(document, "", "image_url", "imageUrl"));
         hotel.setLocationId(document.contains("location_id") ? document.getString("location_id") : "");
         hotel.setOwnerId(firstStringValue(document, "", "owner_id", "ownerId"));

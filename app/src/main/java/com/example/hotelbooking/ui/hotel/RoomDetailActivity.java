@@ -4,6 +4,8 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.model.Room;
 import com.example.hotelbooking.data.model.Section;
 import com.example.hotelbooking.ui.payment.ConfirmActivity;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -45,6 +48,7 @@ public class RoomDetailActivity extends AppCompatActivity {
     private long checkOutDateMillis;
     private Section selectedSection;
     private int selectedAvailableRooms;
+    private boolean adjustingRoomQuantity;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
     private TextView tvRoomName;
@@ -55,6 +59,7 @@ public class RoomDetailActivity extends AppCompatActivity {
     private TextView btnCheckInDate;
     private TextView btnCheckOutDate;
     private EditText edtGuestCount;
+    private EditText edtRoomQuantity;
     private LinearLayout layoutSections;
     private Button btnContinue;
 
@@ -79,6 +84,8 @@ public class RoomDetailActivity extends AppCompatActivity {
         roomId = intent.getStringExtra("room_id");
         roomImage = intent.getStringExtra("room_image");
         address = intent.getStringExtra("address");
+        checkInDateMillis = intent.getLongExtra("EXTRA_CHECK_IN", 0);
+        checkOutDateMillis = intent.getLongExtra("EXTRA_CHECK_OUT", 0);
 
         if (room != null && (roomId == null || roomId.isEmpty())) {
             roomId = room.getId();
@@ -104,15 +111,56 @@ public class RoomDetailActivity extends AppCompatActivity {
         btnCheckInDate = findViewById(R.id.btnRoomCheckInDate);
         btnCheckOutDate = findViewById(R.id.btnRoomCheckOutDate);
         edtGuestCount = findViewById(R.id.edtRoomGuestCount);
+        edtRoomQuantity = findViewById(R.id.edtRoomQuantity);
         layoutSections = findViewById(R.id.layoutSections);
         btnContinue = findViewById(R.id.btnContinueConfirm);
 
+        int initialRoomQuantity = getIntent().getIntExtra("EXTRA_ROOM_QUANTITY", 1);
+        if (edtRoomQuantity != null) {
+            edtRoomQuantity.setText(String.valueOf(Math.max(1, initialRoomQuantity)));
+        }
+        if (checkInDateMillis > 0) {
+            btnCheckInDate.setText(dateFormat.format(new Date(checkInDateMillis)));
+        }
+        if (checkOutDateMillis > 0) {
+            btnCheckOutDate.setText(dateFormat.format(new Date(checkOutDateMillis)));
+        }
+
+        setupRoomQuantityValidation();
         btnContinue.setOnClickListener(v -> continueToConfirm());
+    }
+
+    private void setupRoomQuantityValidation() {
+        if (edtRoomQuantity == null) {
+            return;
+        }
+        edtRoomQuantity.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (adjustingRoomQuantity || selectedAvailableRooms <= 0 || s == null || s.toString().trim().isEmpty()) {
+                    return;
+                }
+                int quantity = getRoomQuantity();
+                if (quantity > selectedAvailableRooms) {
+                    adjustingRoomQuantity = true;
+                    edtRoomQuantity.setText(String.valueOf(selectedAvailableRooms));
+                    edtRoomQuantity.setSelection(edtRoomQuantity.getText().length());
+                    adjustingRoomQuantity = false;
+                    Toast.makeText(RoomDetailActivity.this, "Số phòng tối đa là " + selectedAvailableRooms, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void bindRoomData() {
         if (hotel == null || room == null || roomId == null || roomId.isEmpty()) {
-            Toast.makeText(this, "Khong tim thay thong tin phong", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Không tìm thấy thông tin phòng", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
@@ -125,22 +173,22 @@ public class RoomDetailActivity extends AppCompatActivity {
             imageView.setVisibility(View.GONE);
         }
 
-        tvRoomName.setText(valueOrDefault(room.getRoomName(), "Phong"));
-        tvRoomType.setText(valueOrDefault(room.getRoomType(), "Hang phong tieu chuan"));
-        tvRoomDescription.setText(valueOrDefault(room.getDescription(), "Phong dang cap nhat mo ta chi tiet."));
+        tvRoomName.setText(valueOrDefault(room.getRoomName(), "Phòng"));
+        tvRoomType.setText(valueOrDefault(room.getRoomType(), "Hạng phòng tiêu chuẩn"));
+        tvRoomDescription.setText(valueOrDefault(room.getDescription(), "Phòng đang cập nhật mô tả chi tiết."));
 
         String bed = valueOrDefault(room.getBedType(), "Tieu chuan");
         int adults = room.getCapacityAdults();
         int children = room.getCapacityChildren();
         String sizeText = room.getRoomSize() > 0 ? formatNumber(room.getRoomSize()) + " m2 - " : "";
-        tvRoomInfo.setText(sizeText + "Giuong: " + bed + " - Suc chua: " + adults + " nguoi lon, " + children + " tre em");
+        tvRoomInfo.setText(sizeText + "Giường: " + bed + " - Sức chứa: " + adults + " người lớn, " + children + " trẻ em");
     }
 
     private void setupDatePickers() {
         btnCheckInDate.setOnClickListener(v -> showDatePicker(true));
         btnCheckOutDate.setOnClickListener(v -> {
             if (checkInDateMillis <= 0) {
-                Toast.makeText(this, "Vui long chon ngay den truoc", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Vui lòng chọn ngày đến trước", Toast.LENGTH_SHORT).show();
                 showDatePicker(true);
                 return;
             }
@@ -167,24 +215,24 @@ public class RoomDetailActivity extends AppCompatActivity {
 
                     if (isCheckIn) {
                         if (selectedMillis < todayStartMillis()) {
-                            Toast.makeText(this, "Ngay den khong duoc nho hon hom nay", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Ngày đến không được nhỏ hơn hôm nay", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         checkInDateMillis = selectedMillis;
                         btnCheckInDate.setText(dateFormat.format(new Date(checkInDateMillis)));
                         if (checkOutDateMillis > 0 && checkOutDateMillis <= checkInDateMillis) {
                             checkOutDateMillis = 0;
-                            btnCheckOutDate.setText("Bam chon ngay di");
+                            btnCheckOutDate.setText("Bấm chọn ngày đi");
                         }
                         return;
                     }
 
                     if (checkInDateMillis <= 0) {
-                        Toast.makeText(this, "Hay chon ngay den truoc", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Hãy chọn ngày đến trước", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (selectedMillis <= checkInDateMillis) {
-                        Toast.makeText(this, "Ngay di phai sau ngay den", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Ngày đi phải sau ngày đến", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     checkOutDateMillis = selectedMillis;
@@ -194,35 +242,59 @@ public class RoomDetailActivity extends AppCompatActivity {
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH));
 
-        dialog.setTitle(isCheckIn ? "Chon ngay den" : "Chon ngay di");
+        dialog.setTitle(isCheckIn ? "Chọn ngày đến" : "Chọn ngày đi");
         dialog.getDatePicker().setMinDate(isCheckIn ? todayStartMillis() : checkoutMinDateMillis());
         dialog.show();
     }
 
     private void loadSections() {
         layoutSections.removeAllViews();
-        layoutSections.addView(createText("Dang tai hang phong...", false));
-        db.collection("sections")
+        selectedSection = null;
+        selectedAvailableRooms = 0;
+
+        String sectionId = room.getSectionId();
+        if (sectionId != null && !sectionId.trim().isEmpty()) {
+            db.collection(AppConstants.COLLECTION_SECTIONS)
+                    .document(sectionId)
+                    .get()
+                    .addOnSuccessListener(document -> {
+                        if (document.exists()) {
+                            addSectionFromSnapshot(document);
+                        } else {
+                            loadSectionsByRoomId();
+                        }
+                    })
+                    .addOnFailureListener(e -> loadSectionsByRoomId());
+            return;
+        }
+
+        loadSectionsByRoomId();
+    }
+
+    private void loadSectionsByRoomId() {
+        db.collection(AppConstants.COLLECTION_SECTIONS)
                 .whereEqualTo("room_id", roomId)
                 .get()
-                .addOnSuccessListener(this::showSectionsOrTryCamelCase)
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot.isEmpty()) {
+                        loadSectionsByCamelRoomId();
+                        return;
+                    }
+                    showSections(querySnapshot);
+                })
                 .addOnFailureListener(e -> showRoomAsDefaultSection());
     }
 
-    private void showSectionsOrTryCamelCase(QuerySnapshot querySnapshot) {
-        if (!querySnapshot.isEmpty()) {
-            showSections(querySnapshot);
-            return;
-        }
-        db.collection("sections")
+    private void loadSectionsByCamelRoomId() {
+        db.collection(AppConstants.COLLECTION_SECTIONS)
                 .whereEqualTo("roomId", roomId)
                 .get()
-                .addOnSuccessListener(secondSnapshot -> {
-                    if (secondSnapshot.isEmpty()) {
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot.isEmpty()) {
                         showRoomAsDefaultSection();
-                    } else {
-                        showSections(secondSnapshot);
+                        return;
                     }
+                    showSections(querySnapshot);
                 })
                 .addOnFailureListener(e -> showRoomAsDefaultSection());
     }
@@ -230,13 +302,29 @@ public class RoomDetailActivity extends AppCompatActivity {
     private void showSections(QuerySnapshot querySnapshot) {
         layoutSections.removeAllViews();
         for (DocumentSnapshot document : querySnapshot.getDocuments()) {
-            Section section = document.toObject(Section.class);
-            if (section == null) {
-                continue;
-            }
-            section.setId(document.getId());
-            addSectionView(section, availableRoomsForSection(document));
+            addSectionFromSnapshot(document);
         }
+    }
+
+    private void addSectionFromSnapshot(DocumentSnapshot document) {
+        Section section = document.toObject(Section.class);
+        if (section == null) {
+            return;
+        }
+        section.setId(document.getId());
+        if (section.getHotelId() == null || section.getHotelId().isEmpty()) {
+            section.setHotelId(hotelId);
+        }
+        if (section.getBasePrice() <= 0) {
+            section.setBasePrice(room.getPricePerNight() > 0 ? room.getPricePerNight() : hotel.getPrice());
+        }
+        if (section.getMaxGuests() <= 0) {
+            section.setMaxGuests(room.getCapacityAdults() + room.getCapacityChildren());
+        }
+        if (section.getRoomStyle() == null || section.getRoomStyle().trim().isEmpty()) {
+            section.setRoomStyle(valueOrDefault(room.getRoomName(), "Phòng"));
+        }
+        addSectionView(section, availableRoomsForSection(document));
     }
 
     private void showRoomAsDefaultSection() {
@@ -248,28 +336,28 @@ public class RoomDetailActivity extends AppCompatActivity {
                 false,
                 false,
                 room.getCapacityAdults() + room.getCapacityChildren(),
-                valueOrDefault(room.getRoomName(), "Phong")
+                valueOrDefault(room.getRoomName(), "Phòng")
         );
         addSectionView(fallback, room.getAvailableRooms());
     }
 
     private void addSectionView(Section section, int availableRooms) {
         LinearLayout box = createBox();
-        String style = valueOrDefault(section.getRoomStyle(), valueOrDefault(room.getRoomName(), "Hang phong"));
+        String style = valueOrDefault(section.getRoomStyle(), valueOrDefault(room.getRoomName(), "Hạng phòng"));
         double price = section.getBasePrice() > 0 ? section.getBasePrice() : room.getPricePerNight();
         int maxGuests = section.getMaxGuests() > 0 ? section.getMaxGuests() : room.getCapacityAdults() + room.getCapacityChildren();
 
         box.addView(createText(style, true));
-        box.addView(createText(formatMoney(price) + " / dem", true));
+        box.addView(createText(formatMoney(price) + " / đêm", true));
         if (maxGuests > 0) {
-            box.addView(createText("Toi da " + maxGuests + " khach", false));
+            box.addView(createText("Tối đa " + maxGuests + " khách", false));
         }
-        box.addView(createText(section.isRefundable() ? "Co hoan tien" : "Khong hoan tien", false));
-        box.addView(createText(section.isReschedulable() ? "Co doi lich" : "Khong doi lich", false));
-        box.addView(createText("Con " + availableRooms + " phong", false));
+        box.addView(createText(section.isRefundable() ? "Có hoàn tiền" : "Không hoàn tiền", false));
+        box.addView(createText(section.isReschedulable() ? "Có đổi lịch" : "Không đổi lịch", false));
+        box.addView(createText("Còn " + availableRooms + " phòng", false));
 
         Button chooseButton = new Button(this);
-        chooseButton.setText("Chon hang nay");
+        chooseButton.setText("Chọn hạng này");
         chooseButton.setEnabled(availableRooms > 0);
         chooseButton.setOnClickListener(v -> selectSection(section, availableRooms));
         if (availableRooms > 0) {
@@ -283,7 +371,12 @@ public class RoomDetailActivity extends AppCompatActivity {
     private void selectSection(Section section, int availableRooms) {
         selectedSection = section;
         selectedAvailableRooms = availableRooms;
-        tvSelectedSection.setText("Da chon: " + valueOrDefault(section.getRoomStyle(), room.getRoomName()));
+        int roomQuantity = getRoomQuantity();
+        if (roomQuantity > selectedAvailableRooms) {
+            edtRoomQuantity.setText(String.valueOf(selectedAvailableRooms));
+            Toast.makeText(this, "Số phòng tối đa là " + selectedAvailableRooms, Toast.LENGTH_SHORT).show();
+        }
+        tvSelectedSection.setText("Đã chọn: " + valueOrDefault(section.getRoomStyle(), room.getRoomName()));
     }
 
     private void continueToConfirm() {
@@ -300,26 +393,31 @@ public class RoomDetailActivity extends AppCompatActivity {
             return;
         }
         if (selectedSection == null) {
-            Toast.makeText(this, "Vui long chon hang phong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn hạng phòng", Toast.LENGTH_SHORT).show();
             return;
         }
         if (checkInDateMillis <= 0 || checkOutDateMillis <= 0) {
-            Toast.makeText(this, "Vui long chon ngay den va ngay di", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn ngày đến và ngày đi", Toast.LENGTH_SHORT).show();
             return;
         }
         if (checkOutDateMillis <= checkInDateMillis) {
-            Toast.makeText(this, "Ngay di phai sau ngay den", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Ngày đi phải sau ngày đến", Toast.LENGTH_SHORT).show();
             return;
         }
         if (selectedAvailableRooms <= 0) {
-            Toast.makeText(this, "Hang phong da chon khong con trong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Hạng phòng đã chọn không còn trống", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        int roomQuantity = getRoomQuantity();
+        if (roomQuantity > selectedAvailableRooms) {
+            Toast.makeText(this, "Số phòng chọn vượt quá số phòng còn trống", Toast.LENGTH_SHORT).show();
             return;
         }
         int maxGuests = selectedSection.getMaxGuests() > 0
                 ? selectedSection.getMaxGuests()
                 : room.getCapacityAdults() + room.getCapacityChildren();
-        if (maxGuests > 0 && getGuestCount() > maxGuests) {
-            Toast.makeText(this, "So khach vuot qua suc chua", Toast.LENGTH_SHORT).show();
+        if (maxGuests > 0 && getGuestCount() > maxGuests * roomQuantity) {
+            Toast.makeText(this, "Số khách vượt quá sức chứa", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -336,17 +434,27 @@ public class RoomDetailActivity extends AppCompatActivity {
         intent.putExtra("check_in", checkInDateMillis);
         intent.putExtra("check_out", checkOutDateMillis);
         intent.putExtra("guest_count", getGuestCount());
+        intent.putExtra("room_quantity", roomQuantity);
         intent.putExtra("EXTRA_HOTEL", hotel);
         intent.putExtra("EXTRA_SECTION", selectedSection);
         intent.putExtra("EXTRA_AVAILABLE_ROOMS", selectedAvailableRooms);
         intent.putExtra("EXTRA_CHECK_IN", checkInDateMillis);
         intent.putExtra("EXTRA_CHECK_OUT", checkOutDateMillis);
+        intent.putExtra("EXTRA_ROOM_QUANTITY", roomQuantity);
         startActivity(intent);
     }
 
     private int getGuestCount() {
         try {
             return Math.max(1, Integer.parseInt(edtGuestCount.getText().toString().trim()));
+        } catch (NumberFormatException e) {
+            return 1;
+        }
+    }
+
+    private int getRoomQuantity() {
+        try {
+            return Math.max(1, Integer.parseInt(edtRoomQuantity.getText().toString().trim()));
         } catch (NumberFormatException e) {
             return 1;
         }

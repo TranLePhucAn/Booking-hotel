@@ -79,7 +79,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
-                android:text="Ngay luu tru"
+                android:text="Ngày lưu trú"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -100,7 +100,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:text="Bam chon ngay den"
+                    android:text="Bấm chọn ngày đến"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
 
@@ -114,7 +114,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:text="Bam chon ngay di"
+                    android:text="Bấm chọn ngày đi"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
             </LinearLayout>
@@ -125,20 +125,54 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/bg_input"
-                android:hint="So khach"
+                android:hint="Số khách"
                 android:inputType="number"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:text="1"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_input"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:text="Số lượng phòng"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edtRoomQuantity"
+                    android:layout_width="96dp"
+                    android:layout_height="48dp"
+                    android:background="@android:color/transparent"
+                    android:gravity="center"
+                    android:hint="1"
+                    android:inputType="number"
+                    android:text="1"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvSelectedSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="Chua chon hang phong"
+                android:text="Chưa chọn hạng phòng"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
@@ -146,7 +180,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
-                android:text="Hang phong"
+                android:text="Hạng phòng"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />

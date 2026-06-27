@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.ui.home.HomeActivity;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -149,7 +150,7 @@ public class PaymentActivity extends AppCompatActivity {
         String accountNo = "0342689642"; // Số tài khoản ngân hàng thật
         String accountName = "NGUYEN THI HONG HANH"; // Tên chủ tài khoản
 
-        String description = "Thanh toan ma phong " + reservationId;
+        String description = "Thanh toán mã phòng " + reservationId;
 
         String qrUrl = "https://img.vietqr.io/image/" + bankId + "-" + accountNo + "-compact.jpg"
                 + "?amount=" + (int) totalPrice
@@ -173,14 +174,14 @@ public class PaymentActivity extends AppCompatActivity {
         // todo: thanh toán chuyển trạng thái thủ công
         btnBooking.setEnabled(false);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("reservations").document(reservationId).get()
+        db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if(documentSnapshot.exists()) {
                         Timestamp paymentDeadline = documentSnapshot.getTimestamp("payment_deadline");
                         Timestamp now = Timestamp.now();
                         if(paymentDeadline != null && now.compareTo(paymentDeadline) > 0) {
-                            db.collection("reservations").document(reservationId)
-                                    .update("status", "CANCELLED")
+                            db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId)
+                                    .update("status", AppConstants.BOOKING_EXPIRED)
                                     .addOnCompleteListener(task -> {
                                         Toast.makeText(PaymentActivity.this,
                                                 "Đơn đặt phòng của bạn đã hết hạn 20 phút giữ phòng! Vui lòng đặt lại.",
@@ -195,11 +196,12 @@ public class PaymentActivity extends AppCompatActivity {
                         }
 
                         Map<String, Object> updates = new HashMap<>();
-                        updates.put("status", "PAID");
+                        updates.put("status", AppConstants.BOOKING_CONFIRMED);
+                        updates.put("payment_status", AppConstants.PAYMENT_PAID);
                         updates.put("payment_method", paymentMethod);
                         updates.put("paid_at", now);
 
-                        db.collection("reservations").document(reservationId)
+                        db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId)
                                 .update(updates)
                                 .addOnSuccessListener(runnable -> {
                                     Toast.makeText(PaymentActivity.this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();

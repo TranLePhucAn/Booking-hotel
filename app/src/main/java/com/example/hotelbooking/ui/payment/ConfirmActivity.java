@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.model.Section;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -29,7 +30,7 @@ public class ConfirmActivity extends AppCompatActivity {
 
     private TextView tvHotelName, tvRoomStyle, tvBasePrice, tvTaxPrice, tvTotalPrice, tvOldTotalPrice,
             tvAvailableRooms, tvDateFrom, tvDateEnd, tvNumberOfNights, tvCheckInTime, tvCheckOutTime;
-    private TextView tvRatingScore, tvReviewCount;
+    private TextView tvRatingScore, tvReviewCount, tvBasePriceLabel;
     private RatingBar ratingBar;
 
     private EditText etPromoCode, etGuestName, etGuestPhone, etGuestEmail;
@@ -42,7 +43,9 @@ public class ConfirmActivity extends AppCompatActivity {
     private Date checkOutDate;
     private int numberOfNights = 1; // mặc định là 1 đêm
     private int availableRooms;
+    private int roomQuantity = 1;
     private String selectedRoomId;
+    private String selectedOwnerId;
     private String checkInText, checkOutText, checkInTimeText, checkOutTimeText;
 
     @Override
@@ -97,6 +100,7 @@ public class ConfirmActivity extends AppCompatActivity {
         tvRatingScore = findViewById(R.id.textView2);
         tvReviewCount = findViewById(R.id.textView3);
         tvRoomStyle = findViewById(R.id.textView5); // ID của Tên hạng phòng
+        tvBasePriceLabel = findViewById(R.id.tv_base_price_label);
         tvBasePrice = findViewById(R.id.tv_base_price);
         tvTaxPrice = findViewById(R.id.tv_tax_price);
         tvTotalPrice = findViewById(R.id.tv_total_price);
@@ -123,7 +127,13 @@ public class ConfirmActivity extends AppCompatActivity {
             hotel = (Hotel) intent.getSerializableExtra("EXTRA_HOTEL");
             section = (Section) intent.getSerializableExtra("EXTRA_SECTION");
             availableRooms = intent.getIntExtra("EXTRA_AVAILABLE_ROOMS", 1);
+            roomQuantity = Math.max(1, intent.getIntExtra("EXTRA_ROOM_QUANTITY",
+                    intent.getIntExtra("room_quantity", 1)));
+            if (availableRooms > 0 && roomQuantity > availableRooms) {
+                roomQuantity = availableRooms;
+            }
             selectedRoomId = intent.getStringExtra("room_id");
+            selectedOwnerId = intent.getStringExtra("owner_id");
 
             // Giả định nhận thêm ngày check-in/out từ bộ lọc tìm kiếm màn hình trước
             // nếu không có thì lấy ngày hôm nay và ngày mai làm mặc định mẫu
@@ -156,7 +166,7 @@ public class ConfirmActivity extends AppCompatActivity {
                 ratingBar.setRating((float) hotel.getRatingStar());
                 tvRatingScore.setText(scoreText);
                 tvReviewCount.setText(reviewText);
-                tvRoomStyle.setText("(1x) " + section.getRoomStyle());
+                tvRoomStyle.setText("(" + roomQuantity + "x) " + section.getRoomStyle());
                 tvAvailableRooms.setText("Chỉ còn " + availableRooms + " phòng");
                 tvDateFrom.setText(checkInText);
                 tvCheckInTime.setText("Từ " + checkInTimeText);
@@ -164,10 +174,13 @@ public class ConfirmActivity extends AppCompatActivity {
                 tvDateEnd.setText(checkOutText);
                 tvCheckOutTime.setText("Đến " + checkOutTimeText);
 
-                double basePrice = section.getBasePrice() * numberOfNights;
+                double basePrice = section.getBasePrice() * numberOfNights * roomQuantity;
                 double taxPrice = basePrice * 0.1; // thuế 10%
                 finalPrice = basePrice + taxPrice;
 
+                if (tvBasePriceLabel != null) {
+                    tvBasePriceLabel.setText("Giá phòng (" + roomQuantity + " phòng x " + numberOfNights + " đêm)");
+                }
                 tvBasePrice.setText(formatVND(basePrice));
                 tvTaxPrice.setText(formatVND(taxPrice));
                 tvTotalPrice.setText(formatVND(finalPrice));
@@ -233,6 +246,7 @@ public class ConfirmActivity extends AppCompatActivity {
             Map<String, Object> reservationData = new HashMap<>();
             reservationData.put("hotel_id", hotel.getId()); // Lấy Document ID của khách sạn
             reservationData.put("section_id", section.getId()); // Lấy Document ID của hạng phòng
+            reservationData.put("owner_id", selectedOwnerId == null ? "" : selectedOwnerId);
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
                 reservationData.put("customer_id", FirebaseAuth.getInstance().getCurrentUser().getUid());
             } else {
@@ -242,24 +256,29 @@ public class ConfirmActivity extends AppCompatActivity {
             reservationData.put("day_start", new Timestamp(checkInDate));
             reservationData.put("day_end", new Timestamp(checkOutDate));
             reservationData.put("number_of_nights", numberOfNights);
+            reservationData.put("room_quantity", roomQuantity);
 
             reservationData.put("guest_name", name);
             reservationData.put("guest_phone", phone);
             reservationData.put("guest_email", email);
 
-            reservationData.put("base_price", section.getBasePrice());
-            reservationData.put("tax_fee", section.getBasePrice() * 0.1);
+            double basePrice = section.getBasePrice() * numberOfNights * roomQuantity;
+            double taxPrice = basePrice * 0.1;
+            reservationData.put("price_per_night", section.getBasePrice());
+            reservationData.put("base_price", basePrice);
+            reservationData.put("tax_fee", taxPrice);
 //            reservationData.put("discount_price", tvOldTotalPrice.getVisibility() == View.VISIBLE ? discountValue : 0);
             reservationData.put("total_price", finalPrice);
 
-            reservationData.put("status", "PENDING"); // chờ thanh toán
+            reservationData.put("status", AppConstants.BOOKING_PENDING_PAYMENT);
+            reservationData.put("payment_status", AppConstants.PAYMENT_UNPAID);
             reservationData.put("created_at", new Timestamp(now));
             reservationData.put("payment_deadline", new Timestamp(deadline)); // deadline thanh toán
             reservationData.put("room_id", selectedRoomId == null ? "" : selectedRoomId);
 
             btnConfirmBooking.setEnabled(false);
 
-            firestore.collection("reservations")
+            firestore.collection(AppConstants.COLLECTION_RESERVATIONS)
                     .add(reservationData)
                     .addOnSuccessListener(documentReference -> {
                         String reservationId = documentReference.getId();

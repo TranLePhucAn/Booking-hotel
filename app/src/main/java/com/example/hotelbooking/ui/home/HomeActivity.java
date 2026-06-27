@@ -17,6 +17,7 @@ import com.example.hotelbooking.databinding.ActivityHomeBinding;
 import com.example.hotelbooking.ui.adapter.CategoryAdapter;
 import com.example.hotelbooking.ui.auth.LoginActivity;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -105,7 +106,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupCategories() {
-        List<String> categories = Arrays.asList("Tat ca", "Resort", "Khach san", "Villa", "Homestay", "Can ho");
+        List<String> categories = Arrays.asList("Tất cả", "Resort", "Khách sạn", "Villa", "Homestay", "Căn hộ");
         CategoryAdapter categoryAdapter = new CategoryAdapter(categories, this::filterByCategory);
 
         binding.rvCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -140,8 +141,9 @@ public class HomeActivity extends AppCompatActivity {
         allHotels.clear();
         allHotels.addAll(DemoHotelData.hotels());
 
-        db.collection("hotels")
-                .whereEqualTo("status", "active")
+        db.collection(AppConstants.COLLECTION_HOTELS)
+                .whereEqualTo("approval_status", AppConstants.STATUS_APPROVED)
+                .whereEqualTo("is_active", true)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot != null && !querySnapshot.isEmpty()) {
@@ -191,7 +193,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void filterByCategory(String category) {
         suggestionHotels.clear();
-        if (category.equalsIgnoreCase("Tat ca")) {
+        if (category.equalsIgnoreCase("Tất cả")) {
             for (Hotel h : allHotels) {
                 if (!h.isFeatured()) suggestionHotels.add(h);
             }
@@ -205,7 +207,7 @@ public class HomeActivity extends AppCompatActivity {
         
         suggestionsAdapter.updateData(suggestionHotels);
         
-        if (suggestionHotels.isEmpty() && !category.equalsIgnoreCase("Tat ca")) {
+        if (suggestionHotels.isEmpty() && !category.equalsIgnoreCase("Tất cả")) {
             Toast.makeText(this, "Không có kết quả cho: " + category, Toast.LENGTH_SHORT).show();
         }
     }

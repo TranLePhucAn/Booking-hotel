@@ -8,6 +8,7 @@ import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.repository.HotelRepository;
 import com.example.hotelbooking.utils.AppConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HotelViewModel extends ViewModel {
@@ -33,7 +34,10 @@ public class HotelViewModel extends ViewModel {
         _isLoading.setValue(true);
         hotelRepository.getApprovedHotels()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    _hotels.setValue(queryDocumentSnapshots.toObjects(Hotel.class));
+                    List<Hotel> result = new ArrayList<>();
+                    queryDocumentSnapshots.getDocuments().forEach(document ->
+                            result.add(Hotel.fromDocument(document)));
+                    _hotels.setValue(result);
                     _isLoading.setValue(false);
                 })
                 .addOnFailureListener(e -> {
@@ -46,7 +50,10 @@ public class HotelViewModel extends ViewModel {
         _isLoading.setValue(true);
         hotelRepository.getPendingHotels()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    _pendingHotels.setValue(queryDocumentSnapshots.toObjects(Hotel.class));
+                    List<Hotel> result = new ArrayList<>();
+                    queryDocumentSnapshots.getDocuments().forEach(document ->
+                            result.add(Hotel.fromDocument(document)));
+                    _pendingHotels.setValue(result);
                     _isLoading.setValue(false);
                 })
                 .addOnFailureListener(e -> {

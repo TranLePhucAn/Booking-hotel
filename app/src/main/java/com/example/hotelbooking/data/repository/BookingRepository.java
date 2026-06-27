@@ -5,7 +5,6 @@ import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.utils.AppConstants;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 public class BookingRepository {
@@ -24,7 +23,6 @@ public class BookingRepository {
     public Task<QuerySnapshot> getUserReservations(String userId) {
         return db.collection(AppConstants.COLLECTION_RESERVATIONS)
                 .whereEqualTo("customer_id", userId)
-                .orderBy("created_at", Query.Direction.DESCENDING)
                 .get();
     }
 
@@ -32,13 +30,11 @@ public class BookingRepository {
 
         return db.collection(AppConstants.COLLECTION_RESERVATIONS)
                 .whereEqualTo("owner_id", ownerId)
-                .orderBy("created_at", Query.Direction.DESCENDING)
                 .get();
     }
 
     public Task<QuerySnapshot> getAllReservations() {
         return db.collection(AppConstants.COLLECTION_RESERVATIONS)
-                .orderBy("created_at", Query.Direction.DESCENDING)
                 .get();
     }
 

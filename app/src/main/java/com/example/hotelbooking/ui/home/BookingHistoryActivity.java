@@ -12,9 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Reservation;
 import com.example.hotelbooking.ui.adapter.BookingHistoryAdapter;
+import com.example.hotelbooking.utils.AppConstants;
 import com.example.hotelbooking.viewmodels.BookingViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +62,7 @@ public class BookingHistoryActivity extends AppCompatActivity {
             allBookings.clear();
             if (reservations != null) {
                 allBookings.addAll(reservations);
+                autoCompleteExpiredBookings();
             }
             if (allBookings.isEmpty()) {
                 Toast.makeText(this, "Bạn chưa có đơn đặt phòng nào", Toast.LENGTH_SHORT).show();
@@ -90,12 +93,41 @@ public class BookingHistoryActivity extends AppCompatActivity {
             String status = res.getStatus();
             if (status == null) status = "";
 
-            boolean isCompletedStatus = "COMPLETED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status);
+            boolean isCompletedStatus = AppConstants.BOOKING_COMPLETED.equalsIgnoreCase(status)
+                    || AppConstants.BOOKING_CANCELLED.equalsIgnoreCase(status)
+                    || AppConstants.BOOKING_EXPIRED.equalsIgnoreCase(status)
+                    || "COMPLETED".equalsIgnoreCase(status)
+                    || "CANCELLED".equalsIgnoreCase(status);
 
             if (completedOnly == isCompletedStatus) {
                 result.add(res);
             }
         }
         adapter.updateData(result);
+    }
+
+    private void autoCompleteExpiredBookings() {
+        long now = System.currentTimeMillis();
+        for (Reservation res : allBookings) {
+            String status = res.getStatus();
+            if (status == null) {
+                status = "";
+            }
+            boolean canAutoCompleteStatus = AppConstants.BOOKING_CONFIRMED.equalsIgnoreCase(status)
+                    || AppConstants.BOOKING_CHECKED_IN.equalsIgnoreCase(status)
+                    || "PAID".equalsIgnoreCase(status)
+                    || "CONFIRMED".equalsIgnoreCase(status)
+                    || "BOOKED".equalsIgnoreCase(status);
+
+            if (canAutoCompleteStatus && res.getDayEnd() != null && now >= res.getDayEnd().toDate().getTime()) {
+                res.setStatus(AppConstants.BOOKING_COMPLETED);
+                if (res.getId() != null && !res.getId().isEmpty()) {
+                    FirebaseFirestore.getInstance()
+                            .collection(AppConstants.COLLECTION_RESERVATIONS)
+                            .document(res.getId())
+                            .update("status", AppConstants.BOOKING_COMPLETED);
+                }
+            }
+        }
     }
 }

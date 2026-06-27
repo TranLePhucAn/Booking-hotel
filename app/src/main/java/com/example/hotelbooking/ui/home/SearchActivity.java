@@ -24,6 +24,7 @@ import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -137,8 +138,9 @@ public class SearchActivity extends AppCompatActivity {
         allHotels.addAll(DemoHotelData.hotels());
 
         FirebaseFirestore.getInstance()
-                .collection("hotels")
-                .whereEqualTo("status", "active")
+                .collection(AppConstants.COLLECTION_HOTELS)
+                .whereEqualTo("approval_status", AppConstants.STATUS_APPROVED)
+                .whereEqualTo("is_active", true)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot != null && !querySnapshot.isEmpty()) {
