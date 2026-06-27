@@ -147,7 +147,7 @@
                     android:id="@+id/et_edit_base_price"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Giá bán gói dịch vụ (base_price)"
+                    android:hint="Giá bán gói dịch vụ"
                     android:inputType="numberDecimal"
                     android:layout_marginBottom="16dp" />
 
@@ -176,6 +176,27 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="TV"
+                        android:layout_columnWeight="1"/>
+                </GridLayout>
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:alignmentMode="alignBounds">
+
+                    <CheckBox
+                        android:id="@+id/cb_is_refundable"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cho phép hoàn tiền"
+                        android:layout_columnWeight="1"/>
+
+                    <CheckBox
+                        android:id="@+id/cb_is_reschedulable"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cho phép đổi lịch"
                         android:layout_columnWeight="1"/>
                 </GridLayout>
             </LinearLayout>
