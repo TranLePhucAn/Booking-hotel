@@ -13,17 +13,21 @@ import com.denzcoskun.imageslider.models.SlideModel;
 import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
+import com.example.hotelbooking.data.repository.WishlistRepository;
 import com.example.hotelbooking.databinding.ActivityHomeBinding;
 import com.example.hotelbooking.ui.adapter.CategoryAdapter;
 import com.example.hotelbooking.ui.adapter.HotelAdapter;
 import com.example.hotelbooking.ui.auth.LoginActivity;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 import com.example.hotelbooking.utils.AppConstants;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -37,6 +41,7 @@ public class HomeActivity extends AppCompatActivity {
     private final List<Hotel> suggestionHotels = new ArrayList<>();
     
     private FirebaseFirestore db;
+    private WishlistRepository wishlistRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +50,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
+        wishlistRepository = new WishlistRepository();
 
         initViews();
         setupBanner();
@@ -72,6 +78,8 @@ public class HomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateUserUI();
+        if (featuredAdapter != null) featuredAdapter.updateData(featuredHotels);
+        if (suggestionsAdapter != null) suggestionsAdapter.updateData(suggestionHotels);
     }
 
     private void initViews() {
@@ -115,27 +123,71 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupHotelRecyclerViews() {
+        HotelAdapter.OnHotelClickListener hotelClickListener = new HotelAdapter.OnHotelClickListener() {
+            @Override
+            public void onHotelClick(Hotel hotel) {
+                openHotelDetail(hotel);
+            }
+
+            @Override
+            public void onBookClick(Hotel hotel) {
+                openHotelDetail(hotel);
+            }
+
+            @Override
+            public void onFavoriteClick(Hotel hotel) {
+                handleFavoriteToggle(hotel);
+            }
+        };
+
         // Featured Hotels - Horizontal
-        featuredAdapter = new HotelAdapter(featuredHotels, true, new HotelAdapter.OnHotelClickListener() {
-            @Override
-            public void onHotelClick(Hotel hotel) { openHotelDetail(hotel); }
-            @Override
-            public void onBookClick(Hotel hotel) { openHotelDetail(hotel); }
-        });
+        featuredAdapter = new HotelAdapter(featuredHotels, true, hotelClickListener);
         binding.rvFeaturedHotels.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.rvFeaturedHotels.setAdapter(featuredAdapter);
 
         // Suggestions - Vertical
-        suggestionsAdapter = new HotelAdapter(suggestionHotels, false, new HotelAdapter.OnHotelClickListener() {
-            @Override
-            public void onHotelClick(Hotel hotel) { openHotelDetail(hotel); }
-            @Override
-            public void onBookClick(Hotel hotel) { openHotelDetail(hotel); }
-        });
+        suggestionsAdapter = new HotelAdapter(suggestionHotels, false, hotelClickListener);
         binding.rvSuggestions.setLayoutManager(new LinearLayoutManager(this));
         binding.rvSuggestions.setAdapter(suggestionsAdapter);
     }
+    private void handleFavoriteToggle(Hotel hotel) {
+        String userId = FirebaseAuth.getInstance().getUid();
+        if (userId == null) {
+            Toast.makeText(this, "Vui lòng đăng nhập để thực hiện", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        wishlistRepository.isFavorite(userId, hotel.getId()).addOnSuccessListener(isFav -> {
+            if (isFav) {
+                // Đang thích -> Bỏ thích
+                wishlistRepository.removeFromWishlist(userId, hotel.getId()).addOnSuccessListener(aVoid -> {
+                    Toast.makeText(HomeActivity.this, "Đã bỏ yêu thích", Toast.LENGTH_SHORT).show();
+                    refreshBothAdapters();
+                });
+            } else {
+                // Chưa thích -> Thêm vào yêu thích
+                Map<String, Object> hotelInfo = new HashMap<>();
+                hotelInfo.put("hotelName", hotel.getHotelName());
+                hotelInfo.put("address", hotel.getAddress());
+                hotelInfo.put("basePrice", hotel.getPrice());
+                hotelInfo.put("hotelImage", hotel.getImageUrl());
+                hotelInfo.put("rating", hotel.getRatingStar());
+
+                wishlistRepository.addToWishlist(userId, hotel.getId(), hotelInfo).addOnSuccessListener(aVoid -> {
+                    Toast.makeText(HomeActivity.this, "Đã thêm vào yêu thích", Toast.LENGTH_SHORT).show();
+                    refreshBothAdapters();
+                });
+            }
+        });
+    }
+    private void refreshBothAdapters() {
+        if (featuredAdapter != null) {
+            featuredAdapter.updateData(featuredHotels);
+        }
+        if (suggestionsAdapter != null) {
+            suggestionsAdapter.updateData(suggestionHotels);
+        }
+    }
     private void loadHotels() {
         showLoading();
         
