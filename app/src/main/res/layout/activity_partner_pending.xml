@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Ho so cua ban dang duoc Admin xet duyet"
+        android:text="Hồ sơ của bạn đang được Admin xét duyệt"
         android:textColor="@color/text_primary"
         android:textSize="24sp"
         android:textStyle="bold" />
@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:gravity="center"
-        android:text="Vui long doi. Khi duoc phe duyet, ban dang nhap lai se vao Dashboard doi tac."
+        android:text="Vui lòng đợi. Khi được phê duyệt, bạn đăng nhập lại sẽ vào Dashboard đối tác."
         android:textColor="@color/text_secondary"
         android:textSize="16sp" />
 
@@ -30,5 +30,5 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="28dp"
-        android:text="Dang xuat" />
+        android:text="Đăng xuất" />
 </LinearLayout>

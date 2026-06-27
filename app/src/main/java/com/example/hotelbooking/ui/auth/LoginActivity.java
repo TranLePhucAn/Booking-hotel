@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.ui.home.HomeActivity;
+import com.example.hotelbooking.utils.AppConstants;
 import com.example.hotelbooking.utils.LoadingDialog;
 import com.example.hotelbooking.utils.RoleRouter;
 import com.google.firebase.auth.FirebaseAuth;
@@ -128,15 +129,13 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         FirebaseFirestore.getInstance()
-                .collection("users")
+                .collection(AppConstants.COLLECTION_USERS)
                 .document(user.getUid())
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     String role = documentSnapshot.getString("role");
                     if (RoleRouter.ROLE_ADMIN.equalsIgnoreCase(role)
-                            || RoleRouter.ROLE_PARTNER.equalsIgnoreCase(role)
-                            || RoleRouter.ROLE_OWNER.equalsIgnoreCase(role)
-                            || RoleRouter.ROLE_PARTNER_PENDING.equalsIgnoreCase(role)) {
+                            || RoleRouter.ROLE_PARTNER.equalsIgnoreCase(role)) {
                         RoleRouter.routeCurrentUser(this, loadingDialog);
                         return;
                     }
@@ -159,10 +158,10 @@ public class LoginActivity extends AppCompatActivity {
         userData.put("uid", user.getUid());
         userData.put("email", user.getEmail());
         userData.put("fullName", user.getDisplayName());
-        userData.put("role", RoleRouter.ROLE_CUSTOMER);
+        userData.put("role", AppConstants.ROLE_USER);
 
         FirebaseFirestore.getInstance()
-                .collection("users")
+                .collection(AppConstants.COLLECTION_USERS)
                 .document(user.getUid())
                 .set(userData);
     }

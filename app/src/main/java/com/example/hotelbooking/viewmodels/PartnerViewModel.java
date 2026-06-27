@@ -8,7 +8,10 @@ import com.example.hotelbooking.data.model.PartnerApplication;
 import com.example.hotelbooking.data.repository.PartnerRepository;
 import com.example.hotelbooking.data.repository.UserRepository;
 import com.example.hotelbooking.utils.AppConstants;
+import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class PartnerViewModel extends ViewModel {
@@ -33,7 +36,7 @@ public class PartnerViewModel extends ViewModel {
         _isLoading.setValue(true);
         partnerRepository.getPendingApplications()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    _applications.setValue(queryDocumentSnapshots.toObjects(PartnerApplication.class));
+                    _applications.setValue(toSortedApplications(queryDocumentSnapshots.getDocuments()));
                     _isLoading.setValue(false);
                 })
                 .addOnFailureListener(e -> {
@@ -72,5 +75,22 @@ public class PartnerViewModel extends ViewModel {
                     _error.setValue(e.getMessage());
                     _isLoading.setValue(false);
                 });
+    }
+
+    private List<PartnerApplication> toSortedApplications(List<DocumentSnapshot> documents) {
+        List<PartnerApplication> result = new ArrayList<>();
+        for (DocumentSnapshot document : documents) {
+            PartnerApplication application = document.toObject(PartnerApplication.class);
+            if (application != null) {
+                application.setId(document.getId());
+                result.add(application);
+            }
+        }
+        result.sort(Comparator.comparingLong(this::createdAtMillis));
+        return result;
+    }
+
+    private long createdAtMillis(PartnerApplication application) {
+        return application.getCreatedAt() == null ? 0 : application.getCreatedAt().toDate().getTime();
     }
 }

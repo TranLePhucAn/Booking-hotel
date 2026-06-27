@@ -15,9 +15,7 @@ public class RoleRouter {
 
     public static final String ROLE_ADMIN = AppConstants.ROLE_ADMIN;
     public static final String ROLE_PARTNER = AppConstants.ROLE_PARTNER;
-    public static final String ROLE_OWNER = AppConstants.ROLE_OWNER;
-    public static final String ROLE_CUSTOMER = AppConstants.ROLE_CUSTOMER;
-    public static final String ROLE_PARTNER_PENDING = AppConstants.ROLE_PARTNER_PENDING;
+    public static final String ROLE_USER = AppConstants.ROLE_USER;
 
     private RoleRouter() {}
 
@@ -44,11 +42,11 @@ public class RoleRouter {
     }
 
     public static String getRoute(String role, String partnerStatus) {
-        if (role == null) return "LOGIN";
+        if (role == null) return "HOME";
 
         if (AppConstants.ROLE_ADMIN.equals(role)) {
             return "ADMIN_DASHBOARD";
-        } else if (AppConstants.ROLE_PARTNER.equals(role) || AppConstants.ROLE_OWNER.equals(role)) {
+        } else if (AppConstants.ROLE_PARTNER.equals(role)) {
             return "PARTNER_DASHBOARD";
         } else {
             return "HOME";
@@ -59,7 +57,7 @@ public class RoleRouter {
         Intent intent;
         if (AppConstants.ROLE_ADMIN.equals(role)) {
             intent = new Intent(activity, AdminDashboardActivity.class);
-        } else if (AppConstants.ROLE_PARTNER.equals(role) || AppConstants.ROLE_OWNER.equals(role)) {
+        } else if (AppConstants.ROLE_PARTNER.equals(role)) {
             intent = new Intent(activity, PartnerDashboardActivity.class);
         } else {
             intent = new Intent(activity, HomeActivity.class);

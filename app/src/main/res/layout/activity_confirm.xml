@@ -245,7 +245,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             style="@style/TextMore"
-                            android:text="Non-reschedulable" />
+                            android:text="Không được đổi lịch" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -282,6 +282,7 @@
                         android:layout_marginBottom="10dp">
 
                         <TextView
+                            android:id="@+id/tv_base_price_label"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"

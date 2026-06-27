@@ -5,7 +5,6 @@ import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.utils.AppConstants;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.HashMap;
@@ -29,7 +28,6 @@ public class PartnerRepository {
     public Task<QuerySnapshot> getPendingApplications() {
         return db.collection(AppConstants.COLLECTION_PARTNER_APPLICATIONS)
                 .whereEqualTo("status", AppConstants.STATUS_PENDING)
-                .orderBy("created_at", Query.Direction.ASCENDING)
                 .get();
     }
 
