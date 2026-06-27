@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">HotelBooking</string>
+    <string-array name="room_types_array">
+        <item>Standard</item>
+        <item>Deluxe</item>
+        <item>Suite</item>
+        <item>Family</item>
+        <item>Studio</item>
+    </string-array>
 </resources>
