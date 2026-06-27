@@ -70,13 +70,6 @@
 
         <activity
             android:name=".ui.splash.SplashActivity"
-            android:exported="false">
-        </activity>
-
-        <activity android:name=".ui.partner.PartnerAddRoomActivity"
-            android:exported="false" />
-
-        <activity android:name=".ui.partner.PartnerRoomListActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
