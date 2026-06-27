@@ -1,5 +1,7 @@
 package com.example.hotelbooking.viewmodels;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -45,27 +47,46 @@ public class PartnerViewModel extends ViewModel {
                 });
     }
 
-    public void approveApplication(PartnerApplication app, String adminNote) {
+    public void approveApplication(PartnerApplication app, String adminNote, Runnable onSuccess) {
+        if (app.getUserId() == null || app.getUserId().isEmpty()) {
+            _error.setValue("Lỗi: Không tìm thấy ID người dùng trong hồ sơ này!");
+            return;
+        }
+
         _isLoading.setValue(true);
         partnerRepository.updateApplicationStatus(app.getId(), AppConstants.STATUS_APPROVED, adminNote)
                 .addOnSuccessListener(aVoid -> {
-                    // Cập nhật role của user
                     userRepository.updateRole(app.getUserId(), AppConstants.ROLE_PARTNER)
                             .addOnSuccessListener(v -> {
                                 userRepository.updatePartnerStatus(app.getUserId(), AppConstants.STATUS_APPROVED)
                                         .addOnSuccessListener(v2 -> {
                                             sendNotification(app.getUserId(), "Approved", "Đăng ký cộng sự của bạn đã được duyệt.");
-                                            fetchPendingApplications();
+                                            _isLoading.setValue(false);
+                                            // GỌI HÀM KẾT THÚC KHI ĐÃ HOÀN TẤT
+                                            if (onSuccess != null) onSuccess.run();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            _error.setValue("Lỗi update trạng thái user: " + e.getMessage());
+                                            _isLoading.setValue(false);
                                         });
+                            })
+                            .addOnFailureListener(e -> {
+                                _error.setValue("Lỗi update quyền user: " + e.getMessage());
+                                _isLoading.setValue(false);
                             });
                 })
                 .addOnFailureListener(e -> {
-                    _error.setValue(e.getMessage());
+                    _error.setValue("Lỗi duyệt hồ sơ: " + e.getMessage());
                     _isLoading.setValue(false);
                 });
     }
 
-    public void rejectApplication(String appId, String userId, String adminNote) {
+    public void rejectApplication(String appId, String userId, String adminNote, Runnable onSuccess) {
+        if (userId == null || userId.isEmpty()) {
+            _error.setValue("Lỗi: Không tìm thấy ID người dùng để từ chối!");
+            return;
+        }
+
         _isLoading.setValue(true);
         partnerRepository.updateApplicationStatus(appId, AppConstants.STATUS_REJECTED, adminNote)
                 .addOnSuccessListener(aVoid -> {
@@ -75,11 +96,17 @@ public class PartnerViewModel extends ViewModel {
                     userRepository.updateUser(userId, updates)
                             .addOnSuccessListener(v -> {
                                 sendNotification(userId, "Rejected", "Đăng ký cộng sự đã bị từ chối. Lý do: " + adminNote);
-                                fetchPendingApplications();
+                                _isLoading.setValue(false);
+                                // GỌI HÀM KẾT THÚC KHI ĐÃ HOÀN TẤT
+                                if (onSuccess != null) onSuccess.run();
+                            })
+                            .addOnFailureListener(e -> {
+                                _error.setValue("Lỗi update user khi từ chối: " + e.getMessage());
+                                _isLoading.setValue(false);
                             });
                 })
                 .addOnFailureListener(e -> {
-                    _error.setValue(e.getMessage());
+                    _error.setValue("Lỗi từ chối hồ sơ: " + e.getMessage());
                     _isLoading.setValue(false);
                 });
     }
@@ -102,6 +129,12 @@ public class PartnerViewModel extends ViewModel {
             PartnerApplication application = document.toObject(PartnerApplication.class);
             if (application != null) {
                 application.setId(document.getId());
+
+                // QUAN TRỌNG: Gắn userId bằng tay phòng hờ model chưa map được
+                if (application.getUserId() == null) {
+                    application.setUserId(document.getString("user_id"));
+                }
+
                 result.add(application);
             }
         }

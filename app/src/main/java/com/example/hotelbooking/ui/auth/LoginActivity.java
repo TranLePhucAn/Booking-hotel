@@ -133,17 +133,24 @@ public class LoginActivity extends AppCompatActivity {
                 .document(user.getUid())
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    String role = documentSnapshot.getString("role");
-                    if (RoleRouter.ROLE_ADMIN.equalsIgnoreCase(role)
-                            || RoleRouter.ROLE_PARTNER.equalsIgnoreCase(role)) {
-                        RoleRouter.routeCurrentUser(this, loadingDialog);
-                        return;
-                    }
+                    if (documentSnapshot.exists()) {
+                        String role = documentSnapshot.getString("role");
+                        String partnerStatus = documentSnapshot.getString("partnerStatus");
 
-                    if (!documentSnapshot.exists()) {
+                        if (AppConstants.ROLE_ADMIN.equalsIgnoreCase(role)) {
+                            RoleRouter.routeCurrentUser(this, loadingDialog);
+                            return;
+                        }
+
+                        if (AppConstants.ROLE_PARTNER.equalsIgnoreCase(role)) {
+                            if (AppConstants.STATUS_APPROVED.equalsIgnoreCase(partnerStatus)) {
+                                RoleRouter.routeCurrentUser(this, loadingDialog);
+                                return;
+                            }
+                        }
+                    } else {
                         createCustomerProfile(user);
                     }
-
                     loadingDialog.dismiss();
                     openHome();
                 })

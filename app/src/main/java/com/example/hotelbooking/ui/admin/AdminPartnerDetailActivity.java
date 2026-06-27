@@ -78,7 +78,6 @@ public class AdminPartnerDetailActivity extends AppCompatActivity {
     }
 
     private void loadApplicationDetails() {
-        // Áp dụng hằng số COLLECTION_PARTNER_APPLICATIONS
         db.collection(AppConstants.COLLECTION_PARTNER_APPLICATIONS).document(applicationId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -112,7 +111,6 @@ public class AdminPartnerDetailActivity extends AppCompatActivity {
         tvTax.setText(application.getTaxCode());
         tvDesc.setText(application.getDescription());
 
-        // Hiển thị trạng thái hiện tại bằng hằng số
         if (tvStatus != null) {
             String status = application.getStatus();
             if (status == null) status = AppConstants.STATUS_PENDING;
@@ -135,7 +133,6 @@ public class AdminPartnerDetailActivity extends AppCompatActivity {
 
         etNote.setText(application.getAdminNote());
 
-        // Kiểm tra disable nút bằng hằng số
         if (AppConstants.STATUS_APPROVED.equals(application.getStatus())
                 || AppConstants.STATUS_REJECTED.equals(application.getStatus())) {
             btnApprove.setEnabled(false);
@@ -156,7 +153,6 @@ public class AdminPartnerDetailActivity extends AppCompatActivity {
                         .error(android.R.drawable.ic_menu_report_image)
                         .into(ivVerificationFile);
             } else {
-                // PDF thì chỉ mở bằng nút
                 ivVerificationFile.setVisibility(View.GONE);
             }
         } else {
@@ -179,6 +175,7 @@ public class AdminPartnerDetailActivity extends AppCompatActivity {
             }
         });
 
+        // ĐÃ SỬA: Đưa Toast và finish() vào callback onSuccess
         btnApprove.setOnClickListener(v -> {
             new AlertDialog.Builder(this)
                     .setTitle("Duyệt hồ sơ")
@@ -187,12 +184,14 @@ public class AdminPartnerDetailActivity extends AppCompatActivity {
                         btnApprove.setEnabled(false);
                         btnReject.setEnabled(false);
 
+                        // Callback () -> { ... } sẽ được gọi KHI ĐÃ LƯU XONG trên Firebase
                         viewModel.approveApplication(
                                 application,
-                                etNote.getText().toString());
-
-                        Toast.makeText(this, "Đã duyệt hồ sơ đối tác", Toast.LENGTH_SHORT).show();
-                        finish();
+                                etNote.getText().toString(),
+                                () -> {
+                                    Toast.makeText(this, "Đã duyệt hồ sơ đối tác", Toast.LENGTH_SHORT).show();
+                                    finish(); // Đợi Firebase lưu xong rồi mới finish
+                                });
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
@@ -212,15 +211,23 @@ public class AdminPartnerDetailActivity extends AppCompatActivity {
         input.setPadding(padding, padding, padding, padding);
         builder.setView(input);
 
+        // ĐÃ SỬA: Đưa Toast và finish() vào callback onSuccess
         builder.setPositiveButton("Xác nhận", (dialog, which) -> {
             String reason = input.getText().toString().trim();
             if (reason.isEmpty()) {
                 Toast.makeText(this, "Lý do từ chối không được để trống", Toast.LENGTH_SHORT).show();
                 return;
             }
-            viewModel.rejectApplication(application.getId(), application.getUserId(), reason);
-            Toast.makeText(this, "Đã từ chối hồ sơ đối tác", Toast.LENGTH_SHORT).show();
-            finish();
+
+            // Callback () -> { ... }
+            viewModel.rejectApplication(
+                    application.getId(),
+                    application.getUserId(),
+                    reason,
+                    () -> {
+                        Toast.makeText(this, "Đã từ chối hồ sơ đối tác", Toast.LENGTH_SHORT).show();
+                        finish(); // Đợi Firebase lưu xong rồi mới finish
+                    });
         });
 
         builder.setNegativeButton("Hủy", (dialog, which) -> dialog.cancel());

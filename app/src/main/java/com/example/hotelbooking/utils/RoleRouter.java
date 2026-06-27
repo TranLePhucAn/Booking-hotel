@@ -44,9 +44,10 @@ public class RoleRouter {
     public static String getRoute(String role, String partnerStatus) {
         if (role == null) return "HOME";
 
-        if (AppConstants.ROLE_ADMIN.equals(role)) {
+        // Thay bằng equalsIgnoreCase
+        if (AppConstants.ROLE_ADMIN.equalsIgnoreCase(role)) {
             return "ADMIN_DASHBOARD";
-        } else if (AppConstants.ROLE_PARTNER.equals(role)) {
+        } else if (AppConstants.ROLE_PARTNER.equalsIgnoreCase(role)) {
             return "PARTNER_DASHBOARD";
         } else {
             return "HOME";
@@ -55,13 +56,16 @@ public class RoleRouter {
 
     public static void navigateByRole(Activity activity, String role, String partnerStatus) {
         Intent intent;
-        if (AppConstants.ROLE_ADMIN.equals(role)) {
+
+        // Thay bằng equalsIgnoreCase
+        if (AppConstants.ROLE_ADMIN.equalsIgnoreCase(role)) {
             intent = new Intent(activity, AdminDashboardActivity.class);
-        } else if (AppConstants.ROLE_PARTNER.equals(role)) {
+        } else if (AppConstants.ROLE_PARTNER.equalsIgnoreCase(role)) {
             intent = new Intent(activity, PartnerDashboardActivity.class);
         } else {
             intent = new Intent(activity, HomeActivity.class);
         }
+
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         activity.startActivity(intent);
         activity.finish();
