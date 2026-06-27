@@ -54,7 +54,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 hotelName = valueOrDefault(hotel.getHotelName(), "");
             }
         }
-        binding.tvMapHotelName.setText(valueOrDefault(hotelName, "Khach san"));
+        binding.tvMapHotelName.setText(valueOrDefault(hotelName, "Khách sạn"));
         if (!address.isEmpty()) {
             binding.tvDistance.setText(address);
         }
@@ -76,10 +76,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         if (latitude != 0 && longitude != 0) {
             LatLng hotelLocation = new LatLng(latitude, longitude);
-            mMap.addMarker(new MarkerOptions().position(hotelLocation).title(valueOrDefault(hotelName, "Khach san")));
+            mMap.addMarker(new MarkerOptions().position(hotelLocation).title(valueOrDefault(hotelName, "Khách sạn")));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(hotelLocation, 15f));
         } else {
-            Toast.makeText(this, "Khach san chua co toa do", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Khách sạn chưa có tọa độ", Toast.LENGTH_SHORT).show();
         }
 
         enableUserLocation();

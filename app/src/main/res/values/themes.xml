@@ -23,6 +23,16 @@
         <item name="android:textColor">@color/text_primary</item>
     </style>
 
+    <style name="TextHighLightLarge">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/ocean_deep</item>
+    </style>
+
+    <style name="TextHighLightSmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/ocean_deep</item>
+    </style>
+
     <style name="TextSubtitleSmall">
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/text_primary</item>

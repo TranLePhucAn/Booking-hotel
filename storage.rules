@@ -1,0 +1,44 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function userRole() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && userRole() == 'admin';
+    }
+
+    function isPartner() {
+      return isSignedIn() && userRole() == 'partner';
+    }
+
+    match /avatars/{userId}.jpg {
+      allow read: if true;
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /hotels/{ownerId}/{fileName} {
+      allow read: if true;
+      allow write: if (isPartner() && isOwner(ownerId)) || isAdmin();
+    }
+
+    match /rooms/{ownerId}/{fileName} {
+      allow read: if true;
+      allow write: if (isPartner() && isOwner(ownerId)) || isAdmin();
+    }
+
+    match /partner_verification/{userId}/{fileName} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+  }
+}

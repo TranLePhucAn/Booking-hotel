@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/card">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/img_item_room"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:scaleType="centerCrop"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:background="#E0E0E0"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/tv_item_room_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Standard Room"
+                style="@style/TextTitleLarge"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_item_room_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Loại: Standard | 1 giường đôi"
+                style="@style/TextSubtitleSmall"
+                android:layout_marginTop="2dp" />
+
+            <TextView
+                android:id="@+id/tv_item_room_qty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Trống: 8 / Tổng: 10 phòng"
+                style="@style/TextHighLightSmall"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/tv_item_room_price"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="450,000 VND / đêm"
+                android:textColor="@color/highlight_text"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginTop="6dp"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:src="@android:drawable/ic_media_play"
+            app:tint="#CCCCCC" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

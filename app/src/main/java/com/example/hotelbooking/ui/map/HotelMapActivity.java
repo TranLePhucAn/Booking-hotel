@@ -58,9 +58,9 @@ public class HotelMapActivity extends AppCompatActivity {
         TextView btnBackMap = findViewById(R.id.btnBackMap);
         tvMapDistance = findViewById(R.id.tvMapDistance);
 
-        tvMapHotelName.setText("Vi tri khach san: " + valueOrDefault(hotelName, "Khach san"));
-        tvMapAddress.setText("Dia chi: " + valueOrDefault(address, "Dang cap nhat"));
-        tvMapDistance.setText("Khoang cach tu ban: dang tinh...");
+        tvMapHotelName.setText("Vị trí khách sạn: " + valueOrDefault(hotelName, "Khách sạn"));
+        tvMapAddress.setText("Địa chỉ: " + valueOrDefault(address, "Đang cập nhật"));
+        tvMapDistance.setText("Khoảng cách từ bạn: đang tính...");
         btnBackMap.setOnClickListener(v -> finish());
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -83,8 +83,8 @@ public class HotelMapActivity extends AppCompatActivity {
         if (latitude == 0 && longitude == 0) {
             latitude = 10.762622;
             longitude = 106.660172;
-            tvMapDistance.setText("Khoang cach tu ban: khach san chua co toa do chinh xac");
-            Toast.makeText(this, "Dang hien thi vi tri trung tam TP.HCM", Toast.LENGTH_SHORT).show();
+            tvMapDistance.setText("Khoảng cách từ bạn: khách sạn chưa có tọa độ chính xác");
+            Toast.makeText(this, "Đang hiển thị vị trí trung tâm TP.HCM", Toast.LENGTH_SHORT).show();
         }
 
         GeoPoint hotelPoint = new GeoPoint(latitude, longitude);
@@ -93,7 +93,7 @@ public class HotelMapActivity extends AppCompatActivity {
 
         Marker marker = new Marker(osmMap);
         marker.setPosition(hotelPoint);
-        marker.setTitle(valueOrDefault(hotelName, "Khach san"));
+        marker.setTitle(valueOrDefault(hotelName, "Khách sạn"));
         marker.setSubDescription(valueOrDefault(address, ""));
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
@@ -150,12 +150,12 @@ public class HotelMapActivity extends AppCompatActivity {
 
         fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
             if (location == null || latitude == 0 || longitude == 0) {
-                tvMapDistance.setText("Khoang cach tu ban: chua xac dinh duoc vi tri cua ban");
+                tvMapDistance.setText("Khoảng cách từ bạn: chưa xác định được vị trí của bạn");
                 return;
             }
 
             double distanceKm = calculateDistanceKm(location.getLatitude(), location.getLongitude(), latitude, longitude);
-            tvMapDistance.setText(String.format(Locale.getDefault(), "Khoang cach tu ban: %.1f km", distanceKm));
+            tvMapDistance.setText(String.format(Locale.getDefault(), "Khoảng cách từ bạn: %.1f km", distanceKm));
         });
     }
 
@@ -179,7 +179,7 @@ public class HotelMapActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 calculateDistance();
             } else {
-                tvMapDistance.setText("Khoang cach tu ban: bi tu choi truy cap vi tri");
+                tvMapDistance.setText("Khoảng cách từ bạn: bị từ chối truy cập vị trí");
             }
         }
     }

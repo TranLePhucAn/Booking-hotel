@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+        <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+        <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -31,34 +34,58 @@
             android:name=".ui.map.HotelMapActivity"
             android:exported="false" />
 
+        <!-- Admin Activities -->
         <activity
-            android:name=".ui.owner.AdminDashboardActivity"
+            android:name=".ui.admin.AdminDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminPartnerApprovalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminPartnerDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminHotelApprovalActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminHotelDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminBookingManagementActivity"
             android:exported="false" />
 
+        <!-- Partner Activities -->
         <activity
-            android:name=".ui.owner.OwnerDashboardActivity"
+            android:name=".ui.partner.PartnerDashboardActivity"
             android:exported="false" />
-
         <activity
-            android:name=".ui.owner.PartnerPendingActivity"
+            android:name=".ui.partner.PartnerPendingActivity"
             android:exported="false" />
-
         <activity
-            android:name=".ui.owner.AddHotelActivity"
+            android:name=".ui.partner.AddHotelActivity"
             android:exported="false" />
-
         <activity
-            android:name=".ui.owner.AddRoomActivity"
+            android:name=".ui.partner.AddRoomActivity"
             android:exported="false" />
 
         <activity
             android:name=".ui.splash.SplashActivity"
+            android:exported="false">
+        </activity>
+
+        <activity android:name=".ui.partner.PartnerAddRoomActivity"
+            android:exported="false" />
+
+        <activity android:name=".ui.partner.PartnerRoomListActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ui.partner.PartnerEditRoomActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.hotel.HotelDetailActivity"
@@ -92,9 +119,9 @@
             android:name=".ui.home.EditProfileActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".ui.welcome.WelcomeActivity"
-            android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".ui.welcome.WelcomeActivity"-->
+<!--            android:exported="false" />-->
 
         <activity
             android:name=".ui.payment.ConfirmActivity"

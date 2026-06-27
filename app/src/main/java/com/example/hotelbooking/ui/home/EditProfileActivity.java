@@ -8,12 +8,13 @@ import android.view.View;
 import android.widget.*;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
+import com.example.hotelbooking.utils.LoadingDialog;
+import com.example.hotelbooking.viewmodels.UserViewModel;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.*;
-import com.google.firebase.storage.*;
 
 import java.util.*;
 
@@ -31,9 +32,8 @@ public class EditProfileActivity extends AppCompatActivity {
     private Uri imageUri;
     private String avatarUrl = "";
 
-    private FirebaseFirestore db;
-    private FirebaseStorage storage;
-    private StorageReference storageRef;
+    private UserViewModel userViewModel;
+    private LoadingDialog loadingDialog;
 
     private final String[] genderList = {"Nam", "Nữ", "Khác"};
     private final String[] countryList = {"Việt Nam", "USA", "Japan", "Korea", "Thailand", "Singapore", "Malaysia"};
@@ -43,15 +43,16 @@ public class EditProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
 
-        db = FirebaseFirestore.getInstance();
-        storage = FirebaseStorage.getInstance();
-        storageRef = storage.getReference();
-
         uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        loadingDialog = new LoadingDialog(this);
 
         initViews();
         setupAdapters();
-        loadUser();
+
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        observeViewModel();
+
+        userViewModel.fetchUser(uid);
         setupEvents();
     }
 
@@ -68,7 +69,6 @@ public class EditProfileActivity extends AppCompatActivity {
     }
 
     private void setupAdapters() {
-
         ArrayAdapter<String> genderAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_item, genderList);
         genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -79,33 +79,52 @@ public class EditProfileActivity extends AppCompatActivity {
         autoCompleteCountry.setAdapter(countryAdapter);
     }
 
-    private void loadUser() {
-        db.collection("users").document(uid)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
+    private void observeViewModel() {
+        userViewModel.isLoading.observe(this, isLoading -> {
+            if (isLoading != null) {
+                if (isLoading) loadingDialog.show();
+                else loadingDialog.dismiss();
+            }
+        });
 
-                        edtName.setText(doc.getString("fullName"));
-                        tvEmail.setText(doc.getString("email"));
-                        edtPhone.setText(doc.getString("phone"));
-                        edtDob.setText(doc.getString("date_of_birth"));
-                        autoCompleteCountry.setText(doc.getString("country"), false);
+        userViewModel.userData.observe(this, data -> {
+            if (data != null) {
+                edtName.setText((String) data.get("fullName"));
+                tvEmail.setText((String) data.get("email"));
+                edtPhone.setText((String) data.get("phone"));
+                edtDob.setText((String) data.get("date_of_birth"));
+                autoCompleteCountry.setText((String) data.get("country"), false);
 
-                        String gender = doc.getString("gender");
-                        if (gender != null) {
-                            int position = Arrays.asList(genderList).indexOf(gender);
-                            if (position >= 0) spinnerGender.setSelection(position);
-                        }
+                String gender = (String) data.get("gender");
+                if (gender != null) {
+                    int position = Arrays.asList(genderList).indexOf(gender);
+                    if (position >= 0) spinnerGender.setSelection(position);
+                }
 
-                        avatarUrl = doc.getString("avatarUrl");
-                        if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                            Glide.with(this)
-                                    .load(avatarUrl)
-                                    .placeholder(R.drawable.ic_default_avatar)
-                                    .into(imgAvatar);
-                        }
-                    }
-                });
+                avatarUrl = (String) data.get("avatarUrl");
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    Glide.with(this)
+                            .load(avatarUrl)
+                            .placeholder(R.drawable.ic_default_avatar)
+                            .into(imgAvatar);
+                }
+            }
+        });
+
+        userViewModel.updateSuccess.observe(this, success -> {
+            if (success != null && success) {
+                Toast.makeText(this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
+                userViewModel.clearState();
+                finish();
+            }
+        });
+
+        userViewModel.error.observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_SHORT).show();
+                userViewModel.clearState();
+            }
+        });
     }
 
     private void setupEvents() {
@@ -119,7 +138,6 @@ public class EditProfileActivity extends AppCompatActivity {
             Calendar c = Calendar.getInstance();
             DatePickerDialog dialog = new DatePickerDialog(this,
                     (view, y, m, d) -> {
-                        // Định dạng chuỗi hiển thị yyyy-MM-dd
                         String date = y + "-" + String.format(Locale.getDefault(), "%02d", (m + 1)) + "-" + String.format(Locale.getDefault(), "%02d", d);
                         edtDob.setText(date);
                     },
@@ -135,49 +153,23 @@ public class EditProfileActivity extends AppCompatActivity {
         }
 
         findViewById(R.id.btnSaveProfile).setOnClickListener(v -> {
-            if (imageUri != null) {
-                uploadAvatar();
-            } else {
-                saveToFirestore(null);
-            }
+            saveProfile();
         });
     }
 
-    private void uploadAvatar() {
-        StorageReference ref = storageRef.child("avatars/" + uid + ".jpg");
-        ref.putFile(imageUri)
-                .addOnSuccessListener(task ->
-                        ref.getDownloadUrl().addOnSuccessListener(uri -> {
-                            saveToFirestore(uri.toString());
-                        })
-                )
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Upload thất bại", Toast.LENGTH_SHORT).show()
-                );
-    }
-
-    private void saveToFirestore(String avatar) {
+    private void saveProfile() {
         Map<String, Object> data = new HashMap<>();
-
         data.put("fullName", edtName.getText().toString().trim());
         data.put("phone", edtPhone.getText().toString().trim());
         data.put("gender", spinnerGender.getSelectedItem().toString());
         data.put("date_of_birth", edtDob.getText().toString().trim());
         data.put("country", autoCompleteCountry.getText().toString().trim());
 
-        if (avatar != null) {
-            data.put("avatarUrl", avatar);
+        if (imageUri != null) {
+            userViewModel.uploadAvatar(uid, imageUri, data);
+        } else {
+            userViewModel.updateUserProfile(uid, data);
         }
-
-        db.collection("users").document(uid)
-                .update(data)
-                .addOnSuccessListener(unused -> {
-                    Toast.makeText(this, "Cập nhật thành công", Toast.LENGTH_SHORT).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Lỗi cập nhật: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
     }
 
     @Override

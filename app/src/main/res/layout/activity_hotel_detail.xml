@@ -74,7 +74,7 @@
                         android:id="@+id/tvHotelName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Hotel Name"
+                        android:text="Tên khách sạn"
                         android:textColor="@color/text_primary"
                         android:textSize="24sp"
                         android:textStyle="bold" />
@@ -98,7 +98,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
                             android:layout_weight="1"
-                            android:text="Address"
+                            android:text="Địa chỉ"
                             android:textColor="@color/text_secondary"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -124,7 +124,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:text="Danh gia khach hang"
+                            android:text="Đánh giá khách hàng"
                             android:textColor="@color/text_secondary"
                             android:textSize="13sp" />
                     </LinearLayout>
@@ -148,7 +148,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Mo ta"
+                        android:text="Mô tả"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -159,7 +159,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:lineSpacingExtra="3dp"
-                        android:text="Hotel Description..."
+                        android:text="Mô tả khách sạn..."
                         android:textColor="@color/text_secondary"
                         android:textSize="15sp" />
                 </LinearLayout>
@@ -182,7 +182,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Tien ich"
+                        android:text="Tiện ích"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -193,7 +193,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:lineSpacingExtra="4dp"
-                        android:text="Wifi, May lanh, Bai dau xe"
+                        android:text="Wifi, Máy lạnh, Bãi đậu xe"
                         android:textColor="@color/text_secondary"
                         android:textSize="15sp" />
                 </LinearLayout>
@@ -216,7 +216,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Thong tin dat phong"
+                        android:text="Chọn hạng phòng"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -236,7 +236,7 @@
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"
-                            android:text="Bam chon ngay den"
+                            android:text="Bấm chọn ngày đến"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
 
@@ -249,7 +249,7 @@
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"
-                            android:text="Bam chon ngay di"
+                            android:text="Bấm chọn ngày đi"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </LinearLayout>
@@ -260,31 +260,34 @@
                         android:layout_height="48dp"
                         android:layout_marginTop="10dp"
                         android:background="@drawable/bg_input"
-                        android:hint="So khach"
+                        android:hint="Số khách"
                         android:inputType="number"
                         android:paddingStart="12dp"
                         android:paddingEnd="12dp"
                         android:text="1"
                         android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:visibility="gone" />
 
                     <TextView
                         android:id="@+id/tvSelectedRoom"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Chua chon phong"
+                        android:text="Chưa chọn phòng"
                         android:textColor="@color/text_secondary"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        android:visibility="gone" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
-                        android:text="Chon hang phong"
+                        android:text="Chọn hạng phòng"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:visibility="gone" />
 
                     <LinearLayout
                         android:id="@+id/layoutRooms"
@@ -312,7 +315,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Danh gia khach hang"
+                        android:text="Đánh giá khách hàng"
                         android:textColor="@color/text_primary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -323,7 +326,7 @@
                         android:layout_height="48dp"
                         android:layout_marginTop="10dp"
                         android:backgroundTint="@color/ocean_blue"
-                        android:text="Gui danh gia"
+                        android:text="Gửi đánh giá"
                         android:textColor="@color/white"
                         android:textStyle="bold" />
 
@@ -342,7 +345,7 @@
                 android:layout_height="50dp"
                 android:layout_marginTop="14dp"
                 android:backgroundTint="@color/ocean_blue"
-                android:text="Xem vi tri tren ban do"
+                android:text="Xem vị trí trên bản đồ"
                 android:textColor="@color/white"
                 android:textStyle="bold" />
         </LinearLayout>
@@ -373,7 +376,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Gia tu"
+                    android:text="Giá từ"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
@@ -381,7 +384,7 @@
                     android:id="@+id/tvPrice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="500,000 VND / dem"
+                    android:text="500,000 VND / đêm"
                     android:textColor="@color/highlight_text"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -392,7 +395,7 @@
                 android:layout_width="130dp"
                 android:layout_height="48dp"
                 android:backgroundTint="@color/primary"
-                android:text="Dat ngay"
+                android:text="Đặt ngay"
                 android:textColor="@color/white"
                 android:textStyle="bold" />
         </LinearLayout>

@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Them khach san moi"
+            android:text="Thêm khách sạn mới"
             android:textColor="@color/text_primary"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -24,7 +24,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="18dp"
             android:background="@drawable/bg_input"
-            android:hint="Ten doanh nghiep / chu khach san"
+            android:hint="Tên doanh nghiệp / chủ khách sạn"
             android:paddingHorizontal="14dp" />
 
         <EditText
@@ -33,7 +33,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Ten khach san"
+            android:hint="Tên khách sạn"
             android:paddingHorizontal="14dp" />
 
         <EditText
@@ -43,7 +43,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
             android:gravity="top"
-            android:hint="Mo ta khach san"
+            android:hint="Mô tả khách sạn"
             android:padding="14dp" />
 
         <EditText
@@ -52,7 +52,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Dia chi khach san"
+            android:hint="Địa chỉ khách sạn"
             android:paddingHorizontal="14dp" />
 
         <EditText
@@ -79,7 +79,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="So sao khach san, vi du 2"
+            android:hint="Số sao khách sạn, ví dụ 2"
             android:inputType="numberDecimal"
             android:paddingHorizontal="14dp" />
 
@@ -89,7 +89,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Gia thap nhat moi dem, vi du 500000"
+            android:hint="Giá thấp nhất mỗi đêm, ví dụ 500000"
             android:inputType="numberDecimal"
             android:paddingHorizontal="14dp" />
 
@@ -99,7 +99,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Tien ich khach san, cach nhau bang dau phay"
+            android:hint="Tiện ích khách sạn, cách nhau bằng dấu phẩy"
             android:paddingHorizontal="14dp" />
 
         <EditText
@@ -118,7 +118,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
             android:gravity="top"
-            android:hint="Danh sach anh phu, cach nhau bang dau phay"
+            android:hint="Danh sách ảnh phụ, cách nhau bằng dấu phẩy"
             android:padding="14dp" />
 
         <EditText
@@ -127,7 +127,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Latitude, vi du 10.8131"
+            android:hint="Vĩ độ, ví dụ 10.8131"
             android:inputType="numberDecimal|numberSigned"
             android:paddingHorizontal="14dp" />
 
@@ -137,7 +137,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Longitude, vi du 106.6658"
+            android:hint="Kinh độ, ví dụ 106.6658"
             android:inputType="numberDecimal|numberSigned"
             android:paddingHorizontal="14dp" />
 
@@ -147,7 +147,7 @@
             android:layout_height="54dp"
             android:layout_marginTop="18dp"
             android:backgroundTint="@color/ocean_blue"
-            android:text="Tao khach san va them phong"
+            android:text="Tạo khách sạn và thêm phòng"
             android:textColor="@color/white"
             android:textStyle="bold" />
 

@@ -1,0 +1,181 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function currentUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && currentUser().role == 'admin';
+    }
+
+    function isPartner() {
+      return isSignedIn() && currentUser().role == 'partner';
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function hotelOwner(hotelId) {
+      return get(/databases/$(database)/documents/hotels/$(hotelId)).data.owner_id;
+    }
+
+    function ownsExistingHotel() {
+      return isPartner() && resource.data.owner_id == request.auth.uid;
+    }
+
+    function ownsNewHotel() {
+      return isPartner()
+        && request.resource.data.owner_id == request.auth.uid
+        && request.resource.data.approval_status == 'pending'
+        && request.resource.data.is_active == false;
+    }
+
+    function ownsExistingRoomHotel() {
+      return isPartner()
+        && resource.data.owner_id == request.auth.uid
+        && hotelOwner(resource.data.hotel_id) == request.auth.uid;
+    }
+
+    function ownsNewRoomHotel() {
+      return isPartner()
+        && request.resource.data.owner_id == request.auth.uid
+        && hotelOwner(request.resource.data.hotel_id) == request.auth.uid;
+    }
+
+    function selfProfileFieldsOnly() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'fullName',
+        'phone',
+        'avatarUrl',
+        'avatar_url',
+        'displayName',
+        'updated_at'
+      ]);
+    }
+
+    function hotelPartnerFieldsOnly() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'owner_id',
+        'approval_status',
+        'is_active',
+        'admin_note',
+        'reviewed_at'
+      ]);
+    }
+
+    function roomPartnerFieldsOnly() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'owner_id',
+        'hotel_id'
+      ]);
+    }
+
+    function allowedReservationUpdateFields() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'status',
+        'payment_status',
+        'payment_method',
+        'paid_at',
+        'updated_at'
+      ]);
+    }
+
+    function allowedReservationStatus() {
+      return !('status' in request.resource.data)
+        || request.resource.data.status in [
+          'pending_payment',
+          'confirmed',
+          'checked_in',
+          'completed',
+          'cancelled',
+          'expired'
+        ];
+    }
+
+    match /users/{userId} {
+      allow read: if isSelf(userId) || isAdmin();
+      allow create: if isAdmin()
+        || (isSelf(userId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.role == 'user');
+      allow update: if isAdmin() || (isSelf(userId) && selfProfileFieldsOnly());
+      allow delete: if isAdmin();
+    }
+
+    match /partner_applications/{appId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.user_id == request.auth.uid);
+      allow create: if isSignedIn()
+        && appId == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /hotels/{hotelId} {
+      allow read: if true;
+      allow create: if isAdmin() || ownsNewHotel();
+      allow update: if isAdmin() || (ownsExistingHotel() && hotelPartnerFieldsOnly());
+      allow delete: if isAdmin();
+    }
+
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create: if isAdmin() || ownsNewRoomHotel();
+      allow update: if isAdmin() || (ownsExistingRoomHotel() && roomPartnerFieldsOnly());
+      allow delete: if isAdmin() || ownsExistingRoomHotel();
+    }
+
+    match /sections/{sectionId} {
+      allow read: if true;
+      allow create: if isAdmin()
+        || (isPartner()
+          && request.resource.data.owner_id == request.auth.uid
+          && hotelOwner(request.resource.data.hotel_id) == request.auth.uid);
+      allow update, delete: if isAdmin()
+        || (isPartner()
+          && resource.data.owner_id == request.auth.uid
+          && hotelOwner(resource.data.hotel_id) == request.auth.uid);
+    }
+
+    match /reservations/{reservationId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.customer_id == request.auth.uid)
+        || (isPartner() && resource.data.owner_id == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.customer_id == request.auth.uid
+        && request.resource.data.status == 'pending_payment';
+      allow update: if isAdmin()
+        || (isSignedIn()
+          && resource.data.customer_id == request.auth.uid
+          && request.resource.data.customer_id == resource.data.customer_id
+          && request.resource.data.owner_id == resource.data.owner_id
+          && allowedReservationUpdateFields()
+          && allowedReservationStatus());
+      allow delete: if isAdmin();
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn()
+        && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if isAdmin()
+        || (isSignedIn() && resource.data.user_id == request.auth.uid);
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.user_id == request.auth.uid);
+      allow create: if isAdmin() || isPartner();
+      allow update, delete: if isAdmin()
+        || (isSignedIn() && resource.data.user_id == request.auth.uid);
+    }
+  }
+}

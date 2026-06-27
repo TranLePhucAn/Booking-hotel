@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Dang ky cong tac khach san"
+            android:text="Đăng ký cộng tác khách sạn"
             android:textColor="@color/white"
             android:textSize="26sp"
             android:textStyle="bold" />
@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Gui ho so de admin xet duyet va mo dashboard quan ly phong."
+            android:text="Gửi hồ sơ để Admin xét duyệt và mở Dashboard quản lý phòng."
             android:textColor="@color/ocean_sky"
             android:textSize="14sp" />
 
@@ -45,7 +45,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Thong tin tai khoan"
+                    android:text="Thông tin tài khoản"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -56,7 +56,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="14dp"
                     android:background="@drawable/bg_input"
-                    android:hint="Ten nguoi dai dien"
+                    android:hint="Tên người đại diện"
                     android:inputType="textPersonName"
                     android:paddingHorizontal="14dp" />
 
@@ -66,7 +66,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_input"
-                    android:hint="Email dang nhap"
+                    android:hint="Email đăng nhập"
                     android:inputType="textEmailAddress"
                     android:paddingHorizontal="14dp" />
 
@@ -76,7 +76,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_input"
-                    android:hint="So dien thoai"
+                    android:hint="Số điện thoại"
                     android:inputType="phone"
                     android:paddingHorizontal="14dp" />
 
@@ -86,7 +86,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_input"
-                    android:hint="Mat khau toi thieu 6 ky tu"
+                    android:hint="Mật khẩu tối thiểu 6 ký tự"
                     android:inputType="textPassword"
                     android:paddingHorizontal="14dp" />
             </LinearLayout>
@@ -109,7 +109,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Thong tin khach san"
+                    android:text="Thông tin khách sạn"
                     android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -120,7 +120,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="14dp"
                     android:background="@drawable/bg_input"
-                    android:hint="Ten doanh nghiep / ten khach san"
+                    android:hint="Tên doanh nghiệp / Tên khách sạn"
                     android:paddingHorizontal="14dp" />
 
                 <EditText
@@ -129,7 +129,7 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_input"
-                    android:hint="Dia chi kinh doanh"
+                    android:hint="Địa chỉ kinh doanh"
                     android:paddingHorizontal="14dp" />
 
                 <EditText
@@ -138,14 +138,14 @@
                     android:layout_height="52dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_input"
-                    android:hint="Loai hinh: Hotel, Homestay, Resort"
+                    android:hint="Loại hình: Hotel, Homestay, Resort"
                     android:paddingHorizontal="14dp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:text="Giay phep / xac minh"
+                    android:text="Giấy phép / Xác minh"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
@@ -157,7 +157,7 @@
                     android:layout_marginTop="8dp"
                     android:background="@drawable/bg_input"
                     android:gravity="top"
-                    android:hint="Nhap ma giay phep, thong tin xac minh hoac link anh giay phep"
+                    android:hint="Nhập mã giấy phép, thông tin xác minh hoặc link ảnh giấy phép"
                     android:padding="14dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -168,7 +168,7 @@
             android:layout_height="54dp"
             android:layout_marginTop="18dp"
             android:backgroundTint="@color/ocean_blue"
-            android:text="Gui yeu cau xet duyet"
+            android:text="Gửi yêu cầu xét duyệt"
             android:textColor="@color/white"
             android:textStyle="bold" />
 

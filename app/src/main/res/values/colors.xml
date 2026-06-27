@@ -18,6 +18,7 @@
 
     <color name="gray_text">#64748b</color>
     <color name="warn_text">#d32d55</color>
+    <color name="error">#B00020</color>
     <color name="highlight_text">#fd5d1c</color>
 
     <color name="separate_color">#E0E0E0</color>

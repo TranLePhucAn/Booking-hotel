@@ -1,5 +1,6 @@
 package com.example.hotelbooking.ui.auth;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -8,18 +9,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.remote.FirebaseClient;
+import com.example.hotelbooking.ui.home.HomeActivity;
 import com.example.hotelbooking.utils.LoadingDialog;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.example.hotelbooking.viewmodels.AuthViewModel;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -28,7 +23,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText edtPassword;
     private Button btnRegister;
 
-    private FirebaseAuth auth;
+    private AuthViewModel authViewModel;
     private LoadingDialog loadingDialog;
 
     @Override
@@ -37,8 +32,11 @@ public class RegisterActivity extends AppCompatActivity {
         setContentView(R.layout.activity_register);
 
         initViews();
-        auth = FirebaseClient.getAuth();
         loadingDialog = new LoadingDialog(this);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+
+        observeViewModel();
+
         btnRegister.setOnClickListener(v -> register());
     }
 
@@ -49,70 +47,66 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister = findViewById(R.id.btnRegister);
     }
 
+    private void observeViewModel() {
+        authViewModel.isLoading.observe(this, isLoading -> {
+            if (isLoading) loadingDialog.show();
+            else loadingDialog.dismiss();
+        });
+
+        authViewModel.userSession.observe(this, firebaseUser -> {
+            if (firebaseUser != null) {
+                // CHỈNH SỬA: Đăng ký thành công thì vào thẳng Trang chủ
+                Toast.makeText(this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(RegisterActivity.this, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        authViewModel.error.observe(this, error -> {
+            if (error != null) {
+                Toast.makeText(this, "Lỗi: " + error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void register() {
         String name = edtName.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "Vui long nhap day du thong tin", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(name)) {
+            edtName.setError("Vui lòng nhập họ tên");
+            edtName.requestFocus();
+            return;
+        }
+
+        if (TextUtils.isEmpty(email)) {
+            edtEmail.setError("Vui lòng nhập Email");
+            edtEmail.requestFocus();
             return;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Email khong dung dinh dang", Toast.LENGTH_SHORT).show();
+            edtEmail.setError("Email không đúng định dạng");
+            edtEmail.requestFocus();
             return;
         }
 
-        if (password.length() < 6) {
-            Toast.makeText(this, "Mat khau phai co it nhat 6 ky tu", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(password)) {
+            edtPassword.setError("Vui lòng nhập mật khẩu");
+            edtPassword.requestFocus();
             return;
         }
 
-        loadingDialog.show();
-        auth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    loadingDialog.dismiss();
-                    if (!task.isSuccessful() || auth.getCurrentUser() == null) {
-                        String message = task.getException() != null ? task.getException().getMessage() : "Khong tao duoc tai khoan";
-                        Toast.makeText(this, "Loi tao tai khoan: " + message, Toast.LENGTH_LONG).show();
-                        return;
-                    }
+        String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        if (!password.matches(passwordPattern)) {
+            edtPassword.setError("Mật khẩu phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt");
+            edtPassword.requestFocus();
+            return;
+        }
 
-                    FirebaseUser firebaseUser = auth.getCurrentUser();
-                    firebaseUser.updateProfile(new UserProfileChangeRequest.Builder()
-                            .setDisplayName(name)
-                            .build());
-                    saveUserProfile(firebaseUser.getUid(), name, email);
-                });
-    }
-
-    private void saveUserProfile(String uid, String name, String email) {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("uid", uid);
-        userData.put("fullName", name);
-        userData.put("email", email);
-        userData.put("role", "customer");
-        userData.put("phone", "");
-        userData.put("avatarUrl", "");
-        userData.put("gender", "");
-        userData.put("date_of_birth", "");
-        userData.put("country", "");
-        userData.put("created_at", FieldValue.serverTimestamp());
-
-        FirebaseFirestore.getInstance()
-                .collection("users")
-                .document(uid)
-                .set(userData)
-                .addOnSuccessListener(unused -> {
-                    auth.signOut();
-                    Toast.makeText(this, "Dang ky thanh cong. Vui long dang nhap.", Toast.LENGTH_LONG).show();
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    auth.signOut();
-                    Toast.makeText(this, "Tai khoan da tao, nhung chua luu duoc ho so: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    finish();
-                });
+        authViewModel.register(email, password, name, "");
     }
 }

@@ -22,7 +22,7 @@
             android:background="@drawable/bg_input"
             android:gravity="center"
             android:paddingHorizontal="14dp"
-            android:text="Quay lai"
+            android:text="Quay lại"
             android:textColor="@color/ocean_deep"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_weight="1"
-            android:text="Ban do khach san"
+            android:text="Bản đồ khách sạn"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -62,7 +62,7 @@
                 android:id="@+id/tvMapHotelName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Vi tri khach san"
+                android:text="Vị trí khách sạn"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -73,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:lineSpacingExtra="2dp"
-                android:text="Dia chi"
+                android:text="Địa chỉ"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
@@ -84,7 +84,7 @@
                 android:layout_marginTop="10dp"
                 android:background="@color/ocean_bg"
                 android:padding="10dp"
-                android:text="Khoang cach tu ban: dang tinh"
+                android:text="Khoảng cách từ bạn: đang tính"
                 android:textColor="@color/ocean_deep"
                 android:textSize="14sp"
                 android:textStyle="bold" />

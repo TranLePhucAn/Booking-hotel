@@ -14,8 +14,10 @@ import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.databinding.ActivityHomeBinding;
+import com.example.hotelbooking.ui.adapter.CategoryAdapter;
 import com.example.hotelbooking.ui.auth.LoginActivity;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
@@ -50,25 +52,37 @@ public class HomeActivity extends AppCompatActivity {
         loadHotels();
     }
 
+    private void updateUserUI() {
+        if (FirebaseClient.getAuth().getCurrentUser() != null) {
+            String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
+            binding.btnProfile.setText(name != null && !name.isEmpty() ? name : "Tài khoản");
+            binding.btnLogout.setVisibility(View.VISIBLE);
+            binding.btnProfile.setOnClickListener(v ->
+                    startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
+        } else {
+            binding.btnProfile.setText("Đăng nhập");
+            binding.btnLogout.setVisibility(View.GONE);
+            binding.btnProfile.setOnClickListener(v ->
+                    startActivity(new Intent(HomeActivity.this, LoginActivity.class)));
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateUserUI();
+    }
+
     private void initViews() {
         binding.searchBar.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
 
-        if (FirebaseClient.getAuth().getCurrentUser() != null) {
-            String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
-            if (name != null && !name.isEmpty()) {
-                binding.btnProfile.setText(name);
-            }
-        }
-
-        binding.btnProfile.setOnClickListener(v ->
-                startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
+        updateUserUI();
 
         binding.btnLogout.setOnClickListener(v -> {
             FirebaseClient.getAuth().signOut();
-            Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
+            updateUserUI();
+            Toast.makeText(this, "Đã đăng xuất thành công", Toast.LENGTH_SHORT).show();
         });
 
         binding.btnFilter.setOnClickListener(v ->
@@ -92,7 +106,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void setupCategories() {
-        List<String> categories = Arrays.asList("Tat ca", "Resort", "Khach san", "Villa", "Homestay", "Can ho");
+        List<String> categories = Arrays.asList("Tất cả", "Resort", "Khách sạn", "Villa", "Homestay", "Căn hộ");
         CategoryAdapter categoryAdapter = new CategoryAdapter(categories, this::filterByCategory);
 
         binding.rvCategories.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -127,8 +141,9 @@ public class HomeActivity extends AppCompatActivity {
         allHotels.clear();
         allHotels.addAll(DemoHotelData.hotels());
 
-        db.collection("hotels")
-                .whereEqualTo("status", "active")
+        db.collection(AppConstants.COLLECTION_HOTELS)
+                .whereEqualTo("approval_status", AppConstants.STATUS_APPROVED)
+                .whereEqualTo("is_active", true)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot != null && !querySnapshot.isEmpty()) {
@@ -178,7 +193,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void filterByCategory(String category) {
         suggestionHotels.clear();
-        if (category.equalsIgnoreCase("Tat ca")) {
+        if (category.equalsIgnoreCase("Tất cả")) {
             for (Hotel h : allHotels) {
                 if (!h.isFeatured()) suggestionHotels.add(h);
             }
@@ -192,7 +207,7 @@ public class HomeActivity extends AppCompatActivity {
         
         suggestionsAdapter.updateData(suggestionHotels);
         
-        if (suggestionHotels.isEmpty() && !category.equalsIgnoreCase("Tat ca")) {
+        if (suggestionHotels.isEmpty() && !category.equalsIgnoreCase("Tất cả")) {
             Toast.makeText(this, "Không có kết quả cho: " + category, Toast.LENGTH_SHORT).show();
         }
     }
