@@ -54,6 +54,7 @@ public class PartnerViewModel extends ViewModel {
                             .addOnSuccessListener(v -> {
                                 userRepository.updatePartnerStatus(app.getUserId(), AppConstants.STATUS_APPROVED)
                                         .addOnSuccessListener(v2 -> {
+                                            sendNotification(app.getUserId(), "Approved", "Đăng ký cộng sự của bạn đã được duyệt.");
                                             fetchPendingApplications();
                                         });
                             });
@@ -68,13 +69,31 @@ public class PartnerViewModel extends ViewModel {
         _isLoading.setValue(true);
         partnerRepository.updateApplicationStatus(appId, AppConstants.STATUS_REJECTED, adminNote)
                 .addOnSuccessListener(aVoid -> {
-                    userRepository.updatePartnerStatus(userId, AppConstants.STATUS_REJECTED)
-                            .addOnSuccessListener(v -> fetchPendingApplications());
+                    java.util.Map<String, Object> updates = new java.util.HashMap<>();
+                    updates.put("partnerStatus", AppConstants.STATUS_REJECTED);
+                    updates.put("admin_note", adminNote);
+                    userRepository.updateUser(userId, updates)
+                            .addOnSuccessListener(v -> {
+                                sendNotification(userId, "Rejected", "Đăng ký cộng sự đã bị từ chối. Lý do: " + adminNote);
+                                fetchPendingApplications();
+                            });
                 })
                 .addOnFailureListener(e -> {
                     _error.setValue(e.getMessage());
                     _isLoading.setValue(false);
                 });
+    }
+
+    private void sendNotification(String userId, String title, String message) {
+        java.util.Map<String, Object> notification = new java.util.HashMap<>();
+        notification.put("userId", userId);
+        notification.put("title", title);
+        notification.put("message", message);
+        notification.put("time", com.google.firebase.Timestamp.now());
+        notification.put("read", false);
+        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection(AppConstants.COLLECTION_NOTIFICATIONS)
+                .add(notification);
     }
 
     private List<PartnerApplication> toSortedApplications(List<DocumentSnapshot> documents) {

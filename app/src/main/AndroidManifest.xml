@@ -54,6 +54,9 @@
             android:name=".ui.admin.AdminHotelDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.admin.AdminHotelPreviewActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.admin.AdminBookingManagementActivity"
             android:exported="false" />
 

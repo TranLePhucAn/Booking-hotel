@@ -145,20 +145,60 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:text="Giấy phép / Xác minh"
+                    android:text="Giấy phép / File xác minh (PDF, JPG, PNG)"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
-                <EditText
-                    android:id="@+id/edtLicenseInfo"
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="96dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Tải lên giấy phép kinh doanh hoặc ảnh giấy tờ xác minh"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnPickFile"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="#EEF2FF"
+                    android:text="📎  Chọn file từ thiết bị"
+                    android:textColor="@color/ocean_blue"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSelectedFileName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:text="Chưa chọn file"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+
+                <ImageView
+                    android:id="@+id/ivFilePreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
                     android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_input"
-                    android:gravity="top"
-                    android:hint="Nhập mã giấy phép, thông tin xác minh hoặc link ảnh giấy phép"
-                    android:padding="14dp" />
+                    android:scaleType="fitCenter"
+                    android:visibility="gone"
+                    android:contentDescription="Xem trước ảnh giấy tờ" />
+
+                <TextView
+                    android:id="@+id/tvPdfIndicator"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="#FFF3E0"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:text="📄 File PDF đã được chọn"
+                    android:textColor="#E65100"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

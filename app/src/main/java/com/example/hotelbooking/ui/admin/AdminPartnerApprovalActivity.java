@@ -37,7 +37,7 @@ public class AdminPartnerApprovalActivity extends AppCompatActivity {
 
         adapter.setOnItemClickListener(app -> {
             Intent intent = new Intent(this, AdminPartnerDetailActivity.class);
-            intent.putExtra("application", app);
+            intent.putExtra("applicationId", app.getId());
             startActivity(intent);
         });
 
