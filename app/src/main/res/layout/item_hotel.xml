@@ -4,6 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     app:cardCornerRadius="16dp"
     app:cardElevation="4dp">
 
@@ -50,6 +53,8 @@
                 android:backgroundTint="#80FFFFFF"
                 android:padding="8dp"
                 android:src="@drawable/ic_heart_border"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
                 app:tint="@color/highlight_text" />
 
         </RelativeLayout>
@@ -117,7 +122,9 @@
                 android:layout_marginTop="12dp"
                 android:backgroundTint="@color/primary"
                 android:text="Đặt phòng"
-                android:textColor="@color/white" />
+                android:textColor="@color/white"
+                android:focusable="false"
+                android:focusableInTouchMode="false" />
 
         </LinearLayout>
     </LinearLayout>

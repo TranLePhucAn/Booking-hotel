@@ -10,51 +10,159 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvDetailBusinessName"
+        <!-- Header -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="22sp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvDetailBusinessName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Tên doanh nghiệp"
+                android:textColor="@color/text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvApplicationStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/status_pending"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="Đang chờ duyệt"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chi tiết hồ sơ cộng sự"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Người đại diện -->
+        <TextView
+            android:text="Người đại diện"
             android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:layout_marginBottom="16dp"/>
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Người đại diện:" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvDetailRepName" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <TextView
+            android:id="@+id/tvDetailRepName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"/>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Số điện thoại:" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvDetailPhone" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <!-- SĐT -->
+        <TextView
+            android:text="Số điện thoại"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Email:" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvDetailEmail" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <TextView
+            android:id="@+id/tvDetailPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"/>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Địa chỉ:" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvDetailAddress" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <!-- Email -->
+        <TextView
+            android:text="Email"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mã số thuế:" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvDetailTaxCode" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <TextView
+            android:id="@+id/tvDetailEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"/>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mô tả:" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvDetailDesc" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="16dp"/>
+        <!-- Địa chỉ -->
+        <TextView
+            android:text="Địa chỉ"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
+        <TextView
+            android:id="@+id/tvDetailAddress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"/>
+
+        <!-- MST -->
+        <TextView
+            android:text="Mã số thuế"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tvDetailTaxCode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="12dp"/>
+
+        <!-- Mô tả -->
+        <TextView
+            android:text="Mô tả"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tvDetailDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="20dp"/>
+
+        <!-- File xác minh -->
         <Button
             android:id="@+id/btnViewVerificationFile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Xem file xác minh"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="12dp"/>
 
+        <ImageView
+            android:id="@+id/ivVerificationFile"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:visibility="gone"
+            android:scaleType="fitCenter"
+            android:contentDescription="Ảnh xác minh"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- Ghi chú -->
         <EditText
             android:id="@+id/etAdminNote"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ghi chú của Admin (Lý do từ chối...)"
-            android:minLines="3"
-            android:gravity="top"
+            android:layout_height="120dp"
             android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Nhập lý do từ chối (nếu có)"
             android:padding="12dp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="20dp"/>
 
+        <!-- Nút -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -65,18 +173,20 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Từ chối"
+                android:layout_marginEnd="8dp"
                 android:backgroundTint="@color/error"
-                android:layout_marginEnd="8dp"/>
+                android:text="Từ chối" />
 
             <Button
                 android:id="@+id/btnApproveApp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Duyệt"
-                android:backgroundTint="@color/ocean_blue"/>
+                android:backgroundTint="@color/ocean_blue"
+                android:text="Duyệt" />
+
         </LinearLayout>
 
     </LinearLayout>
+
 </ScrollView>
