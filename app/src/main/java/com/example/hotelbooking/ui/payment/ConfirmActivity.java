@@ -206,7 +206,7 @@ public class ConfirmActivity extends AppCompatActivity {
     private void setupPromoLogic() {
         btnApplyPromo.setOnClickListener(view -> {
             String promoCode = etPromoCode.getText().toString().trim();
-            // Todo: Code xử lý Firebase kiểm tra mã giảm giá của bạn ở đây
+            // Todo: Code xử lý Firebase kiểm tra mã giảm giá
             Toast.makeText(this, "Mã giảm giá không hợp lệ hoặc đã hết hạn", Toast.LENGTH_SHORT).show();
         });
     }
@@ -214,6 +214,15 @@ public class ConfirmActivity extends AppCompatActivity {
     // xử lý nút xác nhận đặt phòng
     private void setupBookingLogic() {
         btnConfirmBooking.setOnClickListener(view -> {
+
+            btnConfirmBooking.setEnabled(false);
+
+            if (hotel == null || !hotel.getStatus().equals("active")) {
+                Toast.makeText(this, "Rất tiếc, khách sạn này hiện tại không tiếp nhận đặt phòng!", Toast.LENGTH_LONG).show();
+                btnConfirmBooking.setEnabled(true);
+                return;
+            }
+
             String name = etGuestName.getText().toString().trim();
             String phone = etGuestPhone.getText().toString().trim();
             String email = etGuestEmail.getText().toString().trim();
@@ -222,6 +231,16 @@ public class ConfirmActivity extends AppCompatActivity {
             if (name.isEmpty()) { etGuestName.setError("Vui lòng nhập tên"); return; }
             if (phone.isEmpty()) { etGuestPhone.setError("Vui lòng nhập số điện thoại"); return; }
             if (email.isEmpty()) { etGuestEmail.setError("Vui lòng nhập Email"); return; }
+
+            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+            FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+            String customerId = "";
+            if(firebaseUser != null) {
+                customerId = firebaseAuth.getUid();
+            } else {
+                Toast.makeText(this, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             FirebaseFirestore firestore = FirebaseFirestore.getInstance();
             Date now = new Date();
@@ -233,10 +252,12 @@ public class ConfirmActivity extends AppCompatActivity {
             Map<String, Object> reservationData = new HashMap<>();
             reservationData.put("hotel_id", hotel.getId()); // Lấy Document ID của khách sạn
             reservationData.put("section_id", section.getId()); // Lấy Document ID của hạng phòng
-            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
-                reservationData.put("customer_id", FirebaseAuth.getInstance().getCurrentUser().getUid());
+            reservationData.put("customer_id", customerId);
+
+            if(hotel != null && hotel.getOwnerId() != null) {
+                reservationData.put("owner_id", hotel.getOwnerId());
             } else {
-                reservationData.put("customer_id", "");
+                reservationData.put("owner_id", "");
             }
 
             reservationData.put("day_start", new Timestamp(checkInDate));
@@ -255,9 +276,7 @@ public class ConfirmActivity extends AppCompatActivity {
             reservationData.put("status", "PENDING"); // chờ thanh toán
             reservationData.put("created_at", new Timestamp(now));
             reservationData.put("payment_deadline", new Timestamp(deadline)); // deadline thanh toán
-            reservationData.put("room_id", selectedRoomId == null ? "" : selectedRoomId);
-
-            btnConfirmBooking.setEnabled(false);
+            reservationData.put("room_id", ""); // Chưa xếp phòng vật lý cụ thể khi chưa trả tiền
 
             firestore.collection("reservations")
                     .add(reservationData)
