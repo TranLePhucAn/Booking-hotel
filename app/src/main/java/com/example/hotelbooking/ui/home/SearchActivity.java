@@ -104,6 +104,11 @@ public class SearchActivity extends AppCompatActivity {
             public void onBookClick(Hotel hotel) {
                 openHotelDetail(hotel);
             }
+
+            @Override
+            public void onFavoriteClick(Hotel hotel) {
+
+            }
         });
         rvSearchResults.setLayoutManager(new LinearLayoutManager(this));
         rvSearchResults.setAdapter(hotelAdapter);

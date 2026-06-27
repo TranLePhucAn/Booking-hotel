@@ -39,6 +39,19 @@
                 android:textStyle="bold"
                 android:visibility="gone" />
 
+            <ImageButton
+                android:id="@+id/btnFavorite"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:layout_margin="8dp"
+                android:background="@drawable/bg_bottom_sheet"
+                android:backgroundTint="#80FFFFFF"
+                android:padding="8dp"
+                android:src="@drawable/ic_heart_border"
+                app:tint="@color/highlight_text" />
+
         </RelativeLayout>
 
         <LinearLayout
