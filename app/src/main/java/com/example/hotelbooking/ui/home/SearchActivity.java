@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
+import com.example.hotelbooking.ui.adapter.HotelAdapter;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 import com.example.hotelbooking.utils.AppConstants;
 import com.google.android.material.bottomsheet.BottomSheetDialog;

@@ -15,6 +15,7 @@ import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.databinding.ActivityHomeBinding;
 import com.example.hotelbooking.ui.adapter.CategoryAdapter;
+import com.example.hotelbooking.ui.adapter.HotelAdapter;
 import com.example.hotelbooking.ui.auth.LoginActivity;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 import com.example.hotelbooking.utils.AppConstants;
