@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.hotelbooking.data.repository.UserRepository;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -66,7 +67,8 @@ public class UserViewModel extends ViewModel {
 
     public void uploadAvatar(String uid, Uri imageUri, Map<String, Object> data) {
         _isLoading.setValue(true);
-        StorageReference ref = FirebaseStorage.getInstance().getReference().child("avatars/" + uid + ".jpg");
+        StorageReference ref = FirebaseStorage.getInstance().getReference()
+                .child(AppConstants.STORAGE_AVATARS + "/" + uid + ".jpg");
         ref.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl()
                         .addOnSuccessListener(uri -> {

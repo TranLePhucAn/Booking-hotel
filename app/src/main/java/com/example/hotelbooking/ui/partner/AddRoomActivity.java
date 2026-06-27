@@ -10,6 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.hotelbooking.R;
+import com.example.hotelbooking.utils.AppConstants;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -45,7 +46,7 @@ public class AddRoomActivity extends AppCompatActivity {
         hotelName = getIntent().getStringExtra("hotel_name");
 
         TextView tvAddRoomTitle = findViewById(R.id.tvAddRoomTitle);
-        tvAddRoomTitle.setText("Them phong cho " + (hotelName == null ? "khach san" : hotelName));
+        tvAddRoomTitle.setText("Thêm phòng cho " + (hotelName == null ? "khách sạn" : hotelName));
 
         bindViews();
 
@@ -72,7 +73,7 @@ public class AddRoomActivity extends AppCompatActivity {
     private void saveRoom() {
         String roomName = textOf(edtRoomName);
         if (TextUtils.isEmpty(hotelId) || TextUtils.isEmpty(roomName)) {
-            Toast.makeText(this, "Vui long nhap ten phong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập tên phòng", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -91,7 +92,7 @@ public class AddRoomActivity extends AppCompatActivity {
         room.put("price_per_night", doubleOf(edtRoomPrice, 0));
         room.put("capacity_adults", intOf(edtAdults, 0));
         room.put("capacity_children", intOf(edtChildren, 0));
-        room.put("capacity", intOf(edtAdults, 0) + " nguoi lon, " + intOf(edtChildren, 0) + " tre em");
+        room.put("capacity", intOf(edtAdults, 0) + " người lớn, " + intOf(edtChildren, 0) + " trẻ em");
         room.put("bed_type", textOf(edtBedType));
         room.put("room_size", doubleOf(edtRoomSize, 0));
         room.put("area", doubleOf(edtRoomSize, 0));
@@ -101,14 +102,14 @@ public class AddRoomActivity extends AppCompatActivity {
         room.put("status", availableRooms > 0 ? "AVAILABLE" : "SUSPENDED");
         room.put("created_at", System.currentTimeMillis());
 
-        db.collection("rooms")
+        db.collection(AppConstants.COLLECTION_ROOMS)
                 .add(room)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Da luu phong. Co the them phong tiep theo.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Đã lưu phòng. Có thể thêm phòng tiếp theo.", Toast.LENGTH_SHORT).show();
                     clearRoomForm();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Khong luu duoc phong: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Không lưu được phòng: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private void finishPost() {
@@ -117,15 +118,20 @@ public class AddRoomActivity extends AppCompatActivity {
             return;
         }
 
-        db.collection("hotels")
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("approval_status", AppConstants.STATUS_PENDING);
+        updates.put("is_active", false);
+        updates.put("updated_at", System.currentTimeMillis());
+
+        db.collection(AppConstants.COLLECTION_HOTELS)
                 .document(hotelId)
-                .update("status", "pending")
+                .update(updates)
                 .addOnSuccessListener(unused -> {
-                    Toast.makeText(this, "Bai dang da gui duyet va chua hien cong khai", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Bài đăng đã gửi duyệt và chưa hiển thị công khai", Toast.LENGTH_LONG).show();
                     finish();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Khong cap nhat duoc trang thai: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                        Toast.makeText(this, "Không cập nhật được trạng thái: " + e.getMessage(), Toast.LENGTH_LONG).show());
     }
 
     private void clearRoomForm() {

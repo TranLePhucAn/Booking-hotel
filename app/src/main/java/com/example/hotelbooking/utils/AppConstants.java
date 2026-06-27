@@ -5,17 +5,15 @@ public class AppConstants {
     public static final String COLLECTION_USERS = "users";
     public static final String COLLECTION_HOTELS = "hotels";
     public static final String COLLECTION_ROOMS = "rooms";
+    public static final String COLLECTION_SECTIONS = "sections";
     public static final String COLLECTION_RESERVATIONS = "reservations";
     public static final String COLLECTION_REVIEWS = "reviews";
     public static final String COLLECTION_PARTNER_APPLICATIONS = "partner_applications";
     public static final String COLLECTION_NOTIFICATIONS = "notifications";
 
     public static final String ROLE_USER = "user";
-    public static final String ROLE_CUSTOMER = "user";
     public static final String ROLE_PARTNER = "partner";
-    public static final String ROLE_OWNER = "partner";
     public static final String ROLE_ADMIN = "admin";
-    public static final String ROLE_PARTNER_PENDING = "partner_pending";
 
     public static final String STATUS_PENDING = "pending";
     public static final String STATUS_APPROVED = "approved";
@@ -24,6 +22,11 @@ public class AppConstants {
 
     public static final String PAYMENT_UNPAID = "unpaid";
     public static final String PAYMENT_PAID = "paid";
+
+    public static final String STORAGE_AVATARS = "avatars";
+    public static final String STORAGE_HOTELS = "hotels";
+    public static final String STORAGE_ROOMS = "rooms";
+    public static final String STORAGE_PARTNER_VERIFICATION = "partner_verification";
 
     public static final String BOOKING_PENDING_PAYMENT = "pending_payment";
     public static final String BOOKING_CONFIRMED = "confirmed";

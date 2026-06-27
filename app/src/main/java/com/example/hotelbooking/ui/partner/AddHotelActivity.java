@@ -95,8 +95,27 @@ public class AddHotelActivity extends AppCompatActivity {
         hotel.setStatus(AppConstants.STATUS_PENDING);
         hotel.setCreatedAt(System.currentTimeMillis());
 
+        java.util.Map<String, Object> hotelData = new java.util.HashMap<>();
+        hotelData.put("owner_id", ownerId);
+        hotelData.put("hotel_name", hotelName);
+        hotelData.put("description", description);
+        hotelData.put("address", address);
+        hotelData.put("city", textOf(edtCity));
+        hotelData.put("rating_star", doubleOf(edtRatingStar, 0));
+        hotelData.put("price", price);
+        hotelData.put("price_from", price);
+        hotelData.put("amenities", listOf(textOf(edtAmenities)));
+        hotelData.put("image_url", mainImage);
+        hotelData.put("image_urls", secondaryImages);
+        hotelData.put("latitude", doubleOf(edtLatitude, 0));
+        hotelData.put("longitude", doubleOf(edtLongitude, 0));
+        hotelData.put("approval_status", AppConstants.STATUS_PENDING);
+        hotelData.put("is_active", false);
+        hotelData.put("created_at", System.currentTimeMillis());
+        hotelData.put("updated_at", System.currentTimeMillis());
+
         db.collection(AppConstants.COLLECTION_HOTELS)
-                .add(hotel)
+                .add(hotelData)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(this, "Đã gửi yêu cầu tạo khách sạn. Vui lòng chờ duyệt.", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(this, AddRoomActivity.class);

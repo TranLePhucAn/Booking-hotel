@@ -3,6 +3,7 @@ package com.example.hotelbooking.data.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import com.example.hotelbooking.utils.AppConstants;
 
 public class DemoHotelData {
 
@@ -59,47 +60,47 @@ public class DemoHotelData {
         Hotel passion = new Hotel(
                 "demo_passion_lux",
                 "The Passion Lux Airport",
-                "119 Duong Bach Dang, Phuong 2, Tan Binh, TP.HCM",
+                "119 Đường Bạch Đằng, Phường 2, Tân Bình, TP.HCM",
                 500000,
                 8.3f,
                 "https://kientructrangkim.com/wp-content/uploads/2019/09/tieu-chuan-khach-san-5-sao-c.jpg",
-                "Khach san",
-                "Khach san gan san bay, phong hien dai, phu hop cho du lich va cong tac.",
+                "Khách sạn",
+                "Khách sạn gần sân bay, phòng hiện đại, phù hợp cho du lịch và công tác.",
                 Arrays.asList(
                         "https://pix10.agoda.net/hotelImages/56801030/-1/96cc40d590a674ca39caebda5879fe97.jpg",
                         "https://pix10.agoda.net/hotelImages/56801030/-1/ea01218c2f62d0c80f2f22e54553d748.jpg",
                         "https://pix10.agoda.net/hotelImages/56801030/-1/f8c527a2f31b0c2a141ddc884b7d7cd8.jpg"
                 ),
-                Arrays.asList("Wifi mien phi", "May lanh", "Bai dau xe", "Le tan 24/7", "Dua don san bay"),
+                Arrays.asList("Wifi miễn phí", "Máy lạnh", "Bãi đậu xe", "Lễ tân 24/7", "Đưa đón sân bay"),
                 10.8131,
                 106.6658
         );
         passion.setRatingStar(2);
         passion.setReviewCount(84);
-        passion.setStatus("active");
+        markApproved(passion);
         hotels.add(passion);
 
         Hotel binhYen = new Hotel(
                 "demo_binh_yen",
-                "Khach San Binh Yen",
+                "Khách Sạn Bình Yên",
                 "Vung Tau",
                 650000,
                 8.7f,
                 "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsQEGBt--p2A_0oB2eHqQM0-gkCkPUcFBShC_D7pfgMy5vprgvhBs10kjf&s=10",
                 "Resort",
-                "Khach san yen tinh gan bien, co phong VIP huong bien va dich vu than thien.",
+                "Khách sạn yên tĩnh gần biển, có phòng VIP hướng biển và dịch vụ thân thiện.",
                 Arrays.asList(
                         "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
                         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200",
                         "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1200"
                 ),
-                Arrays.asList("Wifi mien phi", "Ho boi", "Gan bien", "Bua sang", "Bai dau xe"),
+                Arrays.asList("Wifi miễn phí", "Hồ bơi", "Gần biển", "Bữa sáng", "Bãi đậu xe"),
                 10.3460,
                 107.0843
         );
         binhYen.setRatingStar(4);
         binhYen.setReviewCount(126);
-        binhYen.setStatus("active");
+        markApproved(binhYen);
         hotels.add(binhYen);
 
         Hotel ocean = new Hotel(
@@ -109,19 +110,19 @@ public class DemoHotelData {
                 720000,
                 8.9f,
                 "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200",
-                "Khach san",
-                "Khach san ven bien voi phong rong, view dep va khu vuc trung tam.",
+                "Khách sạn",
+                "Khách sạn ven bien voi phòng rong, view dep va khu vuc trung tam.",
                 Arrays.asList(
                         "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200",
                         "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200"
                 ),
-                Arrays.asList("Wifi", "Nha hang", "Ho boi", "Gym", "View bien"),
+                Arrays.asList("Wifi", "Nhà hàng", "Hồ bơi", "Gym", "View biển"),
                 12.2388,
                 109.1967
         );
         ocean.setRatingStar(4);
         ocean.setReviewCount(98);
-        ocean.setStatus("active");
+        markApproved(ocean);
         hotels.add(ocean);
 
         Hotel lotus = new Hotel(
@@ -131,43 +132,43 @@ public class DemoHotelData {
                 880000,
                 9.0f,
                 "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200",
-                "Khach san",
-                "Khach san boutique trung tam thanh pho, thuan tien di bo den khu am thuc va mua sam.",
+                "Khách sạn",
+                "Khách sạn boutique trung tâm thành phố, thuận tiện đi bộ đến khu ẩm thực và mua sắm.",
                 Arrays.asList(
                         "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200",
                         "https://images.unsplash.com/photo-1568084680786-a84f91d1153c?w=1200",
                         "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200"
                 ),
-                Arrays.asList("Wifi", "Bua sang", "Nha hang", "Gym", "Dua don san bay"),
+                Arrays.asList("Wifi", "Bữa sáng", "Nhà hàng", "Gym", "Đưa đón sân bay"),
                 10.7789,
                 106.7042
         );
         lotus.setRatingStar(4);
         lotus.setReviewCount(212);
-        lotus.setStatus("active");
+        markApproved(lotus);
         hotels.add(lotus);
 
         Hotel pine = new Hotel(
                 "demo_pine_dalat",
-                "Pine Hill Da Lat Retreat",
-                "Duong Trieu Viet Vuong, Da Lat",
+                "Pine Hill Đà Lạt Retreat",
+                "Duong Trieu Viet Vuong, Đà Lạt",
                 780000,
                 8.8f,
                 "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200",
                 "Villa",
-                "Khong gian nghi duong yen tinh tren doi thong, phu hop gia dinh va cap doi.",
+                "Không gian nghỉ dưỡng yên tĩnh trên đồi thông, phù hợp gia đình và cặp đôi.",
                 Arrays.asList(
                         "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200",
                         "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200",
                         "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=1200"
                 ),
-                Arrays.asList("Wifi", "Lo suoi", "San vuon", "Bua sang", "Bai dau xe"),
+                Arrays.asList("Wifi", "Lò sưởi", "Sân vườn", "Bữa sáng", "Bãi đậu xe"),
                 11.9251,
                 108.4380
         );
         pine.setRatingStar(4);
         pine.setReviewCount(147);
-        pine.setStatus("active");
+        markApproved(pine);
         hotels.add(pine);
 
         Hotel river = new Hotel(
@@ -177,20 +178,20 @@ public class DemoHotelData {
                 920000,
                 8.6f,
                 "https://images.unsplash.com/photo-1563911302283-d2bc129e7570?w=1200",
-                "Can ho",
-                "Can ho dich vu gan pho co, co bep nho va tam nhin ra song.",
+                "Căn hộ",
+                "Căn hộ dịch vụ gần phố cổ, có bếp nhỏ và tầm nhìn ra sông.",
                 Arrays.asList(
                         "https://images.unsplash.com/photo-1563911302283-d2bc129e7570?w=1200",
                         "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=1200",
                         "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200"
                 ),
-                Arrays.asList("Wifi", "Bep nho", "May giat", "Le tan", "Gan pho co"),
+                Arrays.asList("Wifi", "Bep nho", "May giat", "Le tan", "Gần phố cổ"),
                 21.0328,
                 105.8542
         );
         river.setRatingStar(4);
         river.setReviewCount(175);
-        river.setStatus("active");
+        markApproved(river);
         hotels.add(river);
 
         Hotel sunbay = new Hotel(
@@ -201,45 +202,50 @@ public class DemoHotelData {
                 9.2f,
                 "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=1200",
                 "Resort",
-                "Resort gan bien My Khe, co ho boi lon va cac hang phong view bien.",
+                "Resort gần biển Mỹ Khê, có hồ bơi lớn và các hạng phòng view biển.",
                 Arrays.asList(
                         "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=1200",
                         "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=1200",
                         "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200"
                 ),
-                Arrays.asList("Wifi", "Ho boi", "Spa", "View bien", "Bua sang buffet"),
+                Arrays.asList("Wifi", "Hồ bơi", "Spa", "View biển", "Bữa sáng buffet"),
                 16.0678,
                 108.2453
         );
         sunbay.setRatingStar(5);
         sunbay.setReviewCount(241);
-        sunbay.setStatus("active");
+        markApproved(sunbay);
         hotels.add(sunbay);
 
         Hotel garden = new Hotel(
                 "demo_garden_hoian",
-                "Hoi An Garden Homestay",
-                "Cam Chau, Hoi An",
+                "Hội An Garden Homestay",
+                "Cam Chau, Hội An",
                 520000,
                 8.5f,
                 "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
                 "Homestay",
-                "Homestay am cung gan pho co Hoi An, co san vuon va xe dap mien phi.",
+                "Homestay ấm cúng gần phố cổ Hội An, có sân vườn và xe đạp miễn phí.",
                 Arrays.asList(
                         "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
                         "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200",
                         "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200"
                 ),
-                Arrays.asList("Wifi", "Xe dap", "San vuon", "Bua sang", "Gan pho co"),
+                Arrays.asList("Wifi", "Xe đạp", "Sân vườn", "Bữa sáng", "Gần phố cổ"),
                 15.8801,
                 108.3380
         );
         garden.setRatingStar(3);
         garden.setReviewCount(93);
-        garden.setStatus("active");
+        markApproved(garden);
         hotels.add(garden);
 
         return hotels;
+    }
+
+    private static void markApproved(Hotel hotel) {
+        hotel.setApprovalStatus(AppConstants.STATUS_APPROVED);
+        hotel.setActive(true);
     }
 
     public static Hotel findHotel(String hotelId) {
@@ -254,120 +260,120 @@ public class DemoHotelData {
     public static List<DemoRoom> rooms(String hotelId) {
         if ("demo_binh_yen".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_binh_yen_vip", "Phong VIP huong bien", "VIP", "1 giuong doi lon",
-                            "2 nguoi lon, 1 tre em", 1500000, 5, "AVAILABLE", 42,
+                    new DemoRoom("demo_binh_yen_vip", "Phòng VIP hướng biển", "VIP", "1 giường đôi lớn",
+                            "2 người lớn, 1 trẻ em", 1500000, 5, "AVAILABLE", 42,
                             "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200"),
-                    new DemoRoom("demo_binh_yen_standard", "Standard Room", "Standard", "1 giuong doi",
-                            "2 nguoi lon", 650000, 3, "AVAILABLE", 28,
+                    new DemoRoom("demo_binh_yen_standard", "Standard Room", "Standard", "1 giường đôi",
+                            "2 người lớn", 650000, 3, "AVAILABLE", 28,
                             "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200"),
-                    new DemoRoom("demo_binh_yen_family", "Family Garden Room", "Family", "2 giuong doi",
-                            "4 nguoi lon", 1200000, 2, "AVAILABLE", 48,
+                    new DemoRoom("demo_binh_yen_family", "Family Garden Room", "Family", "2 giường đôi",
+                            "4 người lớn", 1200000, 2, "AVAILABLE", 48,
                             "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200"),
-                    new DemoRoom("demo_binh_yen_suite", "Suite Balcony", "Suite", "1 giuong king",
-                            "2 nguoi lon", 1850000, 1, "AVAILABLE", 55,
+                    new DemoRoom("demo_binh_yen_suite", "Suite Balcony", "Suite", "1 giường king",
+                            "2 người lớn", 1850000, 1, "AVAILABLE", 55,
                             "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200")
             );
         }
 
         if ("demo_ocean_breeze".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_ocean_deluxe", "Deluxe Sea View", "Deluxe", "1 giuong doi",
-                            "2 nguoi lon", 980000, 4, "AVAILABLE", 35,
+                    new DemoRoom("demo_ocean_deluxe", "Deluxe Sea View", "Deluxe", "1 giường đôi",
+                            "2 người lớn", 980000, 4, "AVAILABLE", 35,
                             "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200"),
-                    new DemoRoom("demo_ocean_family", "Family Room", "Family", "2 giuong doi",
-                            "4 nguoi lon", 1350000, 0, "SUSPENDED", 45,
+                    new DemoRoom("demo_ocean_family", "Family Room", "Family", "2 giường đôi",
+                            "4 người lớn", 1350000, 0, "SUSPENDED", 45,
                             "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200"),
-                    new DemoRoom("demo_ocean_superior", "Superior City View", "Superior", "1 giuong queen",
-                            "2 nguoi lon", 820000, 6, "AVAILABLE", 30,
+                    new DemoRoom("demo_ocean_superior", "Superior City View", "Superior", "1 giường queen",
+                            "2 người lớn", 820000, 6, "AVAILABLE", 30,
                             "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200"),
-                    new DemoRoom("demo_ocean_suite", "Ocean Suite", "Suite", "1 giuong king",
-                            "2 nguoi lon, 1 tre em", 1800000, 2, "AVAILABLE", 58,
+                    new DemoRoom("demo_ocean_suite", "Ocean Suite", "Suite", "1 giường king",
+                            "2 người lớn, 1 trẻ em", 1800000, 2, "AVAILABLE", 58,
                             "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200")
             );
         }
 
         if ("demo_lotus_saigon".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_lotus_classic", "Classic Double", "Classic", "1 giuong queen",
-                            "2 nguoi lon", 880000, 7, "AVAILABLE", 28,
+                    new DemoRoom("demo_lotus_classic", "Classic Double", "Classic", "1 giường queen",
+                            "2 người lớn", 880000, 7, "AVAILABLE", 28,
                             "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200"),
-                    new DemoRoom("demo_lotus_executive", "Executive City View", "Executive", "1 giuong king",
-                            "2 nguoi lon", 1250000, 4, "AVAILABLE", 36,
+                    new DemoRoom("demo_lotus_executive", "Executive City View", "Executive", "1 giường king",
+                            "2 người lớn", 1250000, 4, "AVAILABLE", 36,
                             "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200"),
-                    new DemoRoom("demo_lotus_twin", "Twin Business", "Business", "2 giuong don",
-                            "2 nguoi lon", 980000, 5, "AVAILABLE", 32,
+                    new DemoRoom("demo_lotus_twin", "Twin Business", "Business", "2 giường đơn",
+                            "2 người lớn", 980000, 5, "AVAILABLE", 32,
                             "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200")
             );
         }
 
         if ("demo_pine_dalat".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_pine_standard", "Pine Standard", "Standard", "1 giuong queen",
-                            "2 nguoi lon", 780000, 3, "AVAILABLE", 30,
+                    new DemoRoom("demo_pine_standard", "Pine Standard", "Standard", "1 giường queen",
+                            "2 người lớn", 780000, 3, "AVAILABLE", 30,
                             "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200"),
-                    new DemoRoom("demo_pine_family", "Family Attic", "Family", "2 giuong doi",
-                            "4 nguoi lon", 1350000, 2, "AVAILABLE", 52,
+                    new DemoRoom("demo_pine_family", "Family Attic", "Family", "2 giường đôi",
+                            "4 người lớn", 1350000, 2, "AVAILABLE", 52,
                             "https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=1200"),
-                    new DemoRoom("demo_pine_villa", "Private Villa", "Villa", "2 phong ngu",
-                            "4 nguoi lon, 2 tre em", 2400000, 1, "AVAILABLE", 85,
+                    new DemoRoom("demo_pine_villa", "Private Villa", "Villa", "2 phòng ngủ",
+                            "4 người lớn, 2 trẻ em", 2400000, 1, "AVAILABLE", 85,
                             "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200")
             );
         }
 
         if ("demo_river_hanoi".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_river_studio", "Studio Apartment", "Studio", "1 giuong queen",
-                            "2 nguoi lon", 920000, 6, "AVAILABLE", 34,
+                    new DemoRoom("demo_river_studio", "Studio Apartment", "Studio", "1 giường queen",
+                            "2 người lớn", 920000, 6, "AVAILABLE", 34,
                             "https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=1200"),
-                    new DemoRoom("demo_river_onebed", "One Bedroom River View", "Apartment", "1 giuong king",
-                            "2 nguoi lon, 1 tre em", 1280000, 3, "AVAILABLE", 45,
+                    new DemoRoom("demo_river_onebed", "One Bedroom River View", "Apartment", "1 giường king",
+                            "2 người lớn, 1 trẻ em", 1280000, 3, "AVAILABLE", 45,
                             "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200"),
-                    new DemoRoom("demo_river_twobed", "Two Bedroom Suite", "Suite", "2 phong ngu",
-                            "4 nguoi lon", 1950000, 2, "AVAILABLE", 70,
+                    new DemoRoom("demo_river_twobed", "Two Bedroom Suite", "Suite", "2 phòng ngủ",
+                            "4 người lớn", 1950000, 2, "AVAILABLE", 70,
                             "https://images.unsplash.com/photo-1563911302283-d2bc129e7570?w=1200")
             );
         }
 
         if ("demo_sunbay_danang".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_sunbay_deluxe", "Deluxe Ocean", "Deluxe", "1 giuong king",
-                            "2 nguoi lon", 1100000, 5, "AVAILABLE", 38,
+                    new DemoRoom("demo_sunbay_deluxe", "Deluxe Ocean", "Deluxe", "1 giường king",
+                            "2 người lớn", 1100000, 5, "AVAILABLE", 38,
                             "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200"),
-                    new DemoRoom("demo_sunbay_pool", "Pool Access Room", "Pool Access", "1 giuong king",
-                            "2 nguoi lon, 1 tre em", 1650000, 3, "AVAILABLE", 45,
+                    new DemoRoom("demo_sunbay_pool", "Pool Access Room", "Pool Access", "1 giường king",
+                            "2 người lớn, 1 trẻ em", 1650000, 3, "AVAILABLE", 45,
                             "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=1200"),
-                    new DemoRoom("demo_sunbay_family", "Family Ocean Suite", "Family Suite", "2 giuong doi",
-                            "4 nguoi lon", 2200000, 2, "AVAILABLE", 68,
+                    new DemoRoom("demo_sunbay_family", "Family Ocean Suite", "Family Suite", "2 giường đôi",
+                            "4 người lớn", 2200000, 2, "AVAILABLE", 68,
                             "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=1200")
             );
         }
 
         if ("demo_garden_hoian".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoRoom("demo_garden_double", "Garden Double", "Double", "1 giuong queen",
-                            "2 nguoi lon", 520000, 4, "AVAILABLE", 26,
+                    new DemoRoom("demo_garden_double", "Garden Double", "Double", "1 giường queen",
+                            "2 người lớn", 520000, 4, "AVAILABLE", 26,
                             "https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200"),
-                    new DemoRoom("demo_garden_family", "Family Garden", "Family", "2 giuong doi",
-                            "4 nguoi lon", 880000, 2, "AVAILABLE", 40,
+                    new DemoRoom("demo_garden_family", "Family Garden", "Family", "2 giường đôi",
+                            "4 người lớn", 880000, 2, "AVAILABLE", 40,
                             "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200"),
-                    new DemoRoom("demo_garden_balcony", "Balcony Room", "Balcony", "1 giuong queen",
-                            "2 nguoi lon", 680000, 3, "AVAILABLE", 30,
+                    new DemoRoom("demo_garden_balcony", "Balcony Room", "Balcony", "1 giường queen",
+                            "2 người lớn", 680000, 3, "AVAILABLE", 30,
                             "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200")
             );
         }
 
         return Arrays.asList(
-                new DemoRoom("demo_passion_deluxe", "Deluxe Double Room", "Phong Deluxe", "1 giuong doi",
-                        "2 nguoi lon, 1 tre em", 650000, 5, "AVAILABLE", 32,
+                new DemoRoom("demo_passion_deluxe", "Deluxe Double Room", "Phòng Deluxe", "1 giường đôi",
+                        "2 người lớn, 1 trẻ em", 650000, 5, "AVAILABLE", 32,
                         "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200"),
-                new DemoRoom("demo_passion_standard", "Standard Room", "Phong Standard", "1 giuong doi",
-                        "2 nguoi lon", 450000, 2, "AVAILABLE", 24,
+                new DemoRoom("demo_passion_standard", "Standard Room", "Phòng Standard", "1 giường đôi",
+                        "2 người lớn", 450000, 2, "AVAILABLE", 24,
                         "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200"),
-                new DemoRoom("demo_passion_twin", "Twin Airport Room", "Twin", "2 giuong don",
-                        "2 nguoi lon", 580000, 4, "AVAILABLE", 30,
+                new DemoRoom("demo_passion_twin", "Twin Airport Room", "Twin", "2 giường đơn",
+                        "2 người lớn", 580000, 4, "AVAILABLE", 30,
                         "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200"),
-                new DemoRoom("demo_passion_family", "Family Airport Suite", "Family", "2 giuong doi",
-                        "4 nguoi lon", 980000, 1, "AVAILABLE", 46,
+                new DemoRoom("demo_passion_family", "Family Airport Suite", "Family", "2 giường đôi",
+                        "4 người lớn", 980000, 1, "AVAILABLE", 46,
                         "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200")
             );
         }
@@ -375,21 +381,21 @@ public class DemoHotelData {
     public static List<DemoReview> reviews(String hotelId) {
         if ("demo_binh_yen".equals(hotelId)) {
             return Arrays.asList(
-                    new DemoReview("Tran Minh", 5, "Phong VIP huong bien dep, nhan vien ho tro nhanh."),
-                    new DemoReview("Le Phuong", 4, "Khach san sach se, vi tri thuan tien o Vung Tau.")
+                    new DemoReview("Tran Minh", 5, "Phòng VIP hướng biển đẹp, nhân viên hỗ trợ nhanh."),
+                    new DemoReview("Le Phuong", 4, "Khách sạn sạch sẽ, vị trí thuận tiện ở Vũng Tàu.")
             );
         }
 
         return Arrays.asList(
-                new DemoReview("Nguyen Van A", 5, "Khach san sach se, gan san bay, nhan vien than thien."),
-                new DemoReview("Hoang My", 4, "Phong dep, gia hop ly, di chuyen ra san bay nhanh.")
+                new DemoReview("Nguyen Van A", 5, "Khách sạn sạch sẽ, gần sân bay, nhân viên thân thiện."),
+                new DemoReview("Hoang My", 4, "Phòng đẹp, giá hợp lý, di chuyển ra sân bay nhanh.")
         );
     }
 
     public static List<String> getLocations() {
         return Arrays.asList(
                 "TP.HCM", "Ha Noi", "Da Nang", "Nha Trang", "Vung Tau",
-                "Da Lat", "Hoi An", "Phu Quoc", "Hue", "Can Thr", "Sapa", "Ha Long"
+                "Đà Lạt", "Hội An", "Phú Quốc", "Huế", "Cần Thơ", "Sapa", "Hạ Long"
         );
     }
 }

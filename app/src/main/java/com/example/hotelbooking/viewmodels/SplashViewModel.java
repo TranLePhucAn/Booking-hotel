@@ -7,7 +7,6 @@ import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.utils.AppConstants;
 import com.example.hotelbooking.utils.RoleRouter;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SplashViewModel extends ViewModel {
@@ -31,9 +30,9 @@ public class SplashViewModel extends ViewModel {
                         String partnerStatus = documentSnapshot.getString("partnerStatus");
                         navigationTarget.setValue(RoleRouter.getRoute(role, partnerStatus));
                     } else {
-                        // Nếu lỗi document cũng cho ra Home xem dạng Khách
                         navigationTarget.setValue("HOME");
                     }
                 })
                 .addOnFailureListener(e -> navigationTarget.setValue("HOME"));
-    }}
+    }
+}

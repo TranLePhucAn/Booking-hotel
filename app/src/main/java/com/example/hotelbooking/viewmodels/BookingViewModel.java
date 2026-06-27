@@ -6,7 +6,10 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.hotelbooking.data.model.Reservation;
 import com.example.hotelbooking.data.repository.BookingRepository;
+import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class BookingViewModel extends ViewModel {
@@ -39,7 +42,7 @@ public class BookingViewModel extends ViewModel {
         _isLoading.setValue(true);
         bookingRepository.getUserReservations(userId)
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    _reservations.setValue(queryDocumentSnapshots.toObjects(Reservation.class));
+                    _reservations.setValue(toSortedReservations(queryDocumentSnapshots.getDocuments()));
                     _isLoading.setValue(false);
                 })
                 .addOnFailureListener(e -> {
@@ -52,7 +55,7 @@ public class BookingViewModel extends ViewModel {
         _isLoading.setValue(true);
         bookingRepository.getPartnerReservations(ownerId)
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    _reservations.setValue(queryDocumentSnapshots.toObjects(Reservation.class));
+                    _reservations.setValue(toSortedReservations(queryDocumentSnapshots.getDocuments()));
                     _isLoading.setValue(false);
                 })
                 .addOnFailureListener(e -> {
@@ -65,7 +68,7 @@ public class BookingViewModel extends ViewModel {
         _isLoading.setValue(true);
         bookingRepository.getAllReservations()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    _reservations.setValue(queryDocumentSnapshots.toObjects(Reservation.class));
+                    _reservations.setValue(toSortedReservations(queryDocumentSnapshots.getDocuments()));
                     _isLoading.setValue(false);
                 })
                 .addOnFailureListener(e -> {
@@ -77,5 +80,22 @@ public class BookingViewModel extends ViewModel {
     public void updateStatus(String reservationId, String status) {
         bookingRepository.updateReservationStatus(reservationId, status)
                 .addOnFailureListener(e -> _error.setValue(e.getMessage()));
+    }
+
+    private List<Reservation> toSortedReservations(List<DocumentSnapshot> documents) {
+        List<Reservation> result = new ArrayList<>();
+        for (DocumentSnapshot document : documents) {
+            Reservation reservation = document.toObject(Reservation.class);
+            if (reservation != null) {
+                reservation.setId(document.getId());
+                result.add(reservation);
+            }
+        }
+        result.sort(Comparator.comparingLong(this::createdAtMillis).reversed());
+        return result;
+    }
+
+    private long createdAtMillis(Reservation reservation) {
+        return reservation.getCreatedAt() == null ? 0 : reservation.getCreatedAt().toDate().getTime();
     }
 }

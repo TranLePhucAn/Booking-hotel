@@ -14,7 +14,7 @@
             android:id="@+id/tvAddRoomTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Them phong"
+            android:text="Thêm phòng"
             android:textColor="@color/text_primary"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -25,7 +25,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="18dp"
             android:background="@drawable/bg_input"
-            android:hint="Ten phong"
+            android:hint="Ten phòng"
             android:paddingHorizontal="14dp" />
 
         <EditText
@@ -34,7 +34,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Loai phong, vi du Deluxe"
+            android:hint="Loại phòng, ví dụ Deluxe"
             android:paddingHorizontal="14dp" />
 
         <EditText
@@ -44,7 +44,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
             android:gravity="top"
-            android:hint="Mo ta phong"
+            android:hint="Mô tả phòng"
             android:padding="14dp" />
 
         <EditText
@@ -53,7 +53,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Gia moi dem, vi du 650000"
+            android:hint="Giá mỗi đêm, ví dụ 650000"
             android:inputType="numberDecimal"
             android:paddingHorizontal="14dp" />
 
@@ -63,7 +63,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="So nguoi lon"
+            android:hint="Số người lớn"
             android:inputType="number"
             android:paddingHorizontal="14dp" />
 
@@ -73,7 +73,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="So tre em"
+            android:hint="Số trẻ em"
             android:inputType="number"
             android:paddingHorizontal="14dp" />
 
@@ -83,7 +83,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Loai giuong"
+            android:hint="Loại giường"
             android:paddingHorizontal="14dp" />
 
         <EditText
@@ -92,7 +92,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Dien tich phong, vi du 32"
+            android:hint="Diện tích phòng, ví dụ 32"
             android:inputType="numberDecimal"
             android:paddingHorizontal="14dp" />
 
@@ -102,7 +102,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="So luong phong con trong"
+            android:hint="Số lượng phòng còn trống"
             android:inputType="number"
             android:paddingHorizontal="14dp" />
 
@@ -112,7 +112,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Anh phong"
+            android:hint="Anh phòng"
             android:paddingHorizontal="14dp" />
 
         <EditText
@@ -121,7 +121,7 @@
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/bg_input"
-            android:hint="Tien ich phong, cach nhau bang dau phay"
+            android:hint="Tiện ích phòng, cách nhau bằng dấu phẩy"
             android:paddingHorizontal="14dp" />
 
         <Button
@@ -130,7 +130,7 @@
             android:layout_height="54dp"
             android:layout_marginTop="18dp"
             android:backgroundTint="@color/ocean_blue"
-            android:text="Luu phong"
+            android:text="Lưu phòng"
             android:textColor="@color/white"
             android:textStyle="bold" />
 
@@ -139,7 +139,7 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="10dp"
-            android:text="Gui duyet bai dang"
+            android:text="Gửi duyệt bài đăng"
             android:textStyle="bold" />
 
     </LinearLayout>
