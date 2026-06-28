@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.ui.adapter.HotelAdapter;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
@@ -87,7 +86,7 @@ public class SearchActivity extends AppCompatActivity {
 
     private void setupAutoComplete() {
         if (etSearch == null) return;
-        List<String> locations = DemoHotelData.getLocations();
+        List<String> locations = new ArrayList<>();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, locations);
         etSearch.setAdapter(adapter);
@@ -139,9 +138,7 @@ public class SearchActivity extends AppCompatActivity {
     private void loadHotels() {
         showLoading();
         
-        // Luôn nạp dữ liệu mẫu trước để đảm bảo có kết quả chạy thử
         allHotels.clear();
-        allHotels.addAll(DemoHotelData.hotels());
 
         FirebaseFirestore.getInstance()
                 .collection(AppConstants.COLLECTION_HOTELS)
@@ -157,17 +154,27 @@ public class SearchActivity extends AppCompatActivity {
                             }
                         });
                     }
+                    updateSearchSuggestions();
                     applyFilters();
                 })
                 .addOnFailureListener(e -> {
-                    if (allHotels.isEmpty()) {
-                        showError();
-                    } else {
-                        // Nếu đã có dữ liệu mẫu thì vẫn cho phép tìm kiếm và hiện Toast
-                        applyFilters();
-                        Toast.makeText(this, "Lỗi kết nối Firestore, đang dùng dữ liệu mẫu", Toast.LENGTH_SHORT).show();
-                    }
+                    showError();
+                    Toast.makeText(this, "Không tải được khách sạn từ Firebase", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void updateSearchSuggestions() {
+        if (etSearch == null) return;
+        List<String> locations = new ArrayList<>();
+        for (Hotel hotel : allHotels) {
+            String address = hotel.getAddress();
+            if (address != null && !address.trim().isEmpty() && !locations.contains(address)) {
+                locations.add(address);
+            }
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, locations);
+        etSearch.setAdapter(adapter);
     }
 
     private void applyFilters() {

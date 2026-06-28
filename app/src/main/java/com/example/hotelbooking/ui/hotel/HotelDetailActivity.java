@@ -22,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.denzcoskun.imageslider.constants.ScaleTypes;
 import com.denzcoskun.imageslider.models.SlideModel;
-import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.model.Room;
@@ -294,9 +293,7 @@ public class HotelDetailActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot.isEmpty()) {
-                        if (!addDemoRoomsIfAvailable()) {
-                            binding.layoutRooms.addView(createText("Chưa có phòng nào liên kết với hotel_id: " + hotelId, false));
-                        }
+                        binding.layoutRooms.addView(createText("Chưa có phòng nào liên kết với hotel_id: " + hotelId, false));
                         return;
                     }
                     for (DocumentSnapshot room : querySnapshot.getDocuments()) {
@@ -357,89 +354,6 @@ public class HotelDetailActivity extends AppCompatActivity {
 
         box.addView(bookButton);
         roomContainer.addView(box);
-    }
-
-    private boolean addDemoRoomsIfAvailable() {
-        if (DemoHotelData.findHotel(hotelId) == null) {
-            return false;
-        }
-
-        for (DemoHotelData.DemoRoom demoRoom : DemoHotelData.rooms(hotelId)) {
-            Room room = new Room();
-            room.setId(demoRoom.id);
-            room.setRoomName(demoRoom.name);
-            room.setRoomType(demoRoom.type);
-            room.setBedType(demoRoom.bedType);
-            room.setPricePerNight(demoRoom.price);
-            room.setAvailableRooms(demoRoom.availableRooms);
-            room.setStatus(demoRoom.status);
-            room.setRoomSize(demoRoom.size);
-            room.setCapacityAdults(adultsFromCapacity(demoRoom.capacity));
-            room.setCapacityChildren(childrenFromCapacity(demoRoom.capacity));
-            addDemoRoomView(room, demoRoom.capacity, demoRoom.imageUrl);
-        }
-        return true;
-    }
-
-    private void addDemoRoomView(Room room, String capacity, String roomImage) {
-        LinearLayout box = createBox();
-        boolean canBook = "AVAILABLE".equalsIgnoreCase(room.getStatus()) && room.getAvailableRooms() > 0;
-        rememberLowestAvailableRoom(room, roomImage, room.getPricePerNight(), canBook);
-
-        if (roomImage != null && !roomImage.isEmpty()) {
-            ImageView imageView = new ImageView(this);
-            imageView.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    dp(140)
-            ));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            Glide.with(this).load(roomImage).into(imageView);
-            box.addView(imageView);
-        }
-
-        box.addView(createText(valueOrDefault(room.getRoomName(), "Phòng"), true));
-        box.addView(createText(valueOrDefault(room.getRoomType(), ""), false));
-        box.addView(createText("Giường: " + valueOrDefault(room.getBedType(), "Tieu chuan"), false));
-        box.addView(createText("Sức chứa: " + valueOrDefault(capacity, "Đang cập nhật"), false));
-        box.addView(createText(formatMoney(room.getPricePerNight()) + " / đêm", true));
-        box.addView(createText("Trạng thái: " + (canBook ? "Còn phòng (" + room.getAvailableRooms() + ")" : "Hết phòng"), false));
-
-        Button selectButton = new Button(this);
-        selectButton.setText(canBook ? "Chọn" : "Hết phòng");
-        selectButton.setEnabled(canBook);
-        selectButton.setOnClickListener(v -> openRoomDetail(room, roomImage));
-        if (canBook) {
-            box.setOnClickListener(v -> openRoomDetail(room, roomImage));
-        }
-
-        box.addView(selectButton);
-        binding.layoutRooms.addView(box);
-    }
-
-    private int adultsFromCapacity(String capacity) {
-        if (capacity == null || capacity.isEmpty()) {
-            return 2;
-        }
-        try {
-            return Integer.parseInt(capacity.substring(0, 1));
-        } catch (NumberFormatException e) {
-            return 2;
-        }
-    }
-
-    private int childrenFromCapacity(String capacity) {
-        if (capacity == null || !capacity.contains("trẻ em")) {
-            return 0;
-        }
-        String[] parts = capacity.split(",");
-        if (parts.length < 2) {
-            return 0;
-        }
-        try {
-            return Integer.parseInt(parts[1].trim().substring(0, 1));
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 
     private void setupBookingControls() {

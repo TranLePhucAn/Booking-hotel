@@ -57,6 +57,8 @@ public class PartnerDashboardActivity extends AppCompatActivity {
         btnAddHotel.setOnClickListener(v -> startActivity(new Intent(this, AddHotelActivity.class)));
 
         btnLogout.setOnClickListener(v -> {
+            btnLogout.setEnabled(false);
+            btnLogout.setText("Đang đăng xuất...");
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(this, com.example.hotelbooking.ui.home.HomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

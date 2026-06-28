@@ -106,6 +106,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         editor.apply();
 
+        setLoginLoading(true);
         loadingDialog.show();
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
@@ -114,6 +115,7 @@ public class LoginActivity extends AppCompatActivity {
                         openHomeForCustomerOrRouteRole();
                     } else {
                         loadingDialog.dismiss();
+                        setLoginLoading(false);
                         String message = getLoginErrorMessage(task.getException());
                         Toast.makeText(this, "Lỗi: " + message, Toast.LENGTH_LONG).show();
                     }
@@ -124,6 +126,7 @@ public class LoginActivity extends AppCompatActivity {
         FirebaseUser user = auth.getCurrentUser();
         if (user == null) {
             loadingDialog.dismiss();
+            setLoginLoading(false);
             Toast.makeText(this, "Không lấy được thông tin tài khoản", Toast.LENGTH_LONG).show();
             return;
         }
@@ -158,6 +161,12 @@ public class LoginActivity extends AppCompatActivity {
                     loadingDialog.dismiss();
                     openHome();
                 });
+    }
+
+    private void setLoginLoading(boolean loading) {
+        btnLogin.setEnabled(!loading);
+        btnLogin.setAlpha(loading ? 0.65f : 1f);
+        btnLogin.setText(loading ? "ĐANG ĐĂNG NHẬP..." : "ĐĂNG NHẬP");
     }
 
     private void createCustomerProfile(FirebaseUser user) {

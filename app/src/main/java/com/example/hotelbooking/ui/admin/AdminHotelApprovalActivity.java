@@ -36,8 +36,8 @@ public class AdminHotelApprovalActivity extends AppCompatActivity {
         });
 
         adapter.setOnItemClickListener(hotel -> {
-            Intent intent = new Intent(this, AdminHotelPreviewActivity.class);
-            intent.putExtra("hotelId", hotel.getId());
+            Intent intent = new Intent(this, AdminHotelDetailActivity.class);
+            intent.putExtra("hotel", hotel);
             startActivity(intent);
         });
 
