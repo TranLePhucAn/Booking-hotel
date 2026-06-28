@@ -10,11 +10,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.denzcoskun.imageslider.constants.ScaleTypes;
 import com.denzcoskun.imageslider.models.SlideModel;
-import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.databinding.ActivityHomeBinding;
 import com.example.hotelbooking.ui.adapter.CategoryAdapter;
+import com.example.hotelbooking.ui.adapter.HotelAdapter;
 import com.example.hotelbooking.ui.auth.LoginActivity;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 import com.example.hotelbooking.utils.AppConstants;
@@ -139,7 +139,6 @@ public class HomeActivity extends AppCompatActivity {
         showLoading();
         
         allHotels.clear();
-        allHotels.addAll(DemoHotelData.hotels());
 
         db.collection(AppConstants.COLLECTION_HOTELS)
                 .whereEqualTo("approval_status", AppConstants.STATUS_APPROVED)
@@ -157,12 +156,8 @@ public class HomeActivity extends AppCompatActivity {
                     processAndDisplayData();
                 })
                 .addOnFailureListener(e -> {
-                    if (allHotels.isEmpty()) {
-                        showError();
-                    } else {
-                        processAndDisplayData();
-                        Toast.makeText(this, "Lỗi kết nối, đang dùng dữ liệu tạm thời", Toast.LENGTH_SHORT).show();
-                    }
+                    showError();
+                    Toast.makeText(this, "Không tải được khách sạn từ Firebase", Toast.LENGTH_SHORT).show();
                 });
     }
 

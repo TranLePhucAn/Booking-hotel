@@ -1,6 +1,5 @@
-package com.example.hotelbooking.ui.home;
+package com.example.hotelbooking.ui.adapter;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

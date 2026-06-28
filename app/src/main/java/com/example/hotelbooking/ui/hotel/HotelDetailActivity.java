@@ -22,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.denzcoskun.imageslider.constants.ScaleTypes;
 import com.denzcoskun.imageslider.models.SlideModel;
-import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.model.Room;
@@ -68,6 +67,7 @@ public class HotelDetailActivity extends AppCompatActivity {
     private long checkInDateMillis;
     private long checkOutDateMillis;
     private boolean isOpeningConfirm;
+    private boolean isAdminPreviewMode;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
     @Override
@@ -89,6 +89,7 @@ public class HotelDetailActivity extends AppCompatActivity {
         // Nhận thông tin từ dữ liệu thật truyền qua Intent
         hotelId = getIntent().getStringExtra("hotel_id");
         hotel = (Hotel) getIntent().getSerializableExtra("hotel");
+        isAdminPreviewMode = "admin_preview".equalsIgnoreCase(getIntent().getStringExtra("mode"));
 
         // lấy id hotel hiện tại
         if ((hotelId == null || hotelId.isEmpty()) && hotel != null) {
@@ -112,7 +113,11 @@ public class HotelDetailActivity extends AppCompatActivity {
         binding.btnWriteReview.setOnClickListener(v -> checkReviewEligibility());
         setupBookingControls();
 
-        binding.btnBookNow.setOnClickListener(v -> autoBookLowestAvailableRoom());
+        if (isAdminPreviewMode) {
+            applyAdminPreviewMode();
+        } else {
+            binding.btnBookNow.setOnClickListener(v -> autoBookLowestAvailableRoom());
+        }
     }
 
     @Override
@@ -143,6 +148,14 @@ public class HotelDetailActivity extends AppCompatActivity {
         loadLocation();
         loadRooms();
         loadReviews();
+    }
+
+    private void applyAdminPreviewMode() {
+        binding.bottomBookingBar.setVisibility(View.GONE);
+        binding.btnWriteReview.setVisibility(View.GONE);
+        binding.btnCheckInDate.setEnabled(false);
+        binding.btnCheckOutDate.setEnabled(false);
+        binding.tvSelectedRoom.setVisibility(View.GONE);
     }
 
     private void displayHotelDetails() {
@@ -248,10 +261,8 @@ public class HotelDetailActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     if (querySnapshot.isEmpty()) {
-                        if (!addDemoRoomsIfAvailable()) {
-                            // Nếu trống, hiển thị thông báo kèm mã ID khách sạn
-                            binding.layoutRooms.addView(createText("Chưa có phòng nào liên kết với hotel_id: " + hotelId, false));
-                        }
+                        // Chỉ cho đặt phòng bằng dữ liệu phòng thật trên Firebase.
+                        binding.layoutRooms.addView(createText("Chưa có phòng nào liên kết với hotel_id: " + hotelId, false));
                         return;
                     }
                     for (DocumentSnapshot room : querySnapshot.getDocuments()) {
@@ -302,104 +313,17 @@ public class HotelDetailActivity extends AppCompatActivity {
         box.addView(createText("Trạng thái: " + (canBook ? "Còn phòng (" + room.getAvailableRooms() + ")" : "Hết phòng"), false));
 
         Button bookButton = new Button(this);
-        bookButton.setText(canBook ? "Xem chi tiết" : "Hết phòng");
-        bookButton.setText(canBook ? "Chọn" : "Hết phòng");
-        bookButton.setEnabled(canBook);
-        bookButton.setText(canBook ? "Xem chi tiết" : "Hết phòng");
+        bookButton.setText(isAdminPreviewMode ? "Xem trước" : (canBook ? "Xem chi tiết" : "Hết phòng"));
+        bookButton.setEnabled(canBook && !isAdminPreviewMode);
 
         // gửi dl phòng được chọn qua trang confirm
         bookButton.setOnClickListener(v -> openRoomDetail(room, roomImage));
-        if (canBook) {
+        if (canBook && !isAdminPreviewMode) {
             box.setOnClickListener(v -> openRoomDetail(room, roomImage));
         }
 
         box.addView(bookButton);
         roomContainer.addView(box);
-    }
-
-    private boolean addDemoRoomsIfAvailable() {
-        if (DemoHotelData.findHotel(hotelId) == null) {
-            return false;
-        }
-
-        for (DemoHotelData.DemoRoom demoRoom : DemoHotelData.rooms(hotelId)) {
-            Room room = new Room();
-            room.setId(demoRoom.id);
-            room.setRoomName(demoRoom.name);
-            room.setRoomType(demoRoom.type);
-            room.setBedType(demoRoom.bedType);
-            room.setPricePerNight(demoRoom.price);
-            room.setAvailableRooms(demoRoom.availableRooms);
-            room.setStatus(demoRoom.status);
-            room.setRoomSize(demoRoom.size);
-            room.setCapacityAdults(adultsFromCapacity(demoRoom.capacity));
-            room.setCapacityChildren(childrenFromCapacity(demoRoom.capacity));
-            addDemoRoomView(room, demoRoom.capacity, demoRoom.imageUrl);
-        }
-        return true;
-    }
-
-    private void addDemoRoomView(Room room, String capacity, String roomImage) {
-        LinearLayout box = createBox();
-        boolean canBook = "AVAILABLE".equalsIgnoreCase(room.getStatus()) && room.getAvailableRooms() > 0;
-        rememberLowestAvailableRoom(room, roomImage, room.getPricePerNight(), canBook);
-
-        if (roomImage != null && !roomImage.isEmpty()) {
-            ImageView imageView = new ImageView(this);
-            imageView.setLayoutParams(new LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    dp(140)
-            ));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            Glide.with(this).load(roomImage).into(imageView);
-            box.addView(imageView);
-        }
-
-        box.addView(createText(valueOrDefault(room.getRoomName(), "Phòng"), true));
-        box.addView(createText(valueOrDefault(room.getRoomType(), ""), false));
-        box.addView(createText("Giường: " + valueOrDefault(room.getBedType(), "Tieu chuan"), false));
-        box.addView(createText("Sức chứa: " + valueOrDefault(capacity, "Đang cập nhật"), false));
-        box.addView(createText(formatMoney(room.getPricePerNight()) + " / đêm", true));
-        box.addView(createText("Trạng thái: " + (canBook ? "Còn phòng (" + room.getAvailableRooms() + ")" : "Hết phòng"), false));
-
-        Button selectButton = new Button(this);
-        selectButton.setText(canBook ? "Xem chi tiết" : "Hết phòng");
-        selectButton.setText(canBook ? "Chọn" : "Hết phòng");
-        selectButton.setEnabled(canBook);
-        selectButton.setText(canBook ? "Xem chi tiết" : "Hết phòng");
-        selectButton.setOnClickListener(v -> openRoomDetail(room, roomImage));
-        if (canBook) {
-            box.setOnClickListener(v -> openRoomDetail(room, roomImage));
-        }
-
-        box.addView(selectButton);
-        binding.layoutRooms.addView(box);
-    }
-
-    private int adultsFromCapacity(String capacity) {
-        if (capacity == null || capacity.isEmpty()) {
-            return 2;
-        }
-        try {
-            return Integer.parseInt(capacity.substring(0, 1));
-        } catch (NumberFormatException e) {
-            return 2;
-        }
-    }
-
-    private int childrenFromCapacity(String capacity) {
-        if (capacity == null || !capacity.contains("trẻ em")) {
-            return 0;
-        }
-        String[] parts = capacity.split(",");
-        if (parts.length < 2) {
-            return 0;
-        }
-        try {
-            return Integer.parseInt(parts[1].trim().substring(0, 1));
-        } catch (NumberFormatException e) {
-            return 0;
-        }
     }
 
     private void setupBookingControls() {
@@ -518,8 +442,16 @@ public class HotelDetailActivity extends AppCompatActivity {
     }
 
     private void openRoomDetail(Room room, String roomImage) {
+        if (isAdminPreviewMode) {
+            Toast.makeText(this, "Chế độ preview không cho đặt phòng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (room != null && room.getId() != null && room.getId().startsWith("demo_")) {
+            Toast.makeText(this, "Phòng mẫu không thể đặt. Vui lòng chọn phòng từ Firebase.", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (room == null || room.getAvailableRooms() <= 0 || !"AVAILABLE".equalsIgnoreCase(room.getStatus())) {
-            Toast.makeText(this, "Phòng nay hien khong con trong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Phòng này hiện không còn trống", Toast.LENGTH_SHORT).show();
             return;
         }
         Intent intent = new Intent(this, RoomDetailActivity.class);

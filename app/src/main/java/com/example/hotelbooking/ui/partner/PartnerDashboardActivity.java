@@ -37,6 +37,7 @@ public class PartnerDashboardActivity extends AppCompatActivity {
 
         TextView tvWelcome = findViewById(R.id.tvPartnerWelcome);
         Button btnAddHotel = findViewById(R.id.btnAddHotelPartner);
+        Button btnManageHotels = findViewById(R.id.btnManageHotelsPartner);
         Button btnLogout = findViewById(R.id.btnLogoutPartner);
         RecyclerView rvReservations = findViewById(R.id.rvPartnerReservations);
 
@@ -55,6 +56,7 @@ public class PartnerDashboardActivity extends AppCompatActivity {
         });
 
         btnAddHotel.setOnClickListener(v -> startActivity(new Intent(this, AddHotelActivity.class)));
+        btnManageHotels.setOnClickListener(v -> startActivity(new Intent(this, PartnerHotelManagementActivity.class)));
 
         btnLogout.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();

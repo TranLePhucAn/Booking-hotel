@@ -198,10 +198,9 @@ public class Hotel implements Serializable {
         Hotel hotel = new Hotel();
         hotel.setId(document.getId());
 
-        hotel.setHotelName(document.contains("hotel_name") ? document.getString("hotel_name") : "Khách sạn");
-        hotel.setAddress(document.contains("address") ? document.getString("address") : "Chưa cập nhật địa chỉ");
+        hotel.setHotelName(firstStringValue(document, "Khách sạn", "hotel_name", "name"));
+        hotel.setAddress(firstStringValue(document, "Chưa cập nhật địa chỉ", "address", "address_text", "location"));
         hotel.setDescription(document.contains("description") ? document.getString("description") : "Chưa cập nhật mô tả");
-        hotel.setAddress(firstStringValue(document,hotel.getAddress(), "address", "address_text"));
         hotel.setCategory(document.contains("category") ? document.getString("category") : "Hotel");
         String approvalStatus = firstStringValue(document, "", "approval_status");
         if (approvalStatus.isEmpty() && "active".equalsIgnoreCase(document.getString("status"))) {
@@ -219,8 +218,7 @@ public class Hotel implements Serializable {
         hotel.setReviewScore(document.contains("review_score") && document.get("review_score") != null ?
                 ((Number) document.get("review_score")).doubleValue() : 0.0);
 
-        hotel.setRatingStar(document.contains("rating_star") && document.get("rating_star") != null ?
-                ((Number) document.get("rating_star")).doubleValue() : 0.0);
+        hotel.setRatingStar(firstDoubleValue(document, 0.0, "rating_star", "rating"));
 
         hotel.setLatitude(document.contains("latitude") && document.get("latitude") != null ?
                 ((Number) document.get("latitude")).doubleValue() : 0.0);
