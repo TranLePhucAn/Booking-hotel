@@ -201,7 +201,7 @@ public class Hotel implements Serializable {
         hotel.setHotelName(firstStringValue(document, "Khách sạn", "hotel_name", "name"));
         hotel.setAddress(firstStringValue(document, "Chưa cập nhật địa chỉ", "address", "address_text", "location"));
         hotel.setDescription(document.contains("description") ? document.getString("description") : "Chưa cập nhật mô tả");
-        hotel.setCategory(document.contains("category") ? document.getString("category") : "Hotel");
+        hotel.setCategory(document.contains("category") ? document.getString("category") : "Khách sạn");
         String approvalStatus = firstStringValue(document, "", "approval_status");
         if (approvalStatus.isEmpty() && "active".equalsIgnoreCase(document.getString("status"))) {
             approvalStatus = AppConstants.STATUS_APPROVED;

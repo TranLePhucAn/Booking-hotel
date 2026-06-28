@@ -237,6 +237,7 @@
                     android:paddingHorizontal="6dp" />
 
                 <TextView
+                    android:id="@+id/tvSuggestionTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"

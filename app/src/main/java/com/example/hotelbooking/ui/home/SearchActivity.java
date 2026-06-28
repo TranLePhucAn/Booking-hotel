@@ -48,7 +48,7 @@ public class SearchActivity extends AppCompatActivity {
     private final List<Hotel> allHotels = new ArrayList<>();
     private final List<Hotel> filteredHotels = new ArrayList<>();
 
-    private double maxPriceFilter = 10000000;
+    private double maxPriceFilter = Double.MAX_VALUE;
     private float minRatingFilter = 0;
     private int selectedSortIndex = 0;
 
@@ -183,16 +183,20 @@ public class SearchActivity extends AppCompatActivity {
         if (etSearch == null) return;
         String rawQuery = etSearch.getText().toString().trim();
         String normalizedQuery = removeAccents(rawQuery);
+        String normalizedSelectedProvince = removeAccents(selectedProvince);
         
         filteredHotels.clear();
 
         for (Hotel hotel : allHotels) {
             String normalizedName = removeAccents(hotel.getHotelName());
             String normalizedLocation = removeAccents(hotel.getAddress());
+            String normalizedCategory = removeAccents(hotel.getCategory());
+            String normalizedProvince = removeAccents(getProvince(hotel.getAddress()));
             
             boolean matchQuery = normalizedQuery.isEmpty() || 
                                 normalizedName.contains(normalizedQuery) || 
-                                normalizedLocation.contains(normalizedQuery);
+                                normalizedLocation.contains(normalizedQuery) ||
+                                normalizedCategory.contains(normalizedQuery);
                                 
             boolean matchPrice = hotel.getPrice() <= maxPriceFilter;
             
@@ -203,6 +207,8 @@ public class SearchActivity extends AppCompatActivity {
                     selectedProvince.equals("Tất cả")
                             || getProvince(hotel.getAddress())
                             .equalsIgnoreCase(selectedProvince);
+            matchProvince = isAllProvince(selectedProvince)
+                    || normalizedProvince.equals(normalizedSelectedProvince);
 
             if (matchQuery && matchPrice && matchRating && matchProvince) {
                 filteredHotels.add(hotel);
@@ -210,14 +216,14 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         applySorting();
+        if (hotelAdapter != null) {
+            hotelAdapter.updateData(filteredHotels);
+        }
         
         if (filteredHotels.isEmpty()) {
             showEmpty();
         } else {
             showContent();
-            if (hotelAdapter != null) {
-                hotelAdapter.updateData(filteredHotels);
-            }
         }
     }
 
@@ -278,9 +284,14 @@ public class SearchActivity extends AppCompatActivity {
         String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         String result = pattern.matcher(nfdNormalizedString).replaceAll("");
+        result = result.replace('\u0111', 'd').replace('\u0110', 'd');
         return result.toLowerCase(Locale.ROOT)
                 .replace("đ", "d")
                 .replace("Đ", "d");
+    }
+
+    private boolean isAllProvince(String province) {
+        return removeAccents(province).equals("tat ca");
     }
 
     private String getProvince(String address) {
