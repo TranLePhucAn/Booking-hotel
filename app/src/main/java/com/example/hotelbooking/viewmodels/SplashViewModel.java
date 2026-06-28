@@ -28,6 +28,12 @@ public class SplashViewModel extends ViewModel {
                     if (documentSnapshot.exists()) {
                         String role = documentSnapshot.getString("role");
                         String partnerStatus = documentSnapshot.getString("partnerStatus");
+                        String accountStatus = documentSnapshot.getString("status");
+                        if (AppConstants.STATUS_BLOCKED.equalsIgnoreCase(accountStatus)) {
+                            auth.signOut();
+                            navigationTarget.setValue("HOME");
+                            return;
+                        }
                         navigationTarget.setValue(RoleRouter.getRoute(role, partnerStatus));
                     } else {
                         navigationTarget.setValue("HOME");

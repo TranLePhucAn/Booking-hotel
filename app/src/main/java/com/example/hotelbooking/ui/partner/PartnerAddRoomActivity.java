@@ -85,6 +85,7 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
         String newSectionId = db.collection("sections").document().getId();
         Map<String, Object> sectionData = new HashMap<>();
         sectionData.put("hotel_id", hotelId);
+        sectionData.put("owner_id", ownerId);
         sectionData.put("room_style", roomStyle);
         sectionData.put("base_price", basePrice);
         sectionData.put("max_guests", capacityAdults);
@@ -94,6 +95,7 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
         Map<String, Object> roomData = new HashMap<>();
         roomData.put("section_id", newSectionId);
         roomData.put("hotel_id", hotelId);
+        roomData.put("owner_id", ownerId);
         roomData.put("room_name", roomName);
         roomData.put("room_type", roomType);
         roomData.put("price_per_night", price);
@@ -136,6 +138,10 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
         if (etTotalRooms.getText().toString().trim().isEmpty()) { etTotalRooms.setError("Vui lòng nhập tổng số phòng"); return false; }
         if (hotelId == null || hotelId.isEmpty()) {
             Toast.makeText(this, "Lỗi hệ thống: Không tìm thấy ID khách sạn!", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (ownerId == null || ownerId.isEmpty()) {
+            Toast.makeText(this, "Vui lÃ²ng Ä‘Äƒng nháº­p láº¡i Ä‘á»ƒ thÃªm phÃ²ng", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
