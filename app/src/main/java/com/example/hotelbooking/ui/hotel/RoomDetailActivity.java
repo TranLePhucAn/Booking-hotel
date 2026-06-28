@@ -70,6 +70,11 @@ public class RoomDetailActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         receiveIntentData();
+        if (isDemoRoom()) {
+            Toast.makeText(this, "Phòng mẫu không thể đặt. Vui lòng chọn phòng từ Firebase.", Toast.LENGTH_LONG).show();
+            finish();
+            return;
+        }
         initViews();
         bindRoomData();
         setupDatePickers();
@@ -93,6 +98,10 @@ public class RoomDetailActivity extends AppCompatActivity {
         if (hotel != null && (hotelId == null || hotelId.isEmpty())) {
             hotelId = hotel.getId();
         }
+    }
+
+    private boolean isDemoRoom() {
+        return roomId != null && roomId.startsWith("demo_");
     }
 
     private void initViews() {

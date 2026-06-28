@@ -19,10 +19,13 @@ public class PartnerPendingActivity extends AppCompatActivity {
 
         Button btnLogoutPending = findViewById(R.id.btnLogoutPending);
         btnLogoutPending.setOnClickListener(v -> {
+            btnLogoutPending.setEnabled(false);
+            btnLogoutPending.setText("Đang đăng xuất...");
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(this, com.example.hotelbooking.ui.home.HomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
+            finish();
         });
     }
 }

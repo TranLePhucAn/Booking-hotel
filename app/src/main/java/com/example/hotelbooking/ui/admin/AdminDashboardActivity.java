@@ -57,8 +57,9 @@ public class AdminDashboardActivity extends AppCompatActivity {
         }
 
         btnLogout.setOnClickListener(v -> {
+            btnLogout.setEnabled(false);
+            btnLogout.setText("Đang đăng xuất...");
             FirebaseAuth.getInstance().signOut();
-            // CHỈNH SỬA: Quay về Trang chủ thay vì Login
             Intent intent = new Intent(this, HomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);

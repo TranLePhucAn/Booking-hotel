@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.denzcoskun.imageslider.constants.ScaleTypes;
 import com.denzcoskun.imageslider.models.SlideModel;
-import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.data.repository.WishlistRepository;
@@ -60,6 +59,12 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void updateUserUI() {
+        binding.btnProfile.setEnabled(true);
+        binding.btnProfile.setAlpha(1f);
+        binding.btnLogout.setEnabled(true);
+        binding.btnLogout.setAlpha(1f);
+        binding.btnLogout.setText("Đăng xuất");
+
         if (FirebaseClient.getAuth().getCurrentUser() != null) {
             String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
             binding.btnProfile.setText(name != null && !name.isEmpty() ? name : "Tài khoản");
@@ -89,6 +94,9 @@ public class HomeActivity extends AppCompatActivity {
         updateUserUI();
 
         binding.btnLogout.setOnClickListener(v -> {
+            binding.btnLogout.setEnabled(false);
+            binding.btnLogout.setAlpha(0.65f);
+            binding.btnLogout.setText("Đang đăng xuất...");
             FirebaseClient.getAuth().signOut();
             updateUserUI();
             Toast.makeText(this, "Đã đăng xuất thành công", Toast.LENGTH_SHORT).show();
@@ -192,7 +200,6 @@ public class HomeActivity extends AppCompatActivity {
         showLoading();
         
         allHotels.clear();
-        allHotels.addAll(DemoHotelData.hotels());
 
         db.collection(AppConstants.COLLECTION_HOTELS)
                 .whereEqualTo("approval_status", AppConstants.STATUS_APPROVED)
@@ -210,12 +217,8 @@ public class HomeActivity extends AppCompatActivity {
                     processAndDisplayData();
                 })
                 .addOnFailureListener(e -> {
-                    if (allHotels.isEmpty()) {
-                        showError();
-                    } else {
-                        processAndDisplayData();
-                        Toast.makeText(this, "Lỗi kết nối, đang dùng dữ liệu tạm thời", Toast.LENGTH_SHORT).show();
-                    }
+                    showError();
+                    Toast.makeText(this, "Không tải được khách sạn từ Firebase", Toast.LENGTH_SHORT).show();
                 });
     }
 
