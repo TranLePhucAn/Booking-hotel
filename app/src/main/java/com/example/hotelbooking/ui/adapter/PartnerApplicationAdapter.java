@@ -5,14 +5,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.PartnerApplication;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class PartnerApplicationAdapter extends RecyclerView.Adapter<PartnerApplicationAdapter.ViewHolder> {
+
     private List<PartnerApplication> list = new ArrayList<>();
     private OnItemClickListener listener;
 
@@ -32,16 +36,25 @@ public class PartnerApplicationAdapter extends RecyclerView.Adapter<PartnerAppli
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_partner_application, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_partner_application, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PartnerApplication app = list.get(position);
-        holder.tvBusinessName.setText(app.getBusinessName());
-        holder.tvRepresentativeName.setText("Người đại diện: " + app.getRepresentativeName());
-        holder.tvEmail.setText("Email: " + app.getEmail());
+
+        holder.tvBusinessName.setText(app.getBusinessName() != null ? app.getBusinessName() : "");
+        holder.tvRepresentativeName.setText("Người đại diện: " + (app.getRepresentativeName() != null ? app.getRepresentativeName() : ""));
+        holder.tvEmail.setText("Email: " + (app.getEmail() != null ? app.getEmail() : ""));
+
+        // Bấm toàn bộ vùng card để mở chi tiết
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onItemClick(app);
+        });
+
+        // Nút "Xem chi tiết" cũng mở chi tiết
         holder.btnViewDetails.setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(app);
         });
@@ -56,7 +69,7 @@ public class PartnerApplicationAdapter extends RecyclerView.Adapter<PartnerAppli
         TextView tvBusinessName, tvRepresentativeName, tvEmail;
         Button btnViewDetails;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvBusinessName = itemView.findViewById(R.id.tvBusinessName);
             tvRepresentativeName = itemView.findViewById(R.id.tvRepresentativeName);

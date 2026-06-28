@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -29,6 +30,7 @@
             android:textColor="@android:color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
+
     </RelativeLayout>
 
     <ScrollView
@@ -114,17 +116,61 @@
                         android:text="Quốc tịch: ---"
                         android:textColor="@color/text_secondary" />
 
-                    <TextView
-                        android:id="@+id/tvPartnerStatus"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:id="@+id/layoutPartnerStatus"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Hồ sơ cộng sự đang chờ duyệt"
-                        android:textColor="@color/ocean_blue"
-                        android:textStyle="italic"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:layout_marginTop="16dp"
+                        android:padding="12dp"
+                        android:background="@drawable/bg_input"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tvPartnerStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Trạng thái cộng sự"
+                            android:textAlignment="center"
+                            android:textColor="@color/ocean_blue"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvAdminNote"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Lý do từ chối: ..."
+                            android:textAlignment="center"
+                            android:textColor="@color/error"
+                            android:textSize="12sp"
+                            android:visibility="gone" />
+
+                        <Button
+                            android:id="@+id/btnPartnerAction"
+                            style="@style/AppButtonStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="40dp"
+                            android:layout_marginTop="8dp"
+                            android:text="Hành động"
+                            android:textSize="12sp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnRegisterPartner"
+                        style="@style/AppButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="16dp"
+                        android:text="Đăng ký làm cộng sự"
+                        android:backgroundTint="@color/ocean_blue"
                         android:visibility="gone" />
 
                 </LinearLayout>
+
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
@@ -164,6 +210,7 @@
                             android:text="Chỉnh sửa thông tin"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
+
                     </LinearLayout>
 
                     <View
@@ -197,6 +244,42 @@
                             android:text="Lịch sử đặt phòng"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/separate_color"
+                        android:layout_marginHorizontal="16dp" />
+
+                    <!-- Wishlist Menu -->
+                    <LinearLayout
+                        android:id="@+id/menuWishlist"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_heart_filled"
+                            app:tint="@color/ocean_blue" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:text="Khách sạn yêu thích"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp" />
+
                     </LinearLayout>
 
                     <View
@@ -237,5 +320,6 @@
             </androidx.cardview.widget.CardView>
         </LinearLayout>
     </ScrollView>
+
 
 </RelativeLayout>

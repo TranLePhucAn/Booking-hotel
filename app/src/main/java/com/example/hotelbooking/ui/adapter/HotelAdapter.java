@@ -1,13 +1,14 @@
 package com.example.hotelbooking.ui.adapter;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,9 +16,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
+import com.example.hotelbooking.data.repository.WishlistRepository;
+import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> {
 
@@ -25,20 +32,41 @@ public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> 
     private OnHotelClickListener listener;
     private boolean isHorizontal = false;
 
+    private final Set<String> favoriteIds = new HashSet<>();
+    private final WishlistRepository wishlistRepository = new WishlistRepository();
+    private final String userId = FirebaseAuth.getInstance().getUid();
+
     public interface OnHotelClickListener {
         void onHotelClick(Hotel hotel);
         void onBookClick(Hotel hotel);
+        void onFavoriteClick(Hotel hotel);
     }
 
     public HotelAdapter(List<Hotel> hotels, OnHotelClickListener listener) {
         this.hotels = hotels;
         this.listener = listener;
+        loadFavorites();
     }
 
     public HotelAdapter(List<Hotel> hotels, boolean isHorizontal, OnHotelClickListener listener) {
         this.hotels = hotels;
         this.isHorizontal = isHorizontal;
         this.listener = listener;
+        loadFavorites();
+    }
+
+    private void loadFavorites() {
+        if (userId != null) {
+            wishlistRepository.getWishlist(userId).addOnSuccessListener(queryDocumentSnapshots -> {
+                favoriteIds.clear();
+                if (queryDocumentSnapshots != null) {
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
+                        favoriteIds.add(doc.getId()); // doc.getId() tương đương hotelId
+                    }
+                }
+                notifyDataSetChanged();
+            });
+        }
     }
 
     @NonNull
@@ -46,7 +74,7 @@ public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> 
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_hotel, parent, false);
         if (isHorizontal) {
-            // Set fixed width for horizontal items
+
             ViewGroup.LayoutParams params = view.getLayoutParams();
             params.width = (int) (parent.getResources().getDisplayMetrics().widthPixels * 0.7);
             view.setLayoutParams(params);
@@ -93,6 +121,17 @@ public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> 
             }
         }
 
+        if (holder.btnFavorite != null) {
+            boolean isFav = favoriteIds.contains(hotel.getId());
+            holder.btnFavorite.setImageResource(isFav ? R.drawable.ic_heart_filled : R.drawable.ic_heart_border);
+
+            holder.btnFavorite.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onFavoriteClick(hotel);
+                }
+            });
+        }
+
         holder.itemView.setOnClickListener(v -> listener.onHotelClick(hotel));
         if (holder.btnBook != null) {
             holder.btnBook.setOnClickListener(v -> listener.onBookClick(hotel));
@@ -115,13 +154,14 @@ public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> 
 
     public void updateData(List<Hotel> newHotels) {
         this.hotels = newHotels;
-        notifyDataSetChanged();
+        loadFavorites(); // Đồng bộ lại tim mỗi khi refresh dữ liệu list
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtName, txtLocation, txtPrice, tvBadge;
         Button btnBook;
         ImageView imgHotel;
+        ImageButton btnFavorite;
         RatingBar ratingBarSmall;
 
         public ViewHolder(@NonNull View itemView) {
@@ -133,6 +173,7 @@ public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> 
             imgHotel = itemView.findViewById(R.id.imgHotel);
             ratingBarSmall = itemView.findViewById(R.id.ratingBarSmall);
             tvBadge = itemView.findViewById(R.id.tvBadge);
+            btnFavorite = itemView.findViewById(R.id.btnFavorite);
         }
     }
 }

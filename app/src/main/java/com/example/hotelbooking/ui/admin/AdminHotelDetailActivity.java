@@ -1,5 +1,6 @@
 package com.example.hotelbooking.ui.admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
+import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
 import com.example.hotelbooking.viewmodels.HotelViewModel;
 
 public class AdminHotelDetailActivity extends AppCompatActivity {
@@ -39,6 +41,7 @@ public class AdminHotelDetailActivity extends AppCompatActivity {
         EditText etNote = findViewById(R.id.etHotelAdminNote);
         Button btnApprove = findViewById(R.id.btnApproveHotel);
         Button btnReject = findViewById(R.id.btnRejectHotel);
+        Button btnPreview = findViewById(R.id.btnPreviewHotel);
 
         tvName.setText(hotel.getHotelName());
         tvAddress.setText(hotel.getAddress());
@@ -52,6 +55,14 @@ public class AdminHotelDetailActivity extends AppCompatActivity {
         if (hotel.getImageUrl() != null && !hotel.getImageUrl().isEmpty()) {
             Glide.with(this).load(hotel.getImageUrl()).into(ivHotel);
         }
+
+        btnPreview.setOnClickListener(v -> {
+            Intent intent = new Intent(this, HotelDetailActivity.class);
+            intent.putExtra("hotel", hotel);
+            intent.putExtra("hotel_id", hotel.getId());
+            intent.putExtra("mode", "admin_preview");
+            startActivity(intent);
+        });
 
         btnApprove.setOnClickListener(v -> {
             viewModel.approveHotel(hotel.getId(), etNote.getText().toString());
