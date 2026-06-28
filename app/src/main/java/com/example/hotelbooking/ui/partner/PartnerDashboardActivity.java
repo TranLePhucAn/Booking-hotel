@@ -3,10 +3,12 @@ package com.example.hotelbooking.ui.partner;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,9 +37,12 @@ public class PartnerDashboardActivity extends AppCompatActivity {
             return;
         }
 
-        TextView tvWelcome = findViewById(R.id.tvPartnerWelcome);
-        Button btnAddHotel = findViewById(R.id.btnAddHotelPartner);
-        Button btnManageHotels = findViewById(R.id.btnManageHotelsPartner);
+        ScrollView dashboardScroll = findViewById(R.id.partnerDashboardScroll);
+        TextView bookingSectionTitle = findViewById(R.id.textBookingSectionTitle);
+        CardView cardMyHotels = findViewById(R.id.cardMyHotels);
+        CardView cardManageRooms = findViewById(R.id.cardManageRooms);
+        CardView cardBookings = findViewById(R.id.cardBookings);
+        CardView cardAddHotel = findViewById(R.id.cardAddHotel);
         Button btnLogout = findViewById(R.id.btnLogoutPartner);
         RecyclerView rvReservations = findViewById(R.id.rvPartnerReservations);
 
@@ -47,16 +52,20 @@ public class PartnerDashboardActivity extends AppCompatActivity {
 
         bookingViewModel = new ViewModelProvider(this).get(BookingViewModel.class);
 
-        bookingViewModel.reservations.observe(this, reservations -> {
-            adapter.setList(reservations);
-        });
+        bookingViewModel.reservations.observe(this, reservations -> adapter.setList(reservations));
 
         bookingViewModel.error.observe(this, error -> {
             if (error != null) Toast.makeText(this, error, Toast.LENGTH_SHORT).show();
         });
 
-        btnAddHotel.setOnClickListener(v -> startActivity(new Intent(this, AddHotelActivity.class)));
-        btnManageHotels.setOnClickListener(v -> startActivity(new Intent(this, PartnerHotelManagementActivity.class)));
+        cardAddHotel.setOnClickListener(v -> startActivity(new Intent(this, AddHotelActivity.class)));
+        cardMyHotels.setOnClickListener(v -> startActivity(new Intent(this, PartnerHotelManagementActivity.class)));
+        cardManageRooms.setOnClickListener(v -> {
+            Toast.makeText(this, "Chọn khách sạn rồi bấm Thêm phòng hoặc quản lý phòng.", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, PartnerHotelManagementActivity.class));
+        });
+        cardBookings.setOnClickListener(v -> dashboardScroll.post(() ->
+                dashboardScroll.smoothScrollTo(0, bookingSectionTitle.getTop())));
 
         btnLogout.setOnClickListener(v -> {
             btnLogout.setEnabled(false);
@@ -73,6 +82,8 @@ public class PartnerDashboardActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        bookingViewModel.fetchPartnerBookings(currentUserId);
+        if (bookingViewModel != null && currentUserId != null) {
+            bookingViewModel.fetchPartnerBookings(currentUserId);
+        }
     }
 }
