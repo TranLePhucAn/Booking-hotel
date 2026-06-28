@@ -56,6 +56,12 @@
         <activity
             android:name=".ui.admin.AdminBookingManagementActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminUserManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminUserDetailActivity"
+            android:exported="false" />
 
         <!-- Partner Activities -->
         <activity
