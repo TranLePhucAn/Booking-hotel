@@ -52,6 +52,8 @@ public class SearchActivity extends AppCompatActivity {
     private float minRatingFilter = 0;
     private int selectedSortIndex = 0;
 
+    private String selectedProvince = "Tất cả";
+
     private final String[] sortOptions = {
             "Mặc định",
             "Giá tăng dần",
@@ -197,7 +199,12 @@ public class SearchActivity extends AppCompatActivity {
             double score = hotel.getReviewScore() > 0 ? hotel.getReviewScore() : hotel.getRatingStar();
             boolean matchRating = score >= minRatingFilter;
 
-            if (matchQuery && matchPrice && matchRating) {
+            boolean matchProvince =
+                    selectedProvince.equals("Tất cả")
+                            || getProvince(hotel.getAddress())
+                            .equalsIgnoreCase(selectedProvince);
+
+            if (matchQuery && matchPrice && matchRating && matchProvince) {
                 filteredHotels.add(hotel);
             }
         }
@@ -276,15 +283,23 @@ public class SearchActivity extends AppCompatActivity {
                 .replace("Đ", "d");
     }
 
+    private String getProvince(String address) {
+        if (address == null) return "";
+        String[] parts = address.split(",");
+        if (parts.length == 0) return "";
+        return parts[parts.length - 1].trim();
+    }
+
     private void showFilterDialog() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_filter, null);
         dialog.setContentView(view);
 
         Spinner spSort = view.findViewById(R.id.spSort);
+        Spinner spProvince = view.findViewById(R.id.spProvince);
         SeekBar sbPrice = view.findViewById(R.id.sbPrice);
         TextView tvPriceValue = view.findViewById(R.id.tvPriceValue);
-        android.widget.RatingBar rbStars = view.findViewById(R.id.rbStars);
+//        android.widget.RatingBar rbStars = view.findViewById(R.id.rbStars);
         Button btnApply = view.findViewById(R.id.btnApplyFilter);
 
         if (spSort != null) {
@@ -292,6 +307,30 @@ public class SearchActivity extends AppCompatActivity {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spSort.setAdapter(adapter);
             spSort.setSelection(selectedSortIndex);
+        }
+
+        if (spProvince != null) {
+            List<String> provinces = new ArrayList<>();
+            provinces.add("Tất cả");
+            for (Hotel hotel : allHotels) {
+                String province = getProvince(hotel.getAddress());
+                if (province != null &&
+                        !province.trim().isEmpty() &&
+                        !provinces.contains(province)) {
+                    provinces.add(province);
+                }
+            }
+            ArrayAdapter<String> provinceAdapter =
+                    new ArrayAdapter<>(this,
+                            android.R.layout.simple_spinner_item,
+                            provinces);
+            provinceAdapter.setDropDownViewResource(
+                    android.R.layout.simple_spinner_dropdown_item);
+            spProvince.setAdapter(provinceAdapter);
+            int index = provinces.indexOf(selectedProvince);
+            if(index>=0){
+                spProvince.setSelection(index);
+            }
         }
 
         if (sbPrice != null) {
@@ -308,13 +347,14 @@ public class SearchActivity extends AppCompatActivity {
             });
         }
 
-        if (rbStars != null) rbStars.setRating(minRatingFilter);
+//        if (rbStars != null) rbStars.setRating(minRatingFilter);
 
         if (btnApply != null) {
             btnApply.setOnClickListener(v -> {
                 if (spSort != null) selectedSortIndex = spSort.getSelectedItemPosition();
+                if(spProvince!=null) selectedProvince = spProvince.getSelectedItem().toString();
                 if (sbPrice != null) maxPriceFilter = sbPrice.getProgress();
-                if (rbStars != null) minRatingFilter = rbStars.getRating();
+//                if (rbStars != null) minRatingFilter = rbStars.getRating();
                 applyFilters();
                 dialog.dismiss();
             });

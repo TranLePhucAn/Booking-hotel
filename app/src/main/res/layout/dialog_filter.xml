@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Bộ lọc &amp; Sắp xếp"
+        android:text="Bộ lọc và sắp xếp"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textColor="@color/text_primary" />
@@ -33,7 +33,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Mức giá tối đa ($)"
+        android:text="Tỉnh / Thành phố"
+        android:textColor="@color/text_secondary"/>
+
+    <Spinner
+        android:id="@+id/spProvince"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_search"
+        android:paddingHorizontal="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Mức giá tối đa (VND)"
         android:textColor="@color/text_secondary" />
 
     <SeekBar
@@ -53,23 +68,23 @@
         android:textColor="@color/primary"
         android:textStyle="bold" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Xếp hạng sao (tối thiểu)"
-        android:textColor="@color/text_secondary" />
+<!--    <TextView-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        android:text="Xếp hạng sao (tối thiểu)"-->
+<!--        android:textColor="@color/text_secondary" />-->
 
-    <RatingBar
-        android:id="@+id/rbStars"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:numStars="5"
-        android:stepSize="1"
-        android:rating="0"
-        style="?android:attr/ratingBarStyleIndicator"
-        android:isIndicator="false" />
+<!--    <RatingBar-->
+<!--        android:id="@+id/rbStars"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        android:numStars="5"-->
+<!--        android:stepSize="1"-->
+<!--        android:rating="0"-->
+<!--        style="?android:attr/ratingBarStyleIndicator"-->
+<!--        android:isIndicator="false" />-->
 
     <Button
         android:id="@+id/btnApplyFilter"
