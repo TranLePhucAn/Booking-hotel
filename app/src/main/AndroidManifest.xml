@@ -28,6 +28,9 @@
         <activity
             android:name=".ui.home.WishlistActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.home.NotificationActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.auth.PartnerRegisterActivity"

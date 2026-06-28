@@ -132,7 +132,13 @@ public class PaymentActivity extends AppCompatActivity {
 
             if(selectedMethodId == R.id.rb_credit_card) {
                 if (validateCardFields()) {
-                    processFirebasePaymentUpdate("CREDIT_CARD");
+                    new AlertDialog.Builder(this)
+                            .setTitle("Xác nhận thủ công")
+                            .setMessage("Ứng dụng chưa kết nối cổng thanh toán thẻ. Chỉ tiếp tục nếu giao dịch đã được kiểm tra.")
+                            .setNegativeButton("Hủy", null)
+                            .setPositiveButton("Đã kiểm tra", (dialog, which) ->
+                                    processFirebasePaymentUpdate("CREDIT_CARD_MANUAL"))
+                            .show();
                 }
             } else if(selectedMethodId == R.id.rb_digital_payment) {
                 showQRDialog();
@@ -165,15 +171,22 @@ public class PaymentActivity extends AppCompatActivity {
         dialog.setCancelable(false);
 
         btnPaidConfirm.setOnClickListener(v -> {
-            dialog.dismiss();
-            processFirebasePaymentUpdate("QR_CODE");
+            new AlertDialog.Builder(this)
+                    .setTitle("Xác nhận thủ công")
+                    .setMessage("Ứng dụng chưa kết nối cổng xác minh ngân hàng. Chỉ tiếp tục nếu bạn đã kiểm tra giao dịch.")
+                    .setNegativeButton("Hủy", null)
+                    .setPositiveButton("Đã kiểm tra", (confirmDialog, which) -> {
+                        dialog.dismiss();
+                        processFirebasePaymentUpdate("QR_CODE_MANUAL");
+                    })
+                    .show();
         });
 
         dialog.show();
     }
 
     private void processFirebasePaymentUpdate(String paymentMethod) {
-        // todo: thanh toán chuyển trạng thái thủ công
+        // Thanh toán hiện được xác nhận thủ công trong app.
         btnBooking.setEnabled(false);
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId).get()

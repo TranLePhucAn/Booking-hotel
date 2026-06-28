@@ -154,6 +154,7 @@ public class HotelAdapter extends RecyclerView.Adapter<HotelAdapter.ViewHolder> 
 
     public void updateData(List<Hotel> newHotels) {
         this.hotels = newHotels;
+        notifyDataSetChanged();
         loadFavorites(); // Đồng bộ lại tim mỗi khi refresh dữ liệu list
     }
 

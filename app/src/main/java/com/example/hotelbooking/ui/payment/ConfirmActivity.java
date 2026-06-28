@@ -38,6 +38,7 @@ public class ConfirmActivity extends AppCompatActivity {
     private Hotel hotel;
     private Section section;
     private double finalPrice;
+    private double discountValue = 0;
 
     private Date checkInDate;
     private Date checkOutDate;
@@ -218,10 +219,47 @@ public class ConfirmActivity extends AppCompatActivity {
 
     private void setupPromoLogic() {
         btnApplyPromo.setOnClickListener(view -> {
-            String promoCode = etPromoCode.getText().toString().trim();
-            // Todo: Code xử lý Firebase kiểm tra mã giảm giá
-            Toast.makeText(this, "Mã giảm giá không hợp lệ hoặc đã hết hạn", Toast.LENGTH_SHORT).show();
+            String promoCode = etPromoCode.getText().toString().trim().toUpperCase(Locale.ROOT);
+            applyPromoCode(promoCode);
         });
+    }
+
+    private void applyPromoCode(String promoCode) {
+        if (section == null) {
+            Toast.makeText(this, "Chưa có thông tin phòng để áp dụng mã", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double basePrice = section.getBasePrice() * numberOfNights * roomQuantity;
+        double taxPrice = basePrice * 0.1;
+        double originalTotal = basePrice + taxPrice;
+
+        double discountRate;
+        switch (promoCode) {
+            case "STAYHUB10":
+                discountRate = 0.10;
+                break;
+            case "SUMMER15":
+                discountRate = 0.15;
+                break;
+            case "WELCOME5":
+                discountRate = 0.05;
+                break;
+            default:
+                discountValue = 0;
+                finalPrice = originalTotal;
+                tvOldTotalPrice.setVisibility(View.GONE);
+                tvTotalPrice.setText(formatVND(finalPrice));
+                Toast.makeText(this, "Mã giảm giá không hợp lệ hoặc đã hết hạn", Toast.LENGTH_SHORT).show();
+                return;
+        }
+
+        discountValue = originalTotal * discountRate;
+        finalPrice = Math.max(0, originalTotal - discountValue);
+        tvOldTotalPrice.setVisibility(View.VISIBLE);
+        tvOldTotalPrice.setText("Giá gốc: " + formatVND(originalTotal));
+        tvTotalPrice.setText(formatVND(finalPrice));
+        Toast.makeText(this, "Đã áp dụng mã giảm giá", Toast.LENGTH_SHORT).show();
     }
 
     // xử lý nút xác nhận đặt phòng
@@ -289,7 +327,7 @@ public class ConfirmActivity extends AppCompatActivity {
             reservationData.put("price_per_night", section.getBasePrice());
             reservationData.put("base_price", basePrice);
             reservationData.put("tax_fee", taxPrice);
-//            reservationData.put("discount_price", tvOldTotalPrice.getVisibility() == View.VISIBLE ? discountValue : 0);
+            reservationData.put("discount_price", discountValue);
             reservationData.put("total_price", finalPrice);
 
             reservationData.put("status", AppConstants.BOOKING_PENDING_PAYMENT);

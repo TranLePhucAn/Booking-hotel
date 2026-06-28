@@ -139,6 +139,15 @@ public class LoginActivity extends AppCompatActivity {
                     if (documentSnapshot.exists()) {
                         String role = documentSnapshot.getString("role");
                         String partnerStatus = documentSnapshot.getString("partnerStatus");
+                        String accountStatus = documentSnapshot.getString("status");
+
+                        if (AppConstants.STATUS_BLOCKED.equalsIgnoreCase(accountStatus)) {
+                            auth.signOut();
+                            loadingDialog.dismiss();
+                            setLoginLoading(false);
+                            Toast.makeText(this, "TÃ i khoáº£n cá»§a báº¡n Ä‘Ã£ bá»‹ khÃ³a", Toast.LENGTH_LONG).show();
+                            return;
+                        }
 
                         if (AppConstants.ROLE_ADMIN.equalsIgnoreCase(role)) {
                             RoleRouter.routeCurrentUser(this, loadingDialog);
