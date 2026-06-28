@@ -230,7 +230,7 @@ public class ConfirmActivity extends AppCompatActivity {
 
             btnConfirmBooking.setEnabled(false);
 
-            if (hotel == null || !hotel.getStatus().equals("active")) {
+            if (!canAcceptBooking()) {
                 Toast.makeText(this, "Rất tiếc, khách sạn này hiện tại không tiếp nhận đặt phòng!", Toast.LENGTH_LONG).show();
                 btnConfirmBooking.setEnabled(true);
                 return;
@@ -316,6 +316,22 @@ public class ConfirmActivity extends AppCompatActivity {
                         Toast.makeText(ConfirmActivity.this, "Lỗi hệ thống: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         });
+    }
+
+    private boolean canAcceptBooking() {
+        if (hotel == null) {
+            return false;
+        }
+        String status = hotel.getStatus();
+        String approvalStatus = hotel.getApprovalStatus();
+        return hotel.isActive()
+                || AppConstants.STATUS_APPROVED.equalsIgnoreCase(valueOrEmpty(status))
+                || AppConstants.STATUS_APPROVED.equalsIgnoreCase(valueOrEmpty(approvalStatus))
+                || "active".equalsIgnoreCase(valueOrEmpty(status));
+    }
+
+    private String valueOrEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     private String formatVND(double amount) {

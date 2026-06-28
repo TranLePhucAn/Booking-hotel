@@ -1,7 +1,7 @@
 package com.example.hotelbooking.utils;
 
 public class AppConstants {
-
+//1. FIRESTORE COLLECTIONS
     public static final String COLLECTION_USERS = "users";
     public static final String COLLECTION_HOTELS = "hotels";
     public static final String COLLECTION_ROOMS = "rooms";

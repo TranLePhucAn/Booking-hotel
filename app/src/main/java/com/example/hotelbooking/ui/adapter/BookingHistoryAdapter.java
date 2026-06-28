@@ -231,6 +231,7 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
             }
         });
 
+        holder.itemView.setOnClickListener(v -> holder.btnViewDetail.performClick());
         bindCancelButton(holder, res, docId, status);
     }
 
@@ -247,22 +248,8 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
         if (holder.btnViewDetail == null) {
             return;
         }
-        if (reservationId == null || !canCurrentUserActOn(reservation) || !canCancel(reservation, status)) {
-            holder.btnViewDetail.setVisibility(View.GONE);
-            holder.btnViewDetail.setOnClickListener(null);
-            return;
-        }
-
         holder.btnViewDetail.setVisibility(View.VISIBLE);
-        holder.btnViewDetail.setText("Hủy đặt phòng");
-        holder.btnViewDetail.setOnClickListener(v ->
-                showCancelPolicyDialog(
-                        holder.itemView.getContext(),
-                        reservation,
-                        reservationId,
-                        holder.getBindingAdapterPosition(),
-                        null
-                ));
+        holder.btnViewDetail.setText("Xem chi tiết");
     }
 
     private String displayStatus(String status) {

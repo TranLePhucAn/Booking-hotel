@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chỉnh sửa khách sạn"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/editHotelName"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="18dp"
+            android:background="@drawable/bg_input"
+            android:hint="Tên khách sạn"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/editDescription"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Mô tả khách sạn"
+            android:padding="14dp" />
+
+        <EditText
+            android:id="@+id/editAddress"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Địa chỉ khách sạn"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/editRatingStar"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Số sao khách sạn"
+            android:inputType="numberDecimal"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/editPrice"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Giá thấp nhất mỗi đêm"
+            android:inputType="numberDecimal"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/editAmenities"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Tiện ích, cách nhau bằng dấu phẩy"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/editMainImageUrl"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Ảnh chính"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/editImageUrls"
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:gravity="top"
+            android:hint="Danh sách ảnh phụ, cách nhau bằng dấu phẩy"
+            android:padding="14dp" />
+
+        <EditText
+            android:id="@+id/editLatitude"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Vĩ độ"
+            android:inputType="numberDecimal|numberSigned"
+            android:paddingHorizontal="14dp" />
+
+        <EditText
+            android:id="@+id/editLongitude"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_input"
+            android:hint="Kinh độ"
+            android:inputType="numberDecimal|numberSigned"
+            android:paddingHorizontal="14dp" />
+
+        <Button
+            android:id="@+id/buttonSaveHotel"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="18dp"
+            android:backgroundTint="@color/ocean_blue"
+            android:text="Lưu và gửi duyệt lại"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</ScrollView>

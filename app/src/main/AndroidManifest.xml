@@ -70,6 +70,12 @@
         <activity
             android:name=".ui.partner.AddRoomActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerHotelManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerEditHotelActivity"
+            android:exported="false" />
 
         <activity
             android:name=".ui.splash.SplashActivity"
