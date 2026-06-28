@@ -26,7 +26,7 @@ public class PartnerEditRoomActivity extends AppCompatActivity {
 
     private String roomId, sectionId;
 
-    private EditText etRoomName, etBedType, etCapacity, etTotalRooms, etPrice, etBasePrice;
+    private EditText etRoomName, etBedType, etCapacity, etTotalRooms, etPrice, etBasePrice, etRoomImageUrl;
 
     // Các thành phần lựa chọn
     private Spinner spinnerRoomType;
@@ -60,6 +60,7 @@ public class PartnerEditRoomActivity extends AppCompatActivity {
         long totalRooms = Long.parseLong(etTotalRooms.getText().toString().trim());
         double price = Double.parseDouble(etPrice.getText().toString().trim());
         double basePrice = Double.parseDouble(etBasePrice.getText().toString().trim());
+        String newImageUrl = etRoomImageUrl.getText().toString().trim();
 
         btnUpdateRoom.setEnabled(false);
 
@@ -76,12 +77,13 @@ public class PartnerEditRoomActivity extends AppCompatActivity {
         roomUpdates.put("room_type", spinnerRoomType.getSelectedItem().toString());
         roomUpdates.put("bed_type", etBedType.getText().toString().trim());
         roomUpdates.put("capacity_adults", Long.parseLong(etCapacity.getText().toString().trim()));
-        roomUpdates.put("available_rooms", totalRooms);
+        roomUpdates.put("total_rooms", totalRooms);
         roomUpdates.put("price_per_night", price);
 
         roomUpdates.put("amenities", updatedAmenities);
 
         roomUpdates.put("status", switchDisableRoom.isChecked() ? "SUSPENDED" : "AVAILABLE");
+        roomUpdates.put("image_url", newImageUrl);
 
         batch.update(roomRef, roomUpdates);
 
@@ -118,6 +120,10 @@ public class PartnerEditRoomActivity extends AppCompatActivity {
                     if(roomDoc.exists()) {
                         etRoomName.setText(roomDoc.getString("room_name"));
 
+                        if(roomDoc.contains("image_url")) {
+                            etRoomImageUrl.setText(roomDoc.getString("image_url"));
+                        }
+
                         String roomType = roomDoc.getString("room_type");
                         if(roomType != null) {
                             ArrayAdapter adapter = (ArrayAdapter) spinnerRoomType.getAdapter();
@@ -130,7 +136,7 @@ public class PartnerEditRoomActivity extends AppCompatActivity {
                         long capacity = roomDoc.get("capacity_adults") != null ? roomDoc.getLong("capacity_adults") : 0;
                         etCapacity.setText(String.valueOf(capacity));
 
-                        long total = roomDoc.get("available_rooms") != null ? roomDoc.getLong("available_rooms") : 0;
+                        long total = roomDoc.get("total_rooms") != null ? roomDoc.getLong("total_rooms") : 0;
                         etTotalRooms.setText(String.valueOf(total));
 
                         if (roomDoc.get("price_per_night") != null) {
@@ -209,5 +215,6 @@ public class PartnerEditRoomActivity extends AppCompatActivity {
         switchDisableRoom = findViewById(R.id.switch_disable_room);
 
         btnUpdateRoom = findViewById(R.id.btn_update_room);
+        etRoomImageUrl = findViewById(R.id.et_edit_room_image_url);
     }
 }
