@@ -54,10 +54,16 @@
             android:name=".ui.admin.AdminHotelDetailActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.admin.AdminHotelPreviewActivity"
+            android:name=".ui.admin.AdminHotelManagementActivity"
             android:exported="false" />
         <activity
             android:name=".ui.admin.AdminBookingManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminUserManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.admin.AdminUserDetailActivity"
             android:exported="false" />
 
         <!-- Partner Activities -->
@@ -72,6 +78,21 @@
             android:exported="false" />
         <activity
             android:name=".ui.partner.AddRoomActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerAddRoomActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerRoomListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerEditRoomActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerHotelManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerEditHotelActivity"
             android:exported="false" />
 
         <activity

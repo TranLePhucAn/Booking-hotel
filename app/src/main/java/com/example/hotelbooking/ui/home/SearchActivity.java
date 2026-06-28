@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.model.DemoHotelData;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.ui.adapter.HotelAdapter;
 import com.example.hotelbooking.ui.hotel.HotelDetailActivity;
@@ -52,6 +51,8 @@ public class SearchActivity extends AppCompatActivity {
     private double maxPriceFilter = 10000000;
     private float minRatingFilter = 0;
     private int selectedSortIndex = 0;
+
+    private String selectedProvince = "Tất cả";
 
     private final String[] sortOptions = {
             "Mặc định",
@@ -87,7 +88,7 @@ public class SearchActivity extends AppCompatActivity {
 
     private void setupAutoComplete() {
         if (etSearch == null) return;
-        List<String> locations = DemoHotelData.getLocations();
+        List<String> locations = new ArrayList<>();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, locations);
         etSearch.setAdapter(adapter);
@@ -139,9 +140,7 @@ public class SearchActivity extends AppCompatActivity {
     private void loadHotels() {
         showLoading();
         
-        // Luôn nạp dữ liệu mẫu trước để đảm bảo có kết quả chạy thử
         allHotels.clear();
-        allHotels.addAll(DemoHotelData.hotels());
 
         FirebaseFirestore.getInstance()
                 .collection(AppConstants.COLLECTION_HOTELS)
@@ -157,17 +156,27 @@ public class SearchActivity extends AppCompatActivity {
                             }
                         });
                     }
+                    updateSearchSuggestions();
                     applyFilters();
                 })
                 .addOnFailureListener(e -> {
-                    if (allHotels.isEmpty()) {
-                        showError();
-                    } else {
-                        // Nếu đã có dữ liệu mẫu thì vẫn cho phép tìm kiếm và hiện Toast
-                        applyFilters();
-                        Toast.makeText(this, "Lỗi kết nối Firestore, đang dùng dữ liệu mẫu", Toast.LENGTH_SHORT).show();
-                    }
+                    showError();
+                    Toast.makeText(this, "Không tải được khách sạn từ Firebase", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void updateSearchSuggestions() {
+        if (etSearch == null) return;
+        List<String> locations = new ArrayList<>();
+        for (Hotel hotel : allHotels) {
+            String address = hotel.getAddress();
+            if (address != null && !address.trim().isEmpty() && !locations.contains(address)) {
+                locations.add(address);
+            }
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, locations);
+        etSearch.setAdapter(adapter);
     }
 
     private void applyFilters() {
@@ -190,7 +199,12 @@ public class SearchActivity extends AppCompatActivity {
             double score = hotel.getReviewScore() > 0 ? hotel.getReviewScore() : hotel.getRatingStar();
             boolean matchRating = score >= minRatingFilter;
 
-            if (matchQuery && matchPrice && matchRating) {
+            boolean matchProvince =
+                    selectedProvince.equals("Tất cả")
+                            || getProvince(hotel.getAddress())
+                            .equalsIgnoreCase(selectedProvince);
+
+            if (matchQuery && matchPrice && matchRating && matchProvince) {
                 filteredHotels.add(hotel);
             }
         }
@@ -269,15 +283,23 @@ public class SearchActivity extends AppCompatActivity {
                 .replace("Đ", "d");
     }
 
+    private String getProvince(String address) {
+        if (address == null) return "";
+        String[] parts = address.split(",");
+        if (parts.length == 0) return "";
+        return parts[parts.length - 1].trim();
+    }
+
     private void showFilterDialog() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = getLayoutInflater().inflate(R.layout.dialog_filter, null);
         dialog.setContentView(view);
 
         Spinner spSort = view.findViewById(R.id.spSort);
+        Spinner spProvince = view.findViewById(R.id.spProvince);
         SeekBar sbPrice = view.findViewById(R.id.sbPrice);
         TextView tvPriceValue = view.findViewById(R.id.tvPriceValue);
-        android.widget.RatingBar rbStars = view.findViewById(R.id.rbStars);
+//        android.widget.RatingBar rbStars = view.findViewById(R.id.rbStars);
         Button btnApply = view.findViewById(R.id.btnApplyFilter);
 
         if (spSort != null) {
@@ -285,6 +307,30 @@ public class SearchActivity extends AppCompatActivity {
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spSort.setAdapter(adapter);
             spSort.setSelection(selectedSortIndex);
+        }
+
+        if (spProvince != null) {
+            List<String> provinces = new ArrayList<>();
+            provinces.add("Tất cả");
+            for (Hotel hotel : allHotels) {
+                String province = getProvince(hotel.getAddress());
+                if (province != null &&
+                        !province.trim().isEmpty() &&
+                        !provinces.contains(province)) {
+                    provinces.add(province);
+                }
+            }
+            ArrayAdapter<String> provinceAdapter =
+                    new ArrayAdapter<>(this,
+                            android.R.layout.simple_spinner_item,
+                            provinces);
+            provinceAdapter.setDropDownViewResource(
+                    android.R.layout.simple_spinner_dropdown_item);
+            spProvince.setAdapter(provinceAdapter);
+            int index = provinces.indexOf(selectedProvince);
+            if(index>=0){
+                spProvince.setSelection(index);
+            }
         }
 
         if (sbPrice != null) {
@@ -301,13 +347,14 @@ public class SearchActivity extends AppCompatActivity {
             });
         }
 
-        if (rbStars != null) rbStars.setRating(minRatingFilter);
+//        if (rbStars != null) rbStars.setRating(minRatingFilter);
 
         if (btnApply != null) {
             btnApply.setOnClickListener(v -> {
                 if (spSort != null) selectedSortIndex = spSort.getSelectedItemPosition();
+                if(spProvince!=null) selectedProvince = spProvince.getSelectedItem().toString();
                 if (sbPrice != null) maxPriceFilter = sbPrice.getProgress();
-                if (rbStars != null) minRatingFilter = rbStars.getRating();
+//                if (rbStars != null) minRatingFilter = rbStars.getRating();
                 applyFilters();
                 dialog.dismiss();
             });

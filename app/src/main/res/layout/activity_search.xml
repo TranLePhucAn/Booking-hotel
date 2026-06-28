@@ -44,7 +44,7 @@
             android:layout_height="40dp"
             android:layout_marginStart="8dp"
             android:padding="8dp"
-            android:src="@android:drawable/ic_menu_manage"
+            android:src="@android:drawable/ic_menu_sort_by_size"
             app:tint="@color/primary" />
     </LinearLayout>
 

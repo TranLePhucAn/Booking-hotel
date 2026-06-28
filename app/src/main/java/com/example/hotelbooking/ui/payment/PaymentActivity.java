@@ -199,58 +199,14 @@ public class PaymentActivity extends AppCompatActivity {
                         }
 
                         String roomId = documentSnapshot.getString("room_id");
+                        String sectionId = documentSnapshot.getString("section_id");
                         long roomQuantity = 1;
                         Object roomQuantityValue = documentSnapshot.get("room_quantity");
                         if (roomQuantityValue instanceof Number) {
                             roomQuantity = Math.max(1, ((Number) roomQuantityValue).longValue());
                         }
 
-                        if (roomId == null || roomId.isEmpty()) {
-                            btnBooking.setEnabled(true);
-                            Toast.makeText(PaymentActivity.this, "Không tìm thấy thông tin phòng trong đơn!", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-
-                        final long quantityToReserve = roomQuantity;
-                        final String selectedRoomId = roomId;
-                        db.runTransaction(transaction -> {
-                                    DocumentReference roomRef = db.collection(AppConstants.COLLECTION_ROOMS).document(selectedRoomId);
-                                    DocumentSnapshot roomSnapshot = transaction.get(roomRef);
-
-                                    long availableRooms = 0;
-                                    if (roomSnapshot.exists() && roomSnapshot.contains("available_rooms")) {
-                                        Long value = roomSnapshot.getLong("available_rooms");
-                                        availableRooms = value == null ? 0 : value;
-                                    }
-
-                                    if (availableRooms < quantityToReserve) {
-                                        throw new RuntimeException("Rất tiếc, loại phòng này vừa hết phòng trống!");
-                                    }
-
-                                    transaction.update(roomRef, "available_rooms", availableRooms - quantityToReserve);
-
-                                    DocumentReference reservationRef = db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId);
-                                    Map<String, Object> updates = new HashMap<>();
-                                    updates.put("status", AppConstants.BOOKING_CONFIRMED);
-                                    updates.put("payment_status", AppConstants.PAYMENT_PAID);
-                                    updates.put("payment_method", paymentMethod);
-                                    updates.put("paid_at", now);
-                                    updates.put("room_id", selectedRoomId);
-                                    transaction.update(reservationRef, updates);
-
-                                    return null;
-                                })
-                                .addOnSuccessListener(runnable -> {
-                                    Toast.makeText(PaymentActivity.this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
-                                    Intent intent = new Intent(PaymentActivity.this, HomeActivity.class); // chuyển về trang lịch sử booking
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    startActivity(intent);
-                                    finish();
-                                })
-                                .addOnFailureListener(e -> {
-                                    btnBooking.setEnabled(true);
-                                    Toast.makeText(PaymentActivity.this, "Lỗi cập nhật thanh toán: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
+                        resolveRoomAndCompletePayment(db, roomId, sectionId, roomQuantity, now, paymentMethod);
                     } else {
                         btnBooking.setEnabled(true);
                         Toast.makeText(PaymentActivity.this, "Đơn đặt phòng không tồn tại!", Toast.LENGTH_SHORT).show();
@@ -259,6 +215,118 @@ public class PaymentActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     btnBooking.setEnabled(true);
                     Toast.makeText(PaymentActivity.this, "Lỗi kết nối hệ thống: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void resolveRoomAndCompletePayment(FirebaseFirestore db, String roomId, String sectionId,
+                                               long roomQuantity, Timestamp now, String paymentMethod) {
+        if (roomId != null && !roomId.isEmpty()) {
+            db.collection(AppConstants.COLLECTION_ROOMS).document(roomId).get()
+                    .addOnSuccessListener(roomSnapshot -> {
+                        if (roomSnapshot.exists()) {
+                            completePaymentTransaction(db, roomId, sectionId, roomQuantity, now, paymentMethod);
+                        } else {
+                            resolveRoomBySectionAndCompletePayment(db, sectionId, roomQuantity, now, paymentMethod);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        btnBooking.setEnabled(true);
+                        Toast.makeText(PaymentActivity.this, "Không kiểm tra được phòng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+            return;
+        }
+
+        resolveRoomBySectionAndCompletePayment(db, sectionId, roomQuantity, now, paymentMethod);
+    }
+
+    private void resolveRoomBySectionAndCompletePayment(FirebaseFirestore db, String sectionId,
+                                                        long roomQuantity, Timestamp now, String paymentMethod) {
+        if (sectionId == null || sectionId.isEmpty()) {
+            btnBooking.setEnabled(true);
+            Toast.makeText(this, "Đơn chưa có thông tin phòng/hạng phòng. Vui lòng đặt lại.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        db.collection(AppConstants.COLLECTION_ROOMS)
+                .whereEqualTo("section_id", sectionId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (querySnapshot.isEmpty()) {
+                        btnBooking.setEnabled(true);
+                        Toast.makeText(this, "Không tìm thấy phòng theo hạng phòng. Vui lòng đặt lại.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String resolvedRoomId = querySnapshot.getDocuments().get(0).getId();
+                    completePaymentTransaction(db, resolvedRoomId, sectionId, roomQuantity, now, paymentMethod);
+                })
+                .addOnFailureListener(e -> {
+                    btnBooking.setEnabled(true);
+                    Toast.makeText(this, "Không tìm được phòng theo hạng phòng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void completePaymentTransaction(FirebaseFirestore db, String roomId, String sectionId,
+                                            long roomQuantity, Timestamp now, String paymentMethod) {
+        final long quantityToReserve = roomQuantity;
+        final String selectedRoomId = roomId;
+        final String selectedSectionId = sectionId;
+
+        db.runTransaction(transaction -> {
+                    DocumentReference roomRef = db.collection(AppConstants.COLLECTION_ROOMS).document(selectedRoomId);
+                    DocumentSnapshot roomSnapshot = transaction.get(roomRef);
+                    DocumentReference inventoryRef = roomRef;
+                    DocumentSnapshot inventorySnapshot = roomSnapshot;
+
+                    if (selectedSectionId != null && !selectedSectionId.isEmpty()) {
+                        DocumentReference sectionRef = db.collection(AppConstants.COLLECTION_SECTIONS).document(selectedSectionId);
+                        DocumentSnapshot sectionSnapshot = transaction.get(sectionRef);
+                        if (sectionSnapshot.exists() && sectionSnapshot.contains("available_rooms")) {
+                            inventoryRef = sectionRef;
+                            inventorySnapshot = sectionSnapshot;
+                        }
+                    }
+
+                    if (!inventorySnapshot.exists()) {
+                        throw new RuntimeException("Không tìm thấy phòng trong hệ thống. Vui lòng đặt lại.");
+                    }
+
+                    long availableRooms;
+                    if (inventorySnapshot.contains("available_rooms")) {
+                        Long value = inventorySnapshot.getLong("available_rooms");
+                        availableRooms = value == null ? 0 : value;
+                    } else {
+                        throw new RuntimeException("Phòng chưa có thông tin số lượng còn trống.");
+                    }
+
+                    if (availableRooms < quantityToReserve) {
+                        throw new RuntimeException("Rất tiếc, loại phòng này chỉ còn "
+                                + availableRooms + " phòng trống.");
+                    }
+
+                    transaction.update(inventoryRef, "available_rooms", availableRooms - quantityToReserve);
+
+                    DocumentReference reservationRef = db.collection(AppConstants.COLLECTION_RESERVATIONS).document(reservationId);
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("status", AppConstants.BOOKING_CONFIRMED);
+                    updates.put("payment_status", AppConstants.PAYMENT_PAID);
+                    updates.put("payment_method", paymentMethod);
+                    updates.put("paid_at", now);
+                    updates.put("room_id", selectedRoomId);
+                    transaction.update(reservationRef, updates);
+
+                    return null;
+                })
+                .addOnSuccessListener(runnable -> {
+                    Toast.makeText(PaymentActivity.this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(PaymentActivity.this, HomeActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    btnBooking.setEnabled(true);
+                    Toast.makeText(PaymentActivity.this, "Lỗi cập nhật thanh toán: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 

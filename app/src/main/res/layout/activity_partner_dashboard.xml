@@ -1,25 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"
-        android:elevation="4dp">
+        android:layout_height="wrap_content"
+        android:background="@color/card"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tvPartnerWelcome"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Cộng sự Dashboard"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"/>
-    </androidx.appcompat.widget.Toolbar>
+            android:layout_weight="1"
+            android:text="Dashboard cộng tác"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnLogoutPartner"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:backgroundTint="@color/error"
+            android:text="Đăng xuất"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <ScrollView
+        android:id="@+id/partnerDashboardScroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -29,43 +46,114 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/tvPartnerWelcome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Chào mừng Cộng sự!"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp"/>
-
-            <Button
-                android:id="@+id/btnAddHotelPartner"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardMyHotels"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Thêm Khách Sạn Mới"
-                android:backgroundTint="@color/ocean_blue"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/card"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="18dp"
+                    android:text="Khách sạn của tôi"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardManageRooms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/card"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="18dp"
+                    android:text="Quản lý phòng"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardBookings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/card"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="18dp"
+                    android:text="Đơn đặt phòng"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardAddHotel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/card"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="18dp"
+                    android:text="Thêm khách sạn"
+                    android:textColor="@color/ocean_blue"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
 
             <TextView
+                android:id="@+id/textBookingSectionTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Danh sách đơn đặt phòng mới"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp"
+                android:text="Đơn đặt phòng gần đây"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvPartnerReservations"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:layout_marginBottom="24dp"/>
-
-            <Button
-                android:id="@+id/btnLogoutPartner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Đăng xuất"
-                android:backgroundTint="@color/error"/>
+                android:layout_marginBottom="24dp"
+                android:nestedScrollingEnabled="false" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
