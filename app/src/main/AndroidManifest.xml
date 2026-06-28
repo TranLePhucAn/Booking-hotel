@@ -80,6 +80,15 @@
             android:name=".ui.partner.AddRoomActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.partner.PartnerAddRoomActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerRoomListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.partner.PartnerEditRoomActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.partner.PartnerHotelManagementActivity"
             android:exported="false" />
         <activity
