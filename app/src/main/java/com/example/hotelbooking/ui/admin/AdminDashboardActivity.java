@@ -46,7 +46,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         if (btnManageHotels != null) {
             btnManageHotels.setOnClickListener(v -> {
-                android.widget.Toast.makeText(this, "Chức năng Quản lý khách sạn của thành viên khác đang phát triển", android.widget.Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, AdminHotelManagementActivity.class));
             });
         }
 
