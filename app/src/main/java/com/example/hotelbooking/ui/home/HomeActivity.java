@@ -3,6 +3,7 @@ package com.example.hotelbooking.ui.home;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.denzcoskun.imageslider.constants.ScaleTypes;
 import com.denzcoskun.imageslider.models.SlideModel;
+import com.example.hotelbooking.R;
 import com.example.hotelbooking.data.model.Hotel;
 import com.example.hotelbooking.data.remote.FirebaseClient;
 import com.example.hotelbooking.data.repository.WishlistRepository;
@@ -42,6 +44,12 @@ public class HomeActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private WishlistRepository wishlistRepository;
 
+    private static final int PAGE_SIZE = 10;
+    private int currentPage = 0;
+    private int totalPages = 0;
+    // Danh sách hiển thị của từng trang
+    private final List<Hotel> pageHotels = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,22 +66,49 @@ public class HomeActivity extends AppCompatActivity {
         loadHotels();
     }
 
+//    private void updateUserUI() {
+//        binding.btnProfile.setEnabled(true);
+//        binding.btnProfile.setAlpha(1f);
+////        binding.btnLogout.setEnabled(true);
+////        binding.btnLogout.setAlpha(1f);
+////        binding.btnLogout.setText("Đăng xuất");
+//
+//        if (FirebaseClient.getAuth().getCurrentUser() != null) {
+//            String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
+//            binding.btnProfile.setText(name != null && !name.isEmpty() ? name : "Tài khoản");
+////            binding.btnLogout.setVisibility(View.VISIBLE);
+//            binding.btnProfile.setOnClickListener(v ->
+//                    startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
+//        } else {
+//            binding.btnProfile.setText("Đăng nhập");
+////            binding.btnLogout.setVisibility(View.GONE);
+//            binding.btnProfile.setOnClickListener(v ->
+//                    startActivity(new Intent(HomeActivity.this, LoginActivity.class)));
+//        }
+//    }
+
     private void updateUserUI() {
+
         binding.btnProfile.setEnabled(true);
         binding.btnProfile.setAlpha(1f);
-        binding.btnLogout.setEnabled(true);
-        binding.btnLogout.setAlpha(1f);
-        binding.btnLogout.setText("Đăng xuất");
 
         if (FirebaseClient.getAuth().getCurrentUser() != null) {
+
             String name = FirebaseClient.getAuth().getCurrentUser().getDisplayName();
-            binding.btnProfile.setText(name != null && !name.isEmpty() ? name : "Tài khoản");
-            binding.btnLogout.setVisibility(View.VISIBLE);
+
+            binding.tvProfileName.setText(
+                    name != null && !name.isEmpty()
+                            ? name
+                            : "Tài khoản"
+            );
+
             binding.btnProfile.setOnClickListener(v ->
                     startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
+
         } else {
-            binding.btnProfile.setText("Đăng nhập");
-            binding.btnLogout.setVisibility(View.GONE);
+
+            binding.tvProfileName.setText("Đăng nhập");
+
             binding.btnProfile.setOnClickListener(v ->
                     startActivity(new Intent(HomeActivity.this, LoginActivity.class)));
         }
@@ -93,14 +128,14 @@ public class HomeActivity extends AppCompatActivity {
 
         updateUserUI();
 
-        binding.btnLogout.setOnClickListener(v -> {
-            binding.btnLogout.setEnabled(false);
-            binding.btnLogout.setAlpha(0.65f);
-            binding.btnLogout.setText("Đang đăng xuất...");
-            FirebaseClient.getAuth().signOut();
-            updateUserUI();
-            Toast.makeText(this, "Đã đăng xuất thành công", Toast.LENGTH_SHORT).show();
-        });
+//        binding.btnLogout.setOnClickListener(v -> {
+//            binding.btnLogout.setEnabled(false);
+//            binding.btnLogout.setAlpha(0.65f);
+//            binding.btnLogout.setText("Đang đăng xuất...");
+//            FirebaseClient.getAuth().signOut();
+//            updateUserUI();
+//            Toast.makeText(this, "Đã đăng xuất thành công", Toast.LENGTH_SHORT).show();
+//        });
 
         binding.btnFilter.setOnClickListener(v ->
                 startActivity(new Intent(HomeActivity.this, SearchActivity.class)));
@@ -110,6 +145,18 @@ public class HomeActivity extends AppCompatActivity {
         binding.tvSeeAllFeatured.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, SearchActivity.class);
             startActivity(intent);
+        });
+
+        binding.btnPrev.setOnClickListener(v->{
+            if(currentPage>0){
+                showSuggestionPage(currentPage-1);
+            }
+        });
+
+        binding.btnNext.setOnClickListener(v->{
+            if(currentPage<totalPages-1){
+                showSuggestionPage(currentPage+1);
+            }
         });
     }
 
@@ -154,7 +201,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.rvFeaturedHotels.setAdapter(featuredAdapter);
 
         // Suggestions - Vertical
-        suggestionsAdapter = new HotelAdapter(suggestionHotels, false, hotelClickListener);
+        suggestionsAdapter = new HotelAdapter(pageHotels, false, hotelClickListener);
         binding.rvSuggestions.setLayoutManager(new LinearLayoutManager(this));
         binding.rvSuggestions.setAdapter(suggestionsAdapter);
     }
@@ -244,9 +291,91 @@ public class HomeActivity extends AppCompatActivity {
         }
 
         featuredAdapter.updateData(featuredHotels);
-        suggestionsAdapter.updateData(suggestionHotels);
+        currentPage = 0;
+        totalPages = (int) Math.ceil((double) suggestionHotels.size() / PAGE_SIZE);
+        showSuggestionPage(currentPage);
     }
 
+    private void showSuggestionPage(int page) {
+
+        this.currentPage = page;
+
+        pageHotels.clear();
+
+        int start = page * PAGE_SIZE;
+
+        int end = Math.min(start + PAGE_SIZE, suggestionHotels.size());
+
+        pageHotels.addAll(suggestionHotels.subList(start, end));
+
+        suggestionsAdapter.updateData(pageHotels);
+
+        updatePagination();
+    }
+    private void updatePagination(){
+
+        binding.layoutPageNumbers.removeAllViews();
+
+        int startPage;
+        int endPage;
+
+        if(totalPages<=3){
+
+            startPage=0;
+
+            endPage=totalPages-1;
+
+        }else{
+
+            if(currentPage==0){
+                startPage=0;
+                endPage=2;
+
+            }else if(currentPage==totalPages-1){
+                startPage=totalPages-3;
+                endPage=totalPages-1;
+
+            }else{
+                startPage=currentPage-1;
+                endPage=currentPage+1;
+            }
+        }
+
+        for(int i=startPage;i<=endPage;i++){
+
+            TextView tv=new TextView(this);
+
+            tv.setText(String.valueOf(i+1));
+
+            tv.setPadding(30,15,30,15);
+
+            tv.setTextSize(16);
+
+            if(i==currentPage){
+
+                tv.setBackgroundResource(R.drawable.bg_page_selected);
+
+                tv.setTextColor(getColor(R.color.white));
+
+            }else{
+
+                tv.setTextColor(getColor(R.color.primary));
+
+            }
+
+            int page=i;
+
+            tv.setOnClickListener(v->showSuggestionPage(page));
+
+            binding.layoutPageNumbers.addView(tv);
+
+        }
+
+        binding.btnPrev.setEnabled(currentPage>0);
+
+        binding.btnNext.setEnabled(currentPage<totalPages-1);
+
+    }
     private void filterByCategory(String category) {
         suggestionHotels.clear();
         if (category.equalsIgnoreCase("Tất cả")) {
@@ -260,8 +389,10 @@ public class HomeActivity extends AppCompatActivity {
                 }
             }
         }
-        
-        suggestionsAdapter.updateData(suggestionHotels);
+
+        currentPage = 0;
+        totalPages = (int) Math.ceil((double) suggestionHotels.size() / PAGE_SIZE);
+        showSuggestionPage(currentPage);
         
         if (suggestionHotels.isEmpty() && !category.equalsIgnoreCase("Tất cả")) {
             Toast.makeText(this, "Không có kết quả cho: " + category, Toast.LENGTH_SHORT).show();
