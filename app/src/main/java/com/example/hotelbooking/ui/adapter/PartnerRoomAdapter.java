@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import com.bumptech.glide.Glide;
 
 import com.example.hotelbooking.R;
 
@@ -50,6 +51,8 @@ public class PartnerRoomAdapter extends BaseAdapter {
             viewHolder.tvItemRoomType = view.findViewById(R.id.tv_item_room_type);
             viewHolder.tvItemRoomQty = view.findViewById(R.id.tv_item_room_qty);
             viewHolder.tvItemRoomPrice = view.findViewById(R.id.tv_item_room_price);
+
+            view.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) view.getTag(); // tái sd lại khung nhìn cũ
         }
@@ -59,6 +62,7 @@ public class PartnerRoomAdapter extends BaseAdapter {
         String name = (String) room.get("room_name");
         String type = (String) room.get("room_type");
         String bed = (String) room.get("bed_type");
+        String imageUrl = (String) room.get("image_url");
 
         long total = room.get("total_rooms") != null ? (long) room.get("total_rooms") : 0;
         long available = room.get("available_rooms") != null ? (long) room.get("available_rooms") : 0;
@@ -68,6 +72,13 @@ public class PartnerRoomAdapter extends BaseAdapter {
         viewHolder.tvItemRoomType.setText("Loại: " + type + " | " + bed);
         viewHolder.tvItemRoomQty.setText("Trống: " + available + " / Tổng: " + total + " phòng");
         viewHolder.tvItemRoomPrice.setText(String.format("%,.0f VND / đêm", price));
+
+        Glide.with(context)
+                .load(imageUrl)
+                .placeholder(R.drawable.thumb_not_found)
+                .error(R.drawable.thumb_error)
+                .centerCrop()
+                .into(viewHolder.imgItemRoom);
 
         return view;
     }

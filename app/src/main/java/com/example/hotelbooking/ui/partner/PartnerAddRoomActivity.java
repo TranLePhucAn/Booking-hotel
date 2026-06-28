@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class PartnerAddRoomActivity extends AppCompatActivity {
 
-    private EditText etRoomName, etPrice, etCapacity, etBedType, etTotalRooms, etDescription, etRoomStyle, etBasePrice;
+    private EditText etRoomName, etPrice, etCapacity, etBedType, etTotalRooms, etDescription, etRoomStyle, etBasePrice, etRoomImageUrl;
     private Spinner spinnerRoomType;
     private CheckBox cbWifi, cbAirConditioner, cbTv, cbIsRefundable, cbIsReschedulable;
     private Button btnSaveRoom;
@@ -63,6 +63,11 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
         long totalRooms = Long.parseLong(etTotalRooms.getText().toString().trim());
         String description = etDescription.getText().toString().trim();
 
+        String imageUrl = etRoomImageUrl.getText().toString().trim();
+        if (imageUrl.isEmpty()) {
+            imageUrl = "https://images.unsplash.com/photo-1590490360182-c33d57733427";
+        }
+
         ArrayList<String> amenitiesList = new ArrayList<>();
         if(cbWifi.isChecked()) amenitiesList.add("Wifi");
         if (cbAirConditioner.isChecked()) amenitiesList.add("Máy lạnh");
@@ -95,13 +100,13 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
         roomData.put("capacity_adults", capacityAdults);
         roomData.put("capacity_children", 0L); // mặc định
         roomData.put("bed_type", bedType);
-        roomData.put("available_rooms", totalRooms); // Ban đầu số phòng trống bằng tổng số phòng sở hữu
+        roomData.put("total_rooms", totalRooms);
         roomData.put("description", description);
         roomData.put("amenities", amenitiesList);
         roomData.put("status", "AVAILABLE");
         roomData.put("floor", 1L);
         roomData.put("room_size", 25.0);
-        roomData.put("image_url", "https://images.unsplash.com/photo-1590490360182-c33d57733427"); // Link ảnh mẫu mặc định
+        roomData.put("image_url", imageUrl);
 
         // tiến hành insert
         db.collection("sections").document(newSectionId).set(sectionData)
@@ -155,5 +160,6 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
         cbIsReschedulable = findViewById(R.id.cb_is_reschedulable);
 
         btnSaveRoom = findViewById(R.id.btn_save_room);
+        etRoomImageUrl = findViewById(R.id.et_room_image_url);
     }
 }

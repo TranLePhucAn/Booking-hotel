@@ -70,7 +70,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Kiểu giường"
-                    android:inputType="text" />
+                    android:inputType="text"
+                    android:layout_marginBottom="12dp" />
+
+                <EditText
+                    android:id="@+id/et_edit_room_image_url"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Đường dẫn ảnh phòng https://..."
+                    android:inputType="textUri" />
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
