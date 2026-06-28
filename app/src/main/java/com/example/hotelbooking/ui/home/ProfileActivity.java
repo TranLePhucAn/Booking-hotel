@@ -71,6 +71,7 @@ public class ProfileActivity extends AppCompatActivity {
         LinearLayout menuEditAccount = findViewById(R.id.menuEditAccount);
         LinearLayout menuBookingHistory = findViewById(R.id.menuBookingHistory);
         LinearLayout menuWishlist = findViewById(R.id.menuWishlist);
+        LinearLayout menuNotifications = findViewById(R.id.menuNotifications);
         LinearLayout menuLogout = findViewById(R.id.menuLogout);
 
         // Nút quay lại
@@ -100,6 +101,12 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         // Đăng xuất
+        if (menuNotifications != null) {
+            menuNotifications.setOnClickListener(v -> {
+                startActivity(new Intent(ProfileActivity.this, NotificationActivity.class));
+            });
+        }
+
         if (menuLogout != null) {
             menuLogout.setOnClickListener(v -> {
                 FirebaseClient.getAuth().signOut();

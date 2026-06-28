@@ -113,6 +113,7 @@ public class PartnerViewModel extends ViewModel {
 
     private void sendNotification(String userId, String title, String message) {
         java.util.Map<String, Object> notification = new java.util.HashMap<>();
+        notification.put("user_id", userId);
         notification.put("userId", userId);
         notification.put("title", title);
         notification.put("message", message);
