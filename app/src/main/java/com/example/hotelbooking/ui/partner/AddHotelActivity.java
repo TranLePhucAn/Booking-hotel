@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +33,7 @@ public class AddHotelActivity extends AppCompatActivity {
     private EditText edtImageUrls;
     private EditText edtLatitude;
     private EditText edtLongitude;
+    private Spinner spinnerCategory;
     private FirebaseFirestore db;
 
     @Override
@@ -57,6 +60,17 @@ public class AddHotelActivity extends AppCompatActivity {
         edtImageUrls = findViewById(R.id.edtImageUrls);
         edtLatitude = findViewById(R.id.edtLatitude);
         edtLongitude = findViewById(R.id.edtLongitude);
+        spinnerCategory = findViewById(R.id.spinnerCategory);
+
+        if (spinnerCategory != null) {
+            ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(
+                    this,
+                    android.R.layout.simple_spinner_item,
+                    new String[]{"Khách sạn", "Resort", "Villa", "Homestay", "Căn hộ"}
+            );
+            categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerCategory.setAdapter(categoryAdapter);
+        }
     }
 
     private void submitHotel() {
@@ -65,6 +79,9 @@ public class AddHotelActivity extends AppCompatActivity {
         String description = textOf(edtDescription);
         double price = doubleOf(edtPrice, 0);
         String mainImage = textOf(edtMainImageUrl);
+        String category = spinnerCategory != null && spinnerCategory.getSelectedItem() != null
+                ? spinnerCategory.getSelectedItem().toString()
+                : "Khách sạn";
 
         if (TextUtils.isEmpty(hotelName) || TextUtils.isEmpty(address) || TextUtils.isEmpty(description)
                 || price <= 0 || TextUtils.isEmpty(mainImage)) {
@@ -80,6 +97,7 @@ public class AddHotelActivity extends AppCompatActivity {
         hotel.setHotelName(hotelName);
         hotel.setAddress(address);
         // Note: locationId can be set from edtCity if needed, or ignored if not in model schema
+        hotel.setCategory(category);
         hotel.setDescription(description);
         hotel.setPrice(price);
         hotel.setRatingStar(doubleOf(edtRatingStar, 0));
@@ -104,6 +122,7 @@ public class AddHotelActivity extends AppCompatActivity {
         hotelData.put("address_text", address);
         hotelData.put("location", address);
         hotelData.put("city", textOf(edtCity));
+        hotelData.put("category", category);
         hotelData.put("rating_star", doubleOf(edtRatingStar, 0));
         hotelData.put("rating", doubleOf(edtRatingStar, 0));
         hotelData.put("price", price);

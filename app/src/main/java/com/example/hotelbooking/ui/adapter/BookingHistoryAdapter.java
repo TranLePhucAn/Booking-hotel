@@ -43,6 +43,15 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
     private final List<Reservation> bookings = new ArrayList<>();
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+    private OnAdminBookingActionListener adminActionListener;
+
+    public interface OnAdminBookingActionListener {
+        void onUpdateStatus(Reservation reservation, String status);
+    }
+
+    public void setAdminActionListener(OnAdminBookingActionListener listener) {
+        this.adminActionListener = listener;
+    }
 
     public void updateData(List<Reservation> newBookings) {
         bookings.clear();
@@ -233,6 +242,7 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
 
         holder.itemView.setOnClickListener(v -> holder.btnViewDetail.performClick());
         bindCancelButton(holder, res, docId, status);
+        bindAdminActionButton(holder, res);
     }
 
     @Override
@@ -250,6 +260,41 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
         }
         holder.btnViewDetail.setVisibility(View.VISIBLE);
         holder.btnViewDetail.setText("Xem chi tiết");
+    }
+
+    private void bindAdminActionButton(ViewHolder holder, Reservation reservation) {
+        if (holder.btnAdminAction == null) {
+            return;
+        }
+
+        if (adminActionListener == null || reservation.getId() == null || reservation.getId().isEmpty()) {
+            holder.btnAdminAction.setVisibility(View.GONE);
+            return;
+        }
+
+        holder.btnAdminAction.setVisibility(View.VISIBLE);
+        holder.btnAdminAction.setText("Cập nhật");
+        holder.btnAdminAction.setOnClickListener(v -> showAdminStatusDialog(holder.itemView.getContext(), reservation));
+    }
+
+    private void showAdminStatusDialog(android.content.Context context, Reservation reservation) {
+        String[] labels = {"Xác nhận", "Check-in", "Hoàn thành", "Hủy", "Hết hạn"};
+        String[] statuses = {
+                AppConstants.BOOKING_CONFIRMED,
+                AppConstants.BOOKING_CHECKED_IN,
+                AppConstants.BOOKING_COMPLETED,
+                AppConstants.BOOKING_CANCELLED,
+                AppConstants.BOOKING_EXPIRED
+        };
+
+        new AlertDialog.Builder(context)
+                .setTitle("Cập nhật trạng thái đơn")
+                .setItems(labels, (dialog, which) -> {
+                    reservation.setStatus(statuses[which]);
+                    adminActionListener.onUpdateStatus(reservation, statuses[which]);
+                    notifyDataSetChanged();
+                })
+                .show();
     }
 
     private String displayStatus(String status) {
@@ -483,7 +528,7 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
     static class ViewHolder extends RecyclerView.ViewHolder {
         ShapeableImageView imgThumbnail;
         TextView tvHotelName, tvStatus, tvDate, tvPrice, tvBookingId;
-        Button btnViewDetail;
+        Button btnViewDetail, btnAdminAction;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -494,6 +539,7 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
             tvPrice = itemView.findViewById(R.id.tvHistoryPrice);
             tvBookingId = itemView.findViewById(R.id.tvBookingId);
             btnViewDetail = itemView.findViewById(R.id.btnViewDetail);
+            btnAdminAction = itemView.findViewById(R.id.btnCancelBooking);
         }
     }
 }

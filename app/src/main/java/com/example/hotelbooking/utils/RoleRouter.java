@@ -32,6 +32,17 @@ public class RoleRouter {
                 .addOnSuccessListener(documentSnapshot -> {
                     String role = documentSnapshot.getString("role");
                     String status = documentSnapshot.getString("partnerStatus");
+                    String accountStatus = documentSnapshot.getString("status");
+                    if (AppConstants.STATUS_BLOCKED.equalsIgnoreCase(accountStatus)) {
+                        FirebaseAuth.getInstance().signOut();
+                        Toast.makeText(activity, "TÃ i khoáº£n cá»§a báº¡n Ä‘Ã£ bá»‹ khÃ³a", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(activity, HomeActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        activity.startActivity(intent);
+                        activity.finish();
+                        if (loadingDialog != null) loadingDialog.dismiss();
+                        return;
+                    }
                     navigateByRole(activity, role, status);
                     if (loadingDialog != null) loadingDialog.dismiss();
                 })

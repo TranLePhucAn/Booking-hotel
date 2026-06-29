@@ -52,6 +52,9 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
         'fullName',
         'phone',
+        'gender',
+        'date_of_birth',
+        'country',
         'avatarUrl',
         'avatar_url',
         'displayName',
@@ -62,11 +65,13 @@ service cloud.firestore {
     function hotelPartnerFieldsOnly() {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
         'owner_id',
-        'approval_status',
-        'is_active',
         'admin_note',
         'reviewed_at'
-      ]);
+      ])
+      && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['approval_status'])
+        || request.resource.data.approval_status == 'pending')
+      && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['is_active'])
+        || request.resource.data.is_active == false);
     }
 
     function roomPartnerFieldsOnly() {
@@ -106,6 +111,10 @@ service cloud.firestore {
           && request.resource.data.role == 'user');
       allow update: if isAdmin() || (isSelf(userId) && selfProfileFieldsOnly());
       allow delete: if isAdmin();
+
+      match /wishlists/{hotelId} {
+        allow read, create, update, delete: if isSelf(userId);
+      }
     }
 
     match /partner_applications/{appId} {

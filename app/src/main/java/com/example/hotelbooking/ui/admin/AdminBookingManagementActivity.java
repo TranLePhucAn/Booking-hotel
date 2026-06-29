@@ -22,6 +22,11 @@ public class AdminBookingManagementActivity extends AppCompatActivity {
         RecyclerView rv = findViewById(R.id.rvAllReservations);
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new BookingHistoryAdapter();
+        adapter.setAdminActionListener((reservation, status) -> {
+            viewModel.updateStatus(reservation.getId(), status);
+            Toast.makeText(this, "Đã cập nhật trạng thái đơn", Toast.LENGTH_SHORT).show();
+            viewModel.fetchAllReservations();
+        });
         rv.setAdapter(adapter);
 
         viewModel = new ViewModelProvider(this).get(BookingViewModel.class);

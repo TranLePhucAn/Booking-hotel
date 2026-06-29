@@ -26,9 +26,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.text.Normalizer;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -282,6 +285,8 @@ public class HomeActivity extends AppCompatActivity {
                 suggestionHotels.add(hotel);
             }
         }
+
+        applySeasonalSuggestions();
         
         // If not enough featured, take some from suggestions
         if (featuredHotels.size() < 3 && !suggestionHotels.isEmpty()) {
@@ -294,6 +299,102 @@ public class HomeActivity extends AppCompatActivity {
         currentPage = 0;
         totalPages = (int) Math.ceil((double) suggestionHotels.size() / PAGE_SIZE);
         showSuggestionPage(currentPage);
+    }
+
+    private void applySeasonalSuggestions() {
+        SeasonalSuggestion seasonalSuggestion = getSeasonalSuggestion();
+        binding.tvSuggestionTitle.setText(seasonalSuggestion.title);
+
+        List<Hotel> matchedHotels = new ArrayList<>();
+        List<Hotel> otherHotels = new ArrayList<>();
+
+        for (Hotel hotel : suggestionHotels) {
+            if (seasonalScore(hotel, seasonalSuggestion.keywords) > 0) {
+                matchedHotels.add(hotel);
+            } else {
+                otherHotels.add(hotel);
+            }
+        }
+
+        matchedHotels.sort((first, second) ->
+                Integer.compare(
+                        seasonalScore(second, seasonalSuggestion.keywords),
+                        seasonalScore(first, seasonalSuggestion.keywords)
+                ));
+
+        suggestionHotels.clear();
+        suggestionHotels.addAll(matchedHotels);
+        suggestionHotels.addAll(otherHotels);
+    }
+
+    private SeasonalSuggestion getSeasonalSuggestion() {
+        int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
+
+        if (month >= 5 && month <= 8) {
+            return new SeasonalSuggestion(
+                    "Gợi ý cho bạn - Mùa hè rực rỡ",
+                    new String[]{
+                            "bien", "beach", "sea", "ven bien", "resort",
+                            "nha trang", "da nang", "vung tau", "phu quoc",
+                            "quy nhon", "mui ne", "ha long", "hoi an", "phan thiet"
+                    }
+            );
+        }
+
+        if (month >= 9 && month <= 11) {
+            return new SeasonalSuggestion(
+                    "Gợi ý cho bạn - Mùa thu dịu dàng",
+                    new String[]{
+                            "da lat", "ha noi", "hoi an", "ninh binh", "hue",
+                            "sapa", "sa pa", "moc chau", "tam dao", "homestay"
+                    }
+            );
+        }
+
+        if (month == 12 || month <= 2) {
+            return new SeasonalSuggestion(
+                    "Gợi ý cho bạn - Mùa đông ấm áp",
+                    new String[]{
+                            "da lat", "sapa", "sa pa", "moc chau", "tam dao",
+                            "ha noi", "nui", "mountain", "villa", "homestay"
+                    }
+            );
+        }
+
+        return new SeasonalSuggestion(
+                "Gợi ý cho bạn - Mùa xuân du ngoạn",
+                new String[]{
+                        "da lat", "hoi an", "hue", "ninh binh", "ha noi",
+                        "moc chau", "sapa", "sa pa", "resort", "homestay"
+                }
+        );
+    }
+
+    private int seasonalScore(Hotel hotel, String[] keywords) {
+        String searchableText = normalizeText(
+                hotel.getHotelName() + " "
+                        + hotel.getAddress() + " "
+                        + hotel.getCategory() + " "
+                        + hotel.getDescription()
+        );
+
+        int score = 0;
+        for (String keyword : keywords) {
+            if (searchableText.contains(normalizeText(keyword))) {
+                score++;
+            }
+        }
+        return score;
+    }
+
+    private static class SeasonalSuggestion {
+        final String title;
+        final String[] keywords;
+
+        SeasonalSuggestion(String title, String[] keywords) {
+            this.title = title;
+            this.keywords = keywords;
+        }
     }
 
     private void showSuggestionPage(int page) {
@@ -378,13 +479,16 @@ public class HomeActivity extends AppCompatActivity {
     }
     private void filterByCategory(String category) {
         suggestionHotels.clear();
-        if (category.equalsIgnoreCase("Tất cả")) {
+        if (isAllCategory(category)) {
             for (Hotel h : allHotels) {
                 if (!h.isFeatured()) suggestionHotels.add(h);
             }
+            applySeasonalSuggestions();
         } else {
+            binding.tvSuggestionTitle.setText("Gợi ý theo danh mục: " + category);
+            String selectedCategory = categoryKey(category);
             for (Hotel hotel : allHotels) {
-                if (hotel.getCategory() != null && hotel.getCategory().equalsIgnoreCase(category)) {
+                if (categoryKey(hotel.getCategory()).equals(selectedCategory)) {
                     suggestionHotels.add(hotel);
                 }
             }
@@ -394,9 +498,31 @@ public class HomeActivity extends AppCompatActivity {
         totalPages = (int) Math.ceil((double) suggestionHotels.size() / PAGE_SIZE);
         showSuggestionPage(currentPage);
         
-        if (suggestionHotels.isEmpty() && !category.equalsIgnoreCase("Tất cả")) {
+        if (suggestionHotels.isEmpty() && !isAllCategory(category)) {
             Toast.makeText(this, "Không có kết quả cho: " + category, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private boolean isAllCategory(String category) {
+        return "tat ca".equals(categoryKey(category));
+    }
+
+    private String categoryKey(String category) {
+        String normalized = normalizeText(category);
+        if (normalized.isEmpty() || "hotel".equals(normalized) || "khach san".equals(normalized)) {
+            return "khach san";
+        }
+        return normalized;
+    }
+
+    private String normalizeText(String value) {
+        if (value == null) return "";
+        String normalized = Normalizer.normalize(value.trim(), Normalizer.Form.NFD);
+        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+        return pattern.matcher(normalized).replaceAll("")
+                .replace('\u0111', 'd')
+                .replace('\u0110', 'd')
+                .toLowerCase();
     }
 
     private void showLoading() {
