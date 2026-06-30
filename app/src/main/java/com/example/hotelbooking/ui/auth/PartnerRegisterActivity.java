@@ -197,7 +197,7 @@ public class PartnerRegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // Đã đăng nhập → gửi hồ sơ luôn
+
         loadingDialog.show();
         if (selectedFileUri != null) {
             uploadFileAndSave();
@@ -206,9 +206,7 @@ public class PartnerRegisterActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Trường hợp chưa đăng nhập: tạo tài khoản Firebase Auth trước.
-     */
+  
     private void createAccountAndSubmit(String name, String email, String phone, String password) {
         FirebaseAuth.getInstance()
                 .createUserWithEmailAndPassword(email, password)
@@ -244,9 +242,6 @@ public class PartnerRegisterActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Upload file xác minh lên Firebase Storage.
-     */
     private void uploadFileAndSave() {
         String ext = isPdf ? ".pdf" : ".jpg";
         String path = "partner_verification/" + uid + "/verification" + ext;

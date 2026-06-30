@@ -106,7 +106,6 @@ public class PartnerApplication implements Serializable {
     public String getFrontImageUrl() { return frontImageUrl; }
     @PropertyName("front_image_url")
     public void setFrontImageUrl(String frontImageUrl) { this.frontImageUrl = frontImageUrl; }
-
     @PropertyName("back_image_url")
     public String getBackImageUrl() { return backImageUrl; }
     @PropertyName("back_image_url")
