@@ -24,9 +24,7 @@ public class PartnerRoomListActivity extends AppCompatActivity {
 
     private PartnerRoomAdapter adapter;
     private ArrayList<Map<String, Object>> roomList;
-
-    private String hotelId = "d8OtAy1EnpURXX6NlNnt";
-
+    private String hotelId;
     private ListView listView;
     private FloatingActionButton fabAddRoom;
 
@@ -39,8 +37,12 @@ public class PartnerRoomListActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
-        if (getIntent().getStringExtra("EXTRA_HOTEL_ID") != null) {
-            hotelId = getIntent().getStringExtra("EXTRA_HOTEL_ID");
+        hotelId = getIntent().getStringExtra("EXTRA_HOTEL_ID");
+
+        if (hotelId == null || hotelId.isEmpty()) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy thông tin khách sạn hợp lệ!", Toast.LENGTH_SHORT).show();
+            finish(); // Đóng màn hình ngay lập tức
+            return;
         }
 
         listView = findViewById(R.id.lv_partner_rooms);
