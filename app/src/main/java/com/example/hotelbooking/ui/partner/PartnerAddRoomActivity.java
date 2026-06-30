@@ -12,7 +12,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.hotelbooking.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,6 +105,7 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
         roomData.put("capacity_children", 0L); // mặc định
         roomData.put("bed_type", bedType);
         roomData.put("total_rooms", totalRooms);
+        roomData.put("available_rooms", totalRooms);
         roomData.put("description", description);
         roomData.put("amenities", amenitiesList);
         roomData.put("status", "AVAILABLE");
@@ -111,22 +114,23 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
         roomData.put("image_url", imageUrl);
 
         // tiến hành insert
-        db.collection("sections").document(newSectionId).set(sectionData)
-                .addOnSuccessListener(runnable -> {
-                    db.collection("rooms").add(roomData)
-                            .addOnSuccessListener(runnable1 -> {
-                                Toast.makeText(PartnerAddRoomActivity.this, "Đăng ký hạng phòng lên khách sạn thành công!", Toast.LENGTH_LONG).show();
-                                setResult(RESULT_OK);
-                                finish();
-                            })
-                            .addOnFailureListener(e -> {
-                                btnSaveRoom.setEnabled(true);
-                                Toast.makeText(PartnerAddRoomActivity.this, "Lỗi tạo thông tin phòng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
+        WriteBatch batch = db.batch();
+
+        DocumentReference sectionRef = db.collection("sections").document(newSectionId);
+        batch.set(sectionRef, sectionData);
+
+        DocumentReference roomRef = db.collection("rooms").document(); // Tự sinh ID ngẫu nhiên
+        batch.set(roomRef, roomData);
+
+        batch.commit()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(PartnerAddRoomActivity.this, "Đăng ký hạng phòng thành công!", Toast.LENGTH_LONG).show();
+                    setResult(RESULT_OK);
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSaveRoom.setEnabled(true);
-                    Toast.makeText(PartnerAddRoomActivity.this, "Lỗi tạo phân đoạn dịch vụ: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PartnerAddRoomActivity.this, "Lỗi lưu dữ liệu: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -141,7 +145,7 @@ public class PartnerAddRoomActivity extends AppCompatActivity {
             return false;
         }
         if (ownerId == null || ownerId.isEmpty()) {
-            Toast.makeText(this, "Vui lÃ²ng Ä‘Äƒng nháº­p láº¡i Ä‘á»ƒ thÃªm phÃ²ng", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng đăng nhập lại để thêm phòng!", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
