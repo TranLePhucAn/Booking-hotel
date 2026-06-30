@@ -222,37 +222,55 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
-     * Xử lý quên mật khẩu: kiểm tra email rồi gọi Firebase sendPasswordResetEmail.
+     * Hiển thị Dialog nhập email để đặt lại mật khẩu qua Firebase.
      */
     private void handleForgotPassword() {
-        String email = edtEmail.getText().toString().trim();
+        // Tạo EditText cho dialog
+        final EditText edtResetEmail = new EditText(this);
+        edtResetEmail.setHint("Nhập email của bạn");
+        edtResetEmail.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        edtResetEmail.setPadding(48, 32, 48, 32);
 
-        if (email.isEmpty()) {
-            edtEmail.setError("Nhập email để đặt lại mật khẩu");
-            edtEmail.requestFocus();
-            return;
+        // Điền sẵn email nếu đã nhập ở ô đăng nhập
+        String currentEmail = edtEmail.getText().toString().trim();
+        if (!currentEmail.isEmpty()) {
+            edtResetEmail.setText(currentEmail);
         }
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            edtEmail.setError("Email không hợp lệ");
-            edtEmail.requestFocus();
-            return;
-        }
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Quên mật khẩu")
+                .setMessage("Nhập email đã đăng ký để nhận liên kết đặt lại mật khẩu.")
+                .setView(edtResetEmail)
+                .setPositiveButton("Gửi", (dialog, which) -> {
+                    String email = edtResetEmail.getText().toString().trim();
 
-        loadingDialog.show();
-        auth.sendPasswordResetEmail(email)
-                .addOnCompleteListener(task -> {
-                    loadingDialog.dismiss();
-                    if (task.isSuccessful()) {
-                        Toast.makeText(this,
-                                "Đã gửi email đặt lại mật khẩu! Vui lòng kiểm tra hộp thư.",
-                                Toast.LENGTH_LONG).show();
-                    } else {
-                        String msg = task.getException() != null
-                                ? task.getException().getMessage()
-                                : "Không gửi được email. Vui lòng thử lại.";
-                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                    if (email.isEmpty()) {
+                        Toast.makeText(this, "Vui lòng nhập email", Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                });
+
+                    if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        Toast.makeText(this, "Email không hợp lệ", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    loadingDialog.show();
+                    auth.sendPasswordResetEmail(email)
+                            .addOnCompleteListener(task -> {
+                                loadingDialog.dismiss();
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(this,
+                                            "Đã gửi email đặt lại mật khẩu!\nVui lòng kiểm tra hộp thư.",
+                                            Toast.LENGTH_LONG).show();
+                                } else {
+                                    String msg = task.getException() != null
+                                            ? task.getException().getMessage()
+                                            : "Không gửi được email. Vui lòng thử lại.";
+                                    Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                                }
+                            });
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
     }
 }
