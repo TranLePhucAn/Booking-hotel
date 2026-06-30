@@ -3,12 +3,14 @@ package com.example.hotelbooking.ui.partner;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.hotelbooking.R;
@@ -35,6 +37,7 @@ public class AddHotelActivity extends AppCompatActivity {
     private EditText edtLongitude;
     private Spinner spinnerCategory;
     private FirebaseFirestore db;
+    private Button btnSubmitHotel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +47,7 @@ public class AddHotelActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         bindViews();
 
-        Button btnSubmitHotel = findViewById(R.id.btnSubmitHotel);
+        btnSubmitHotel = findViewById(R.id.btnSubmitHotel);
         btnSubmitHotel.setOnClickListener(v -> submitHotel());
     }
 
@@ -88,6 +91,8 @@ public class AddHotelActivity extends AppCompatActivity {
             Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin bắt buộc.", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        btnSubmitHotel.setEnabled(false);
 
         String ownerId = FirebaseAuth.getInstance().getCurrentUser() != null
                 ? FirebaseAuth.getInstance().getCurrentUser().getUid()
@@ -141,15 +146,33 @@ public class AddHotelActivity extends AppCompatActivity {
         db.collection(AppConstants.COLLECTION_HOTELS)
                 .add(hotelData)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Đã gửi yêu cầu tạo khách sạn. Vui lòng chờ duyệt.", Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(this, AddRoomActivity.class);
-                    intent.putExtra("hotel_id", documentReference.getId());
-                    intent.putExtra("hotel_name", hotelName);
+                    String generatedHotelId = documentReference.getId();
+                    showRedirectDialog(generatedHotelId, hotelName);
+                })
+                .addOnFailureListener(e -> {
+                    btnSubmitHotel.setEnabled(true);
+                    Toast.makeText(this, "Không lưu được khách sạn: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void showRedirectDialog(String generatedHotelId, String hotelName) {
+        new AlertDialog.Builder(this)
+                .setTitle("Đăng ký thành công!")
+                .setMessage("Khách sạn đã được gửi duyệt. Bạn có muốn thêm các hạng phòng cho khách sạn này ngay bây giờ không?")
+                .setCancelable(false) // Bắt buộc chọn, không bấm ra ngoài để tắt
+                .setPositiveButton("Thêm phòng ngay", (dialog, which) -> {
+                    // Chuyển sang PartnerAddRoomActivity
+                    Intent intent = new Intent(AddHotelActivity.this, PartnerAddRoomActivity.class);
+                    intent.putExtra("EXTRA_HOTEL_ID", generatedHotelId);
                     startActivity(intent);
                     finish();
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Không lưu được khách sạn: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                .setNegativeButton("Để sau", (dialog, which) -> {
+                    // Đóng màn hình và quay lại trang quản lý trước đó
+                    Toast.makeText(AddHotelActivity.this, "Bạn có thể thêm phòng sau trong mục Quản lý khách sạn.", Toast.LENGTH_LONG).show();
+                    finish();
+                })
+                .show();
     }
 
     private String textOf(EditText editText) {

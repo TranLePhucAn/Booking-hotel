@@ -267,14 +267,6 @@ public class ConfirmActivity extends AppCompatActivity {
     private void setupBookingLogic() {
         btnConfirmBooking.setOnClickListener(view -> {
 
-            btnConfirmBooking.setEnabled(false);
-
-            if (!canAcceptBooking()) {
-                Toast.makeText(this, "Rất tiếc, khách sạn này hiện tại không tiếp nhận đặt phòng!", Toast.LENGTH_LONG).show();
-                btnConfirmBooking.setEnabled(true);
-                return;
-            }
-
             String name = etGuestName.getText().toString().trim();
             String phone = etGuestPhone.getText().toString().trim();
             String email = etGuestEmail.getText().toString().trim();
@@ -284,6 +276,14 @@ public class ConfirmActivity extends AppCompatActivity {
             if (phone.isEmpty()) { etGuestPhone.setError("Vui lòng nhập số điện thoại"); return; }
             if (email.isEmpty()) { etGuestEmail.setError("Vui lòng nhập Email"); return; }
 
+            btnConfirmBooking.setEnabled(false);
+
+            if (!canAcceptBooking()) {
+                Toast.makeText(this, "Rất tiếc, khách sạn này hiện tại không tiếp nhận đặt phòng!", Toast.LENGTH_LONG).show();
+                btnConfirmBooking.setEnabled(true);
+                return;
+            }
+
             FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
             FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
             String customerId = "";
@@ -291,6 +291,7 @@ public class ConfirmActivity extends AppCompatActivity {
                 customerId = firebaseAuth.getUid();
             } else {
                 Toast.makeText(this, "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!", Toast.LENGTH_SHORT).show();
+                btnConfirmBooking.setEnabled(true);
                 return;
             }
 

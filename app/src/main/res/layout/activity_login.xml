@@ -71,13 +71,32 @@
                 android:inputType="textPassword"
                 android:paddingLeft="15dp" />
 
-            <CheckBox
-                android:id="@+id/cbRememberMe"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Ghi nhớ đăng nhập"
-                android:layout_marginBottom="16dp"
-                android:textColor="@color/ocean_deep" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <CheckBox
+                    android:id="@+id/cbRememberMe"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Ghi nhớ đăng nhập"
+                    android:textColor="@color/ocean_deep" />
+
+                <TextView
+                    android:id="@+id/tvForgotPassword"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Quên mật khẩu?"
+                    android:textColor="@color/ocean_blue"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:padding="4dp" />
+
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btnLogin"
