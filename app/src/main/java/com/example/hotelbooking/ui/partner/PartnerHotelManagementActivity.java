@@ -86,7 +86,7 @@ public class PartnerHotelManagementActivity extends AppCompatActivity {
 
             @Override
             public void onAddRoom(Hotel hotel) {
-                openAddRoom(hotel);
+                openRoomList(hotel);
             }
         });
         recyclerHotels.setAdapter(adapter);
@@ -133,8 +133,8 @@ public class PartnerHotelManagementActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void openAddRoom(Hotel hotel) {
-        Intent intent = new Intent(this, PartnerAddRoomActivity.class);
+    private void openRoomList(Hotel hotel) {
+        Intent intent = new Intent(this, PartnerRoomListActivity.class);
         intent.putExtra("EXTRA_HOTEL_ID", hotel.getId());
         intent.putExtra("hotel_name", hotel.getHotelName());
         startActivity(intent);
