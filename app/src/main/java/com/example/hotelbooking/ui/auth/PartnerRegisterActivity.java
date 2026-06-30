@@ -3,7 +3,6 @@ package com.example.hotelbooking.ui.auth;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,59 +16,61 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.hotelbooking.R;
-import com.example.hotelbooking.data.model.PartnerApplication;
-import com.example.hotelbooking.data.model.User;
-import com.example.hotelbooking.data.repository.PartnerRepository;
-import com.example.hotelbooking.data.repository.UserRepository;
 import com.example.hotelbooking.utils.AppConstants;
 import com.example.hotelbooking.utils.LoadingDialog;
-import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PartnerRegisterActivity extends AppCompatActivity {
 
+    // Thông tin tài khoản
     private EditText edtOwnerName, edtPartnerEmail, edtPartnerPhone, edtPartnerPassword;
+
+    // Thông tin khách sạn
     private EditText edtBusinessName, edtBusinessAddress, edtBusinessType;
 
-    private Button btnPickFile, btnPartnerRegister;
+    // Upload file
+    private Button btnPickFile;
     private TextView tvSelectedFileName, tvPdfIndicator;
     private ImageView ivFilePreview;
+    private Button btnPartnerRegister;
 
     private LoadingDialog loadingDialog;
-    private UserRepository userRepository;
-    private PartnerRepository partnerRepository;
+    private FirebaseFirestore db;
+
+    // Trạng thái: người dùng đã đăng nhập hay chưa
+    private boolean isLoggedIn = false;
+    private String uid;
 
     // File đã chọn
     private Uri selectedFileUri = null;
-    private String selectedFileName = "";
     private boolean isPdf = false;
 
-    // Launcher để chọn file từ thiết bị (ảnh hoặc PDF)
+    // Launcher chọn file (ảnh hoặc PDF)
     private final ActivityResultLauncher<String[]> filePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
                 if (uri != null) {
                     selectedFileUri = uri;
-                    // Lấy tên file từ URI
                     String path = uri.getLastPathSegment();
-                    selectedFileName = path != null ? path : "file_xac_minh";
+                    String fileName = path != null ? path : "file_xac_minh";
 
-                    // Kiểm tra loại file
                     String mimeType = getContentResolver().getType(uri);
                     isPdf = mimeType != null && mimeType.equals("application/pdf");
 
-                    // Cập nhật UI
-                    tvSelectedFileName.setText("✓ " + selectedFileName);
+                    tvSelectedFileName.setText("✓ " + fileName);
                     tvSelectedFileName.setTextColor(getResources().getColor(R.color.ocean_blue));
 
                     if (isPdf) {
-                        // Hiện chỉ báo PDF
                         ivFilePreview.setVisibility(View.GONE);
                         tvPdfIndicator.setVisibility(View.VISIBLE);
                     } else {
-                        // Hiện preview ảnh bằng Glide
                         tvPdfIndicator.setVisibility(View.GONE);
                         ivFilePreview.setVisibility(View.VISIBLE);
                         Glide.with(this).load(uri).into(ivFilePreview);
@@ -82,118 +83,183 @@ public class PartnerRegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_partner_register);
 
-        userRepository = new UserRepository();
-        partnerRepository = new PartnerRepository();
+        db = FirebaseFirestore.getInstance();
         loadingDialog = new LoadingDialog(this);
 
         bindViews();
 
-        btnPickFile.setOnClickListener(v -> {
-            // Mở file picker — chấp nhận PDF, JPG, PNG
-            filePickerLauncher.launch(new String[]{"application/pdf", "image/jpeg", "image/png"});
-        });
+        // Kiểm tra người dùng đã đăng nhập chưa
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            isLoggedIn = true;
+            uid = currentUser.getUid();
+            // Tự điền thông tin + ẩn ô mật khẩu
+            loadCurrentUserInfo();
+            edtPartnerPassword.setVisibility(View.GONE);
+        }
 
-        btnPartnerRegister.setOnClickListener(v -> registerPartner());
+        btnPickFile.setOnClickListener(v ->
+                filePickerLauncher.launch(new String[]{"application/pdf", "image/jpeg", "image/png"})
+        );
+
+        btnPartnerRegister.setOnClickListener(v -> submitApplication());
     }
 
     private void bindViews() {
-        edtOwnerName        = findViewById(R.id.edtOwnerName);
-        edtPartnerEmail     = findViewById(R.id.edtPartnerEmail);
-        edtPartnerPhone     = findViewById(R.id.edtPartnerPhone);
-        edtPartnerPassword  = findViewById(R.id.edtPartnerPassword);
-        edtBusinessName     = findViewById(R.id.edtBusinessName);
-        edtBusinessAddress  = findViewById(R.id.edtBusinessAddress);
-        edtBusinessType     = findViewById(R.id.edtBusinessType);
-
-        btnPickFile         = findViewById(R.id.btnPickFile);
-        btnPartnerRegister  = findViewById(R.id.btnPartnerRegister);
-        tvSelectedFileName  = findViewById(R.id.tvSelectedFileName);
-        tvPdfIndicator      = findViewById(R.id.tvPdfIndicator);
-        ivFilePreview       = findViewById(R.id.ivFilePreview);
+        edtOwnerName       = findViewById(R.id.edtOwnerName);
+        edtPartnerEmail    = findViewById(R.id.edtPartnerEmail);
+        edtPartnerPhone    = findViewById(R.id.edtPartnerPhone);
+        edtPartnerPassword = findViewById(R.id.edtPartnerPassword);
+        edtBusinessName    = findViewById(R.id.edtBusinessName);
+        edtBusinessAddress = findViewById(R.id.edtBusinessAddress);
+        edtBusinessType    = findViewById(R.id.edtBusinessType);
+        btnPickFile        = findViewById(R.id.btnPickFile);
+        tvSelectedFileName = findViewById(R.id.tvSelectedFileName);
+        tvPdfIndicator     = findViewById(R.id.tvPdfIndicator);
+        ivFilePreview      = findViewById(R.id.ivFilePreview);
+        btnPartnerRegister = findViewById(R.id.btnPartnerRegister);
     }
 
-    private void registerPartner() {
-        String ownerName     = textOf(edtOwnerName);
-        String email         = textOf(edtPartnerEmail);
-        String phone         = textOf(edtPartnerPhone);
-        String password      = textOf(edtPartnerPassword);
-        String businessName  = textOf(edtBusinessName);
-        String address       = textOf(edtBusinessAddress);
+    /**
+     * Tự động lấy thông tin từ tài khoản đã đăng nhập và điền vào form.
+     */
+    private void loadCurrentUserInfo() {
+        db.collection(AppConstants.COLLECTION_USERS)
+                .document(uid)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        String name  = document.getString("fullName");
+                        String email = document.getString("email");
+                        String phone = document.getString("phone");
 
-        // Validate các trường bắt buộc
-        if (TextUtils.isEmpty(ownerName) || TextUtils.isEmpty(email) || TextUtils.isEmpty(phone)
-                || TextUtils.isEmpty(password) || TextUtils.isEmpty(businessName) || TextUtils.isEmpty(address)) {
-            Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin bắt buộc", Toast.LENGTH_SHORT).show();
+                        edtOwnerName.setText(name != null ? name : "");
+                        edtPartnerEmail.setText(email != null ? email : "");
+                        edtPartnerPhone.setText(phone != null ? phone : "");
+                    } else {
+                        // Fallback từ FirebaseAuth
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        if (user != null) {
+                            edtOwnerName.setText(user.getDisplayName() != null ? user.getDisplayName() : "");
+                            edtPartnerEmail.setText(user.getEmail() != null ? user.getEmail() : "");
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                    if (user != null) {
+                        edtOwnerName.setText(user.getDisplayName() != null ? user.getDisplayName() : "");
+                        edtPartnerEmail.setText(user.getEmail() != null ? user.getEmail() : "");
+                    }
+                });
+    }
+
+    private void submitApplication() {
+        String ownerName    = textOf(edtOwnerName);
+        String email        = textOf(edtPartnerEmail);
+        String phone        = textOf(edtPartnerPhone);
+        String businessName = textOf(edtBusinessName);
+        String address      = textOf(edtBusinessAddress);
+
+        // Validate
+        if (TextUtils.isEmpty(ownerName)) {
+            edtOwnerName.setError("Vui lòng nhập tên người đại diện");
+            edtOwnerName.requestFocus();
             return;
         }
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Email không đúng định dạng", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(email)) {
+            edtPartnerEmail.setError("Vui lòng nhập email");
+            edtPartnerEmail.requestFocus();
             return;
         }
-        if (password.length() < 6) {
-            Toast.makeText(this, "Mật khẩu phải có ít nhất 6 ký tự", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(businessName)) {
+            edtBusinessName.setError("Vui lòng nhập tên khách sạn");
+            edtBusinessName.requestFocus();
+            return;
+        }
+        if (TextUtils.isEmpty(address)) {
+            edtBusinessAddress.setError("Vui lòng nhập địa chỉ");
+            edtBusinessAddress.requestFocus();
             return;
         }
 
+        // Nếu chưa đăng nhập → cần mật khẩu để tạo tài khoản mới
+        if (!isLoggedIn) {
+            String password = textOf(edtPartnerPassword);
+            if (TextUtils.isEmpty(password) || password.length() < 6) {
+                edtPartnerPassword.setError("Mật khẩu tối thiểu 6 ký tự");
+                edtPartnerPassword.requestFocus();
+                return;
+            }
+            // Tạo tài khoản mới rồi gửi hồ sơ
+            loadingDialog.show();
+            createAccountAndSubmit(ownerName, email, phone, password);
+            return;
+        }
+
+        // Đã đăng nhập → gửi hồ sơ luôn
         loadingDialog.show();
+        if (selectedFileUri != null) {
+            uploadFileAndSave();
+        } else {
+            saveApplicationToFirestore("");
+        }
+    }
 
-        // Bước 1: Tạo tài khoản Firebase Auth
+    /**
+     * Trường hợp chưa đăng nhập: tạo tài khoản Firebase Auth trước.
+     */
+    private void createAccountAndSubmit(String name, String email, String phone, String password) {
         FirebaseAuth.getInstance()
                 .createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    if (!task.isSuccessful() || FirebaseAuth.getInstance().getCurrentUser() == null) {
-                        loadingDialog.dismiss();
-                        String msg = task.getException() != null
-                                ? task.getException().getMessage() : "Không tạo được tài khoản";
-                        Toast.makeText(this, "Lỗi Auth: " + msg, Toast.LENGTH_LONG).show();
-                        return;
-                    }
+                .addOnSuccessListener(authResult -> {
+                    uid = authResult.getUser().getUid();
+                    isLoggedIn = true;
 
-                    String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    // Lưu user vào Firestore
+                    Map<String, Object> userData = new HashMap<>();
+                    userData.put("uid", uid);
+                    userData.put("fullName", name);
+                    userData.put("email", email);
+                    userData.put("phone", phone);
+                    userData.put("role", AppConstants.ROLE_USER);
+                    userData.put("partnerStatus", AppConstants.STATUS_PENDING);
 
-                    // Bước 2: Cập nhật displayName
-                    FirebaseAuth.getInstance().getCurrentUser().updateProfile(
-                            new UserProfileChangeRequest.Builder().setDisplayName(ownerName).build()
-                    ).addOnCompleteListener(profileTask -> {
-                        if (selectedFileUri != null) {
-                            // Bước 3a: Upload file lên Firebase Storage → rồi lưu hồ sơ
-                            uploadFileAndSave(uid, ownerName, email, phone, businessName, address);
-                        } else {
-                            // Bước 3b: Không có file → lưu hồ sơ với URL rỗng
-                            savePartnerApplication(uid, ownerName, email, phone, businessName, address, "");
-                        }
-                    });
+                    db.collection(AppConstants.COLLECTION_USERS).document(uid).set(userData)
+                            .addOnSuccessListener(v -> {
+                                if (selectedFileUri != null) {
+                                    uploadFileAndSave();
+                                } else {
+                                    saveApplicationToFirestore("");
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                loadingDialog.dismiss();
+                                Toast.makeText(this, "Lỗi lưu user: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    loadingDialog.dismiss();
+                    Toast.makeText(this, "Lỗi tạo tài khoản: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
     /**
-     * Upload file xác minh lên Firebase Storage, sau đó lưu hồ sơ.
+     * Upload file xác minh lên Firebase Storage.
      */
-    private void uploadFileAndSave(String uid, String ownerName, String email, String phone,
-                                   String businessName, String address) {
-        // Đường dẫn Storage: partner_verification/{uid}/{fileName}
+    private void uploadFileAndSave() {
         String ext = isPdf ? ".pdf" : ".jpg";
-        String storagePath = AppConstants.STORAGE_PARTNER_VERIFICATION + "/" + uid + "/verification" + ext;
+        String path = "partner_verification/" + uid + "/verification" + ext;
+        StorageReference ref = FirebaseStorage.getInstance().getReference(path);
 
-        StorageReference storageRef = FirebaseStorage.getInstance().getReference(storagePath);
-
-        storageRef.putFile(selectedFileUri)
-                .addOnProgressListener(taskSnapshot -> {
-                    double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                    loadingDialog.show(); // giữ dialog hiển thị
-                })
-                .addOnSuccessListener(taskSnapshot -> {
-                    // Lấy download URL
-                    storageRef.getDownloadUrl()
-                            .addOnSuccessListener(downloadUri -> {
-                                String fileUrl = downloadUri.toString();
-                                savePartnerApplication(uid, ownerName, email, phone, businessName, address, fileUrl);
-                            })
-                            .addOnFailureListener(e -> {
-                                loadingDialog.dismiss();
-                                Toast.makeText(this, "Lỗi lấy URL file: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            });
-                })
+        ref.putFile(selectedFileUri)
+                .addOnSuccessListener(task -> ref.getDownloadUrl()
+                        .addOnSuccessListener(downloadUrl -> saveApplicationToFirestore(downloadUrl.toString()))
+                        .addOnFailureListener(e -> {
+                            loadingDialog.dismiss();
+                            Toast.makeText(this, "Lỗi lấy URL: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        })
+                )
                 .addOnFailureListener(e -> {
                     loadingDialog.dismiss();
                     Toast.makeText(this, "Lỗi upload file: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -201,49 +267,42 @@ public class PartnerRegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * Lưu User + PartnerApplication vào Firestore.
+     * Lưu hồ sơ đăng ký vào Firestore partner_applications.
      */
-    private void savePartnerApplication(String uid, String ownerName, String email, String phone,
-                                        String businessName, String address, String fileUrl) {
-        // Tạo user với role = user, partnerStatus = pending
-        User user = new User(uid, ownerName, email, phone, AppConstants.ROLE_USER, AppConstants.STATUS_PENDING);
-        user.setCreatedAt(Timestamp.now());
+    private void saveApplicationToFirestore(String fileUrl) {
+        Map<String, Object> data = new HashMap<>();
 
-        // Tạo hồ sơ đăng ký cộng sự
-        PartnerApplication app = new PartnerApplication();
-        app.setId(uid);
-        app.setUserId(uid);
-        app.setBusinessName(businessName);
-        app.setRepresentativeName(ownerName);
-        app.setEmail(email);
-        app.setPhone(phone);
-        app.setAddress(address);
-        app.setDescription(textOf(edtBusinessType));
-        app.setTaxCode("");
-        app.setVerificationFileUrl(fileUrl);
-        app.setStatus(AppConstants.STATUS_PENDING);
-        app.setAdminNote("");
-        app.setCreatedAt(Timestamp.now());
+        data.put("user_id", uid);
+        data.put("representative_name", textOf(edtOwnerName));
+        data.put("email", textOf(edtPartnerEmail));
+        data.put("phone", textOf(edtPartnerPhone));
+        data.put("business_name", textOf(edtBusinessName));
+        data.put("address", textOf(edtBusinessAddress));
+        data.put("description", textOf(edtBusinessType));
+        data.put("verification_file_url", fileUrl);
+        data.put("status", AppConstants.STATUS_PENDING);
+        data.put("admin_note", "");
+        data.put("created_at", FieldValue.serverTimestamp());
 
-        userRepository.saveUser(user)
+        db.collection(AppConstants.COLLECTION_PARTNER_APPLICATIONS)
+                .document(uid)
+                .set(data)
                 .addOnSuccessListener(v -> {
-                    partnerRepository.submitApplication(app)
-                            .addOnSuccessListener(v2 -> {
+                    // Cập nhật partnerStatus = pending trên user
+                    db.collection(AppConstants.COLLECTION_USERS)
+                            .document(uid)
+                            .update("partnerStatus", AppConstants.STATUS_PENDING)
+                            .addOnCompleteListener(task -> {
                                 loadingDialog.dismiss();
-                                FirebaseAuth.getInstance().signOut();
                                 Toast.makeText(this,
-                                        "Đăng ký thành công! Vui lòng chờ Admin phê duyệt hồ sơ.",
+                                        "Đăng ký cộng sự thành công!\nVui lòng chờ quản trị viên xét duyệt.",
                                         Toast.LENGTH_LONG).show();
                                 finish();
-                            })
-                            .addOnFailureListener(e -> {
-                                loadingDialog.dismiss();
-                                Toast.makeText(this, "Lỗi lưu hồ sơ: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                             });
                 })
                 .addOnFailureListener(e -> {
                     loadingDialog.dismiss();
-                    Toast.makeText(this, "Lỗi lưu user: " + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Lỗi gửi hồ sơ: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 

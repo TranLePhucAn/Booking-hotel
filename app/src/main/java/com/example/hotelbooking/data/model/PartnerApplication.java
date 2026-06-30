@@ -17,8 +17,15 @@ public class PartnerApplication implements Serializable {
     private String verificationFileUrl;
     private String status;
     private String adminNote;
-    private Timestamp createdAt;
-    private Timestamp reviewedAt;
+    private transient Timestamp createdAt;
+    private transient Timestamp reviewedAt;
+
+    // Các field mới cho CCCD và khách sạn
+    private String cccd;
+    private String hotelName;
+    private String hotelAddress;
+    private String frontImageUrl;
+    private String backImageUrl;
 
     public PartnerApplication() {}
 
@@ -79,4 +86,29 @@ public class PartnerApplication implements Serializable {
     public Timestamp getReviewedAt() { return reviewedAt; }
     @PropertyName("reviewed_at")
     public void setReviewedAt(Timestamp reviewedAt) { this.reviewedAt = reviewedAt; }
+
+    // === Các field mới ===
+
+    public String getCccd() { return cccd; }
+    public void setCccd(String cccd) { this.cccd = cccd; }
+
+    @PropertyName("hotel_name")
+    public String getHotelName() { return hotelName; }
+    @PropertyName("hotel_name")
+    public void setHotelName(String hotelName) { this.hotelName = hotelName; }
+
+    @PropertyName("hotel_address")
+    public String getHotelAddress() { return hotelAddress; }
+    @PropertyName("hotel_address")
+    public void setHotelAddress(String hotelAddress) { this.hotelAddress = hotelAddress; }
+
+    @PropertyName("front_image_url")
+    public String getFrontImageUrl() { return frontImageUrl; }
+    @PropertyName("front_image_url")
+    public void setFrontImageUrl(String frontImageUrl) { this.frontImageUrl = frontImageUrl; }
+
+    @PropertyName("back_image_url")
+    public String getBackImageUrl() { return backImageUrl; }
+    @PropertyName("back_image_url")
+    public void setBackImageUrl(String backImageUrl) { this.backImageUrl = backImageUrl; }
 }
