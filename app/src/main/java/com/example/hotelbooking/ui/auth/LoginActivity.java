@@ -40,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     private CheckBox cbRememberMe;
     private TextView txtRegister;
     private TextView txtPartnerRegister;
+    private TextView tvForgotPassword;
 
     private FirebaseAuth auth;
     private LoadingDialog loadingDialog;
@@ -69,6 +70,12 @@ public class LoginActivity extends AppCompatActivity {
         if (txtPartnerRegister != null) {
             txtPartnerRegister.setOnClickListener(v ->
                     startActivity(new Intent(this, PartnerRegisterActivity.class)));
+        }
+
+        // Quên mật khẩu
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
+        if (tvForgotPassword != null) {
+            tvForgotPassword.setOnClickListener(v -> handleForgotPassword());
         }
     }
 
@@ -212,5 +219,40 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         return "Không đăng nhập được. Hãy kiểm tra mạng và thử lại.";
+    }
+
+    /**
+     * Xử lý quên mật khẩu: kiểm tra email rồi gọi Firebase sendPasswordResetEmail.
+     */
+    private void handleForgotPassword() {
+        String email = edtEmail.getText().toString().trim();
+
+        if (email.isEmpty()) {
+            edtEmail.setError("Nhập email để đặt lại mật khẩu");
+            edtEmail.requestFocus();
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            edtEmail.setError("Email không hợp lệ");
+            edtEmail.requestFocus();
+            return;
+        }
+
+        loadingDialog.show();
+        auth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    loadingDialog.dismiss();
+                    if (task.isSuccessful()) {
+                        Toast.makeText(this,
+                                "Đã gửi email đặt lại mật khẩu! Vui lòng kiểm tra hộp thư.",
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        String msg = task.getException() != null
+                                ? task.getException().getMessage()
+                                : "Không gửi được email. Vui lòng thử lại.";
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }
